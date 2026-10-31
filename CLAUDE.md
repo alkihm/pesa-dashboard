@@ -9,13 +9,17 @@ Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/DESIGN.md](docs/DESI
 
 1. Work out which laptop you are on (`hostname` on the laptop, or the workspace folder name on the server):
    Hydracore → `ws-hydracore`, label `laptop:A`; Alfie → `ws-alfie`, label `laptop:B`.
-2. Follow [docs/WORKFLOW.md](docs/WORKFLOW.md) "Start of a session" — pull `dev`, read [docs/STATUS.md](docs/STATUS.md),
-   pick or resume an issue.
-3. Requirements live in [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md), decisions in [docs/DECISIONS.md](docs/DECISIONS.md).
+2. Run the progress check on the server (`progress/check.sh`, path in `SERVER.md`; over non-interactive ssh
+   prefix `source ~/.nvm/nvm.sh &&`). Act on notes addressed to you in `progress/NOTES.md` first.
+3. Follow [docs/WORKFLOW.md](docs/WORKFLOW.md) "Start of a session" — pull `dev`, read [docs/STATUS.md](docs/STATUS.md),
+   pick or resume an issue, and update your own `progress/<laptop>.md` board.
+4. Requirements live in [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md), decisions in [docs/DECISIONS.md](docs/DECISIONS.md).
    Do not re-open a recorded decision without the owner.
-4. Never edit the other laptop's workspace or `integration/`. Host details are in `SERVER.md` on the server.
-5. Before ending, push the branch, comment on the issue where you stopped, and update STATUS.md if anything
-   important changed.
+5. Never edit the other laptop's workspace, its progress board, or `integration/`. Host details are in `SERVER.md` on the server.
+6. Before changing something the other laptop depends on (tokens, app shell, router, schema, shared types), add a
+   line to `progress/NOTES.md`.
+7. Before ending: push the branch, comment on the issue where you stopped, update your progress board, and update
+   STATUS.md if anything important changed.
 
 ## Rules
 

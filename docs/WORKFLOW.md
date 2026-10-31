@@ -39,16 +39,36 @@ Each workspace commits as `Alkihm (Hydracore)` or `Alkihm (Alfie)`, so history s
 ## Start of a session
 
 1. Open your own workspace over Remote-SSH.
-2. `git switch dev && git pull --rebase`
-3. Read [STATUS.md](STATUS.md) — the current state and what is next.
-4. If you have an open branch, rebase it: `git switch <branch> && git pull --rebase origin dev`.
-5. Otherwise pick the next issue:
+2. Run the progress check (path in `SERVER.md`, `progress/check.sh`) — what the other laptop is doing,
+   notes addressed to you, open pull requests, claimed issues. Act on any note for you first.
+3. `git switch dev && git pull --rebase`
+4. Read [STATUS.md](STATUS.md) — the current state and what is next.
+5. If you have an open branch, rebase it: `git switch <branch> && git pull --rebase origin dev`.
+6. Otherwise pick the next issue:
    - in the current milestone, `P0` before `P1`;
    - not labelled for the other laptop;
    - everything under **Depends on** is closed;
    - prefer a different `epic:*` from what the other laptop is doing.
-6. Label it `laptop:A` or `laptop:B`, comment `Started on <laptop>`, then
+7. Label it `laptop:A` or `laptop:B`, comment `Started on <laptop>`, then
    `git switch -c feat/<issue-number>-<slug>`.
+8. Update your live board (`progress/<laptop>.md`, "Now" table): issue, branch, state, files you will touch.
+
+## Keeping each other informed
+
+Two places, used together:
+
+| Where | Who writes | What |
+|---|---|---|
+| `progress/hydracore.md`, `progress/alfie.md` on the server | each laptop only its own file | "Now" table (issue, branch, state, files being touched, blockers, time) and a dated log, newest on top |
+| `progress/NOTES.md` on the server | both, add-only | Messages that affect the other laptop: schema changed, shared file edited, decision taken, please avoid X, questions. Reply with a new line once acted on. |
+| GitHub | both | Labels, draft PRs and issue comments — the permanent record |
+
+Update your board at the start, when you open or finish a pull request, when you get blocked, and at the end.
+Write a note **before** you change something the other laptop depends on (tokens, app shell, router, schema,
+shared types). These files are on the server only — never copy them into the repo.
+
+If both Claude sessions run on the server at the same time, they may also message each other directly
+(Claude Code can see other local sessions). Treat that as a bonus; the board and notes are the record.
 
 ## While working
 
@@ -80,9 +100,10 @@ Each workspace commits as `Alkihm (Hydracore)` or `Alkihm (Alfie)`, so history s
 
 1. Push your branch, even if unfinished.
 2. Comment on the issue: where you stopped and what is next.
-3. Update [STATUS.md](STATUS.md) in your pull request when something important changed — a milestone
+3. Update your live board: "Now" table and a log line. Leave a note if the other laptop needs to know something.
+4. Update [STATUS.md](STATUS.md) in your pull request when something important changed — a milestone
    moved, a decision was made, a blocker appeared.
-4. New decisions go in [DECISIONS.md](DECISIONS.md); changed requirements in [REQUIREMENTS.md](REQUIREMENTS.md).
+5. New decisions go in [DECISIONS.md](DECISIONS.md); changed requirements in [REQUIREMENTS.md](REQUIREMENTS.md).
 
 ## Releases
 
