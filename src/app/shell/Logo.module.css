@@ -1,0 +1,30 @@
+.logo {
+  display: block;
+  flex: none;
+}
+
+.ring1 {
+  stroke: var(--brand-ring-1);
+}
+
+.ring2 {
+  stroke: var(--brand-ring-2);
+}
+
+.ring3 {
+  stroke: var(--brand-ring-3);
+}
+
+.ring4 {
+  stroke: var(--brand-ring-4);
+}
+
+.bubble {
+  fill: var(--color-accent);
+  stroke: var(--color-header);
+}
+
+.text {
+  fill: var(--color-on-accent);
+  font-family: var(--font-sans);
+}

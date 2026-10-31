@@ -1,0 +1,49 @@
+.bar {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  padding: 8px 8px max(16px, env(safe-area-inset-bottom));
+  background: var(--color-tabbar);
+  border-radius: var(--radius-hero) var(--radius-hero) 0 0;
+}
+
+.tab {
+  min-height: 44px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 0 0 6px;
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-tabbar-inactive);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--color-tabbar-active);
+  outline-offset: 2px;
+}
+
+.indicator {
+  width: 22px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.tab[aria-current="page"] {
+  color: var(--color-tabbar-active);
+}
+
+.tab[aria-current="page"] .indicator {
+  background: var(--color-tabbar-active);
+}
+
+@media (min-width: 900px) {
+  .bar {
+    display: none;
+  }
+}

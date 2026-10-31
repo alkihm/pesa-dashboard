@@ -1,8 +1,8 @@
-// Placeholder until the app shell lands in [0.6].
+import { createBrowserRouter, RouterProvider } from "react-router";
+import { routes } from "./routes";
+
+const router = createBrowserRouter(routes);
+
 export function App() {
-  return (
-    <main>
-      <h1>Pesa Dashboard</h1>
-    </main>
-  );
+  return <RouterProvider router={router} />;
 }

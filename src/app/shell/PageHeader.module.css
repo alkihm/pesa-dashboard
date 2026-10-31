@@ -1,0 +1,203 @@
+/* Phone layout first; the desktop layout starts at 900px (also in AppShell and TabBar). */
+
+.header {
+  background: var(--color-header);
+  color: var(--color-on-header);
+  border-bottom-right-radius: var(--radius-header);
+  padding: calc(14px + env(safe-area-inset-top)) var(--shell-gutter) 22px;
+}
+
+.topBar {
+  display: none;
+}
+
+.titleRow {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr) 44px;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+/* Keeps the header the same height when a screen has no header buttons. */
+.phoneSlot {
+  min-height: 44px;
+}
+
+.titles {
+  text-align: center;
+  min-width: 0;
+}
+
+.title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: var(--font-weight-bold);
+  overflow-wrap: anywhere;
+}
+
+.subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: var(--color-on-header-muted);
+}
+
+.controls {
+  grid-column: 1 / -1;
+  margin-top: 10px;
+}
+
+.desktopOnly {
+  display: none;
+}
+
+.phoneOnly {
+  display: inline;
+}
+
+.join {
+  height: var(--radius-header);
+  background: var(--color-header);
+}
+
+.join > div {
+  height: 100%;
+  background: var(--color-bg);
+  border-top-left-radius: var(--radius-header);
+}
+
+.iconButton {
+  width: 44px;
+  height: 44px;
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  border: 1px solid var(--color-on-header-line);
+  background: transparent;
+  color: var(--color-on-header);
+  cursor: pointer;
+}
+
+.iconButton:hover {
+  background: var(--color-on-header-faint);
+}
+
+.iconButton:focus-visible,
+.navLink:focus-visible,
+.brand:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+@media (min-width: 900px) {
+  .header {
+    border-bottom-right-radius: var(--radius-header-desktop);
+    padding: 0;
+  }
+
+  .topBar,
+  .titleRow {
+    max-width: var(--shell-max-width);
+    margin: 0 auto;
+    padding-inline: var(--shell-gutter);
+  }
+
+  .topBar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    padding-block: 12px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 18px;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-on-header);
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+  }
+
+  .nav {
+    flex: 1 1 auto;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .navLink {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-on-header-muted);
+    text-decoration: none;
+  }
+
+  .navLink:hover {
+    background: var(--color-on-header-faint);
+  }
+
+  .navLink[aria-current="page"] {
+    background: var(--color-accent);
+    color: var(--color-on-accent);
+  }
+
+  .iconButton {
+    border-radius: var(--radius-control);
+  }
+
+  .titleRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    padding-block: 14px 30px;
+  }
+
+  .phoneSlot,
+  .phoneOnly {
+    display: none;
+  }
+
+  .desktopOnly {
+    display: inline;
+  }
+
+  .titles {
+    text-align: left;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .subtitle {
+    margin-top: 4px;
+    font-size: 13px;
+  }
+
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 0;
+  }
+
+  .join {
+    height: 48px;
+  }
+
+  .join > div {
+    border-top-left-radius: 48px;
+  }
+}
