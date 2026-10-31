@@ -4,10 +4,14 @@
   box-sizing: border-box;
 }
 
+/*
+ * Behind the page is the header colour: iOS tints the status bar and the overscroll areas from it, so they
+ * match the header and the tab bar. Screens paint the page colour themselves (AppShell, sign-in).
+ */
 body {
   margin: 0;
   min-height: 100dvh;
-  background: var(--color-bg);
+  background: var(--color-header);
   color: var(--color-text);
   font-family: var(--font-sans);
   font-weight: var(--font-weight-regular);
