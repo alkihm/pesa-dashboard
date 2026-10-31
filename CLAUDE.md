@@ -49,6 +49,12 @@ Node 22 (`.nvmrc`) and pnpm 9. On the server, run `source ~/.nvm/nvm.sh` first i
 | `pnpm build` | Type check and production build into `dist/` |
 | `pnpm preview` | Serve the production build |
 | `pnpm format` / `pnpm format:check` | Prettier (Markdown is formatted by hand) |
+| `supabase status` | Local stack URLs and keys (the stack is shared, project id `pesa-dashboard`) |
+| `supabase migration new <name>` | New migration in `supabase/migrations/` — only in the one PR labelled `db-migration` |
+| `supabase db reset` | Rebuild the shared local database — run in `integration/` only |
+
+Config comes from env only: copy `.env.example` to `.env.local` and fill it from `supabase status`.
+`src/lib/env.ts` fails at start-up if a value is missing.
 
 Source layout: `src/app` (entry, shell, routes), `src/features/<feature>` (screens and their logic),
 `src/components` (shared UI), `src/lib` (shared helpers). Import from `src` with the `@/` alias.

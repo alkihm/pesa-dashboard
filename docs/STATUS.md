@@ -13,6 +13,9 @@ _Last updated: 2026-10-31 by Alfie_
   pnpm 9.15.0, GitHub CLI, Supabase CLI 2.20.5); GitHub login done, all three clones can push.
   Details and ports in `SERVER.md` on the server.
 - **Build:** not started. Hydracore begins with [0.1].
+- **Supabase:** cloud projects `pesa-dashboard-dev` and `pesa-dashboard-prod` created (Frankfurt); refs and keys in
+  `private/env/` on the server. Local stack runs on the server without Studio, analytics, Inbucket and storage
+  (about 400 MB). `.env.example` lists the app's config.
 - **Data model:** settled in [0.9] — tables in [ARCHITECTURE.md](ARCHITECTURE.md), reasons in D-009. Migrations follow it.
 
 ## First time on Alfie
@@ -31,15 +34,16 @@ _Last updated: 2026-10-31 by Alfie_
 | Laptop | Next issues |
 |---|---|
 | Hydracore | [0.1] scaffold (#1) → [0.2] CI (#2) → [0.5] tokens (#5) → [0.6] app shell (#6) |
-| Alfie | [0.3] Supabase local stack (#3) → [1.4] SMS parser (#13) |
+| Alfie | [1.4] SMS parser (#13), then the first schema migration from D-009 |
 
 [1.4] must write overdraft (Fuliza) draws as transfers from an overdraft account — see D-009 rule 3.
 
 ## Open questions
 
 - Vercel or Cloudflare Pages — decide in [0.4].
-- The server has about 4 GB of free memory; the local Supabase stack should run without Studio and
-  analytics if memory gets tight — check in [0.3].
+- The local Supabase database (port 54322, password `postgres`) and API (54321) listen on all interfaces —
+  the CLI has no bind setting. The API must stay reachable for phone testing; the database port should be
+  firewalled to localhost on the server (owner).
 
 ## Owner to-dos outside the repo
 
