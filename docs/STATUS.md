@@ -2,7 +2,7 @@
 
 The handover note. Read it at the start of every session; update it when something important changes.
 
-_Last updated: 2026-10-31 by Alfie_
+_Last updated: 2026-11-01 by Alfie_
 
 ## Where things stand
 
@@ -12,11 +12,16 @@ _Last updated: 2026-10-31 by Alfie_
   excluded from Syncthing on the server and on Hydracore. Toolchain installed (Node 22.23.4 via nvm,
   pnpm 9.15.0, GitHub CLI, Supabase CLI 2.20.5); GitHub login done, all three clones can push.
   Details and ports in `SERVER.md` on the server.
-- **Build:** not started. Hydracore begins with [0.1].
+- **Build:** M0 foundation merged — scaffold, CI, tokens, app shell, shared components, PWA basics (Hydracore).
+  M1 data and intake: schema [1.1], row-level security [1.2], SMS parser [1.4] and intake function [1.5] merged (Alfie).
+- **Intake live on the dev cloud project:** the iPhone Shortcut posts to it alongside the Sheet ([1.6], steps in
+  [SHORTCUT.md](SHORTCUT.md)). The first real messages exposed four new wordings, now handled. The dev project has no
+  opening balances yet, so its balances do not reconcile until those are entered or history is imported.
 - **Supabase:** cloud projects `pesa-dashboard-dev` and `pesa-dashboard-prod` created (Frankfurt); refs and keys in
   `private/env/` on the server. Local stack runs on the server without Studio, analytics, Inbucket and storage
   (about 400 MB). `.env.example` lists the app's config.
-- **Data model:** settled in [0.9] — tables in [ARCHITECTURE.md](ARCHITECTURE.md), reasons in D-009. Migrations follow it.
+- **Data model:** settled in [0.9] — tables in [ARCHITECTURE.md](ARCHITECTURE.md), reasons in D-009; D-010 made savings
+  count in net position.
 
 ## First time on Alfie
 
@@ -34,9 +39,10 @@ _Last updated: 2026-10-31 by Alfie_
 | Laptop | Next issues |
 |---|---|
 | Hydracore | [0.1] scaffold (#1) → [0.2] CI (#2) → [0.5] tokens (#5) → [0.6] app shell (#6) |
-| Alfie | [1.4] SMS parser (#13), then the first schema migration from D-009 |
+| Alfie | [1.8] balance snapshots (#17) → [1.9] payee rules on past rows (#18) → [1.3] history import (#12, prod only) |
 
-[1.4] must write overdraft (Fuliza) draws as transfers from an overdraft account — see D-009 rule 3.
+Accounts receive SMS through `sms_account_hint` (ARCHITECTURE: accounts). Real data goes only to the cloud projects,
+never to the repo or the local database.
 
 ## Open questions
 
