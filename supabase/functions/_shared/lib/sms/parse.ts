@@ -1,7 +1,7 @@
 import { parseAirtel } from "./airtel.ts";
 import { parseBank } from "./bank.ts";
 import type { Draft } from "./draft.ts";
-import { parseMpesa } from "./mpesa.ts";
+import { parseKcbMpesa, parseMpesa } from "./mpesa.ts";
 import type { ParseOptions, SmsInput, SmsParse, Source } from "./types.ts";
 
 /** One-time codes are never stored (ARCHITECTURE: sms_messages). The intake checks this before saving. */
@@ -31,6 +31,10 @@ function notATransaction(t: string): string | undefined {
 function route(sender: string, t: string, opts: ParseOptions): { source: Source; draft: Draft } | undefined {
   const mpesaFormat = /^[A-Z0-9]{10}\s+Confirmed/i.test(t);
   // A KCB notice can quote an M-PESA code; an M-PESA confirmation can mention KCB. The format decides.
+  // KCB M-PESA's savings notices come without a reference code and may come from a KCB sender or none.
+  if (!mpesaFormat && /M-PESA savings Account|KCB M-?Pesa wallet/i.test(t)) {
+    return { source: "mpesa", draft: parseKcbMpesa(t) };
+  }
   // Batched messages from the Shortcut carry no sender, so the text has to say who sent it.
   const kcb = /KCB/i.test(sender) || (!sender.trim() && /\bKCB\b/i.test(t));
   if (kcb && !mpesaFormat) return { source: "bank", draft: parseBank(t, "KCB", opts) };

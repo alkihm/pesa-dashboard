@@ -33,7 +33,7 @@ from pickers, kept in history.
 | `kind` | `wallet` · `bank` · `cash` · `savings` · `loan` · `card` (an overdraft is a `loan`) |
 | `debt_term` | `short` · `long` — loans and cards only; the two debt groups of R2 |
 | `counts_in_net` | Defaults: true for wallet, bank, cash and short-term debt; false for savings and long-term debt |
-| `sms_sender`, `sms_account_hint` | `sms_account_hint` is the parser's account key that lands here, ignoring case: `mpesa`, `fuliza`, `mshwari`, `kcb-mpesa`, `airtel-money`, a bank name (`KCB`) or a card (`KCB card 0042`). Cash goes to the `cash` account. An SMS for an account nobody claims goes to review |
+| `sms_sender`, `sms_account_hint` | `sms_account_hint` is the parser's account key that lands here, ignoring case: `mpesa`, `fuliza`, `mshwari`, `kcb-mpesa` (its savings side), `kcb-mpesa-loan`, `airtel-money`, a bank name (`KCB`) or a card (`KCB card 0042`). Cash goes to the `cash` account. An SMS for an account nobody claims goes to review |
 | `limit_cents` | Card or overdraft limit |
 | `original_cents` | Loan principal, for the progress bar |
 | `due_day` | 1–31, repayment day of a loan or card |

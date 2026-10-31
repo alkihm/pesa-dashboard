@@ -7,7 +7,8 @@ import type { AccountRef, BalanceReading } from "./types.ts";
 const MPESA: AccountRef = { product: "mpesa" };
 const FULIZA: AccountRef = { product: "fuliza" };
 const MSHWARI: AccountRef = { product: "mshwari" };
-const KCB_MPESA: AccountRef = { product: "kcb-mpesa" };
+const KCB_MPESA: AccountRef = { product: "kcb-mpesa" }; // the savings side
+const KCB_MPESA_LOAN: AccountRef = { product: "kcb-mpesa-loan" };
 const CASH: AccountRef = { product: "cash" };
 
 const KSH = String.raw`Ksh\.?\s*`;
@@ -17,7 +18,8 @@ const re = (s: TemplateStringsArray, ...v: string[]) => new RegExp(String.raw(s,
 export function parseMpesa(t: string): Draft {
   const ref = pick(/^([A-Z0-9]{10})\s+Confirmed/i, t) ?? pick(/^([A-Z0-9]{10})\b/, t);
   const cost = pickCents(re`Transaction cost,?\s*${KSH}${AMT}`, t) ?? 0;
-  const mpesaBalance = pickCents(re`M-PESA (?:account )?balance is ${KSH}${AMT}`, t);
+  // Some notices drop the currency: "Your M-PESA balance is 0.00."
+  const mpesaBalance = pickCents(re`M-PESA (?:account )?balance is (?:${KSH})?${AMT}`, t);
   const balances: BalanceReading[] =
     mpesaBalance === undefined ? [] : [{ account: MPESA, cents: mpesaBalance }];
   const parsed = (
@@ -68,7 +70,7 @@ export function parseMpesa(t: string): Draft {
   }
 
   if (/KCB M-?PESA/i.test(t) && re`loan repayment of ${KSH}${AMT}`.test(t)) {
-    return parsed(transfer(MPESA, KCB_MPESA, pickCents(re`repayment of ${KSH}${AMT}`, t)!, "loan"));
+    return parsed(transfer(MPESA, KCB_MPESA_LOAN, pickCents(re`repayment of ${KSH}${AMT}`, t)!, "loan"));
   }
 
   if (re`transfer+ed ${KSH}${AMT} from your KCB M-?PESA account`.test(t)) {
@@ -90,6 +92,13 @@ export function parseMpesa(t: string): Draft {
         ? { ...spend(MPESA, cents, "reversal", { payee: "Reversal" }), amountCents: cents }
         : { ...receive(MPESA, cents, "reversal", { payee: "Reversal" }), amountCents: -cents };
     return parsed([entry]);
+  }
+
+  // Money from the owner's KCB M-PESA savings arrives as "received … from KCB M-PESA …": a transfer.
+  if (re`received ${KSH}${AMT} from KCB M-?PESA.*? on \d`.test(t)) {
+    const legs = transfer(KCB_MPESA, MPESA, pickCents(re`received ${KSH}${AMT}`, t)!, "transfer");
+    legs[1]!.payee = "KCB M-PESA";
+    return parsed(legs);
   }
 
   if ((m = re`received ${KSH}${AMT} from (.+?) on \d`.exec(t))) {
@@ -137,6 +146,17 @@ export function parseMpesa(t: string): Draft {
   // A confirmation in a wording not seen before: keep it for review rather than guess.
   if (/Confirmed/i.test(t)) {
     return review("unrecognised M-PESA wording", { ref, amountCents: pickCents(re`${KSH}${AMT}`, t) });
+  }
+  return ignored("not a transaction");
+}
+
+// KCB M-PESA's own notices about its savings side. The M-PESA confirmation of the same move records the
+// transfer, so these only contribute the savings balance, or nothing.
+export function parseKcbMpesa(t: string): Draft {
+  if (/withdrawn .* from your KCB M-?Pesa wallet/i.test(t)) return ignored("copy of an M-PESA receipt");
+  const savings = pickCents(re`M-PESA savings Account balance is (?:KES|Ksh)\.?\s*${AMT}`, t);
+  if (/transferred (?:KES|Ksh)/i.test(t) && savings !== undefined) {
+    return { status: "parsed", entries: [], balances: [{ account: KCB_MPESA, cents: savings }] };
   }
   return ignored("not a transaction");
 }
