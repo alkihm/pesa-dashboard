@@ -15,6 +15,7 @@ const MPESA = { product: "mpesa" };
 const FULIZA = { product: "fuliza" };
 const MSHWARI = { product: "mshwari" };
 const KCB_MPESA = { product: "kcb-mpesa" };
+const KCB_MPESA_LOAN = { product: "kcb-mpesa-loan" };
 const CASH = { product: "cash" };
 const AIRTEL = { product: "airtel-money" };
 const KCB = { product: "bank", hint: "KCB" };
@@ -217,7 +218,7 @@ export const fixtures: Fixture[] = [
       status: "parsed",
       entries: [
         { account: MPESA, kind: "transfer", amountCents: -310000, channel: "loan" },
-        { account: KCB_MPESA, kind: "transfer", amountCents: 310000 },
+        { account: KCB_MPESA_LOAN, kind: "transfer", amountCents: 310000 },
       ],
     },
   },
@@ -321,6 +322,52 @@ export const fixtures: Fixture[] = [
     sender: "SHOPX",
     body: "You earned 50 points on your last visit.",
     expected: { status: "ignored", reason: "sender not handled" },
+  },
+
+  // ---- Formats first seen on the owner's phone (invented values) ----
+  {
+    name: "Fuliza: partial repayment, code on its own line, balance without Ksh",
+    sender: "",
+    body: "TSW1X2Y3Z4\n Confirmed. Ksh 50.00 from your M-PESA has been used to partially pay your outstanding Fuliza M-PESA. Your available Fuliza M-PESA limit is Ksh 950.00. Your M-PESA balance is 0.00.",
+    expected: {
+      status: "parsed",
+      ref: "TSW1X2Y3Z4",
+      entries: [
+        { account: MPESA, kind: "transfer", amountCents: -5000 },
+        { account: FULIZA, kind: "transfer", amountCents: 5000 },
+      ],
+      balances: [{ account: MPESA, cents: 0 }],
+    },
+  },
+  {
+    name: "KCB M-PESA: money from the savings side arrives in M-PESA as a transfer",
+    sender: "",
+    body: "TSX2Y3Z4A5 Confirmed.You have received Ksh50.00 from KCB M-PESA SAVINGS 222222 on 1/11/26 at 1:49 AM New M-PESA balance is Ksh50.00.  See all your balances now https://example.test/x.",
+    expected: {
+      status: "parsed",
+      entries: [
+        { account: KCB_MPESA, kind: "transfer", amountCents: -5000 },
+        { account: MPESA, kind: "transfer", amountCents: 5000, payee: "KCB M-PESA" },
+      ],
+      balances: [{ account: MPESA, cents: 5000 }],
+    },
+  },
+  {
+    name: "KCB M-PESA: savings notice gives only the savings balance (M-PESA records the move)",
+    sender: "",
+    body: "Confirmed. You have transferred KES 50.00 from your M-PESA savings Account to M-PESA. Your M-PESA savings Account balance is KES 12,345.67.",
+    expected: {
+      status: "parsed",
+      occurredAt: RECEIVED_AT,
+      entries: [],
+      balances: [{ account: KCB_MPESA, cents: 1234567 }],
+    },
+  },
+  {
+    name: "KCB M-PESA: wallet withdrawal notice from KCB is a copy",
+    sender: "KCB",
+    body: "You have successfully withdrawn 50.00 from your KCB M-Pesa wallet.",
+    expected: { status: "ignored", reason: "copy of an M-PESA receipt" },
   },
 
   // ---- Bank (KCB wording) ----

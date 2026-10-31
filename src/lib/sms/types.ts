@@ -9,7 +9,7 @@ export interface SmsInput {
 
 /** Which kind of account a message is about. `hint` narrows it: a card suffix, a bank name. */
 export interface AccountRef {
-  product: "mpesa" | "fuliza" | "mshwari" | "kcb-mpesa" | "airtel-money" | "bank" | "cash";
+  product: "mpesa" | "fuliza" | "mshwari" | "kcb-mpesa" | "kcb-mpesa-loan" | "airtel-money" | "bank" | "cash";
   hint?: string;
 }
 
