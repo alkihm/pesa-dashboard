@@ -27,6 +27,7 @@
   --color-on-header: #ffffff;
   --color-on-header-muted: #dce3ec;
   --color-on-header-faint: rgb(255 255 255 / 0.08);
+  --color-on-header-line: rgb(255 255 255 / 0.18);
 
   /* Accent (buttons) */
   --color-accent: #05da93;
@@ -96,6 +97,12 @@
   --cat-11-tint: color-mix(in srgb, var(--cat-11) 20%, transparent);
   --cat-12-tint: color-mix(in srgb, var(--cat-12) 20%, transparent);
 
+  /* App icon ring (same in both themes) */
+  --brand-ring-1: #ed7d31;
+  --brand-ring-2: #4fa3c7;
+  --brand-ring-3: #f0705a;
+  --brand-ring-4: #f5b13d;
+
   /* Type */
   --font-sans: "Poppins", system-ui, sans-serif;
   --font-weight-regular: 400;
@@ -112,10 +119,21 @@
   --radius-header: 40px;
   --radius-header-desktop: 56px;
 
+  /* Layout — the desktop layout starts at 900px (media queries cannot read variables) */
+  --shell-max-width: 1360px;
+  --shell-gutter: 16px;
+  --tabbar-height: 76px;
+
   /* Shadows */
   --shadow-card:
     0 12px 28px light-dark(rgb(23 37 62 / 0.1), rgb(0 0 0 / 0.38)),
     0 2px 6px light-dark(rgb(23 37 62 / 0.06), rgb(0 0 0 / 0.24));
+}
+
+@media (min-width: 900px) {
+  :root {
+    --shell-gutter: 24px;
+  }
 }
 
 :root[data-theme="light"] {
