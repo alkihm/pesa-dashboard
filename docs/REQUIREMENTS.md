@@ -18,7 +18,7 @@ savings, bills and where the money went in one view, with accounts that reconcil
 | R2 | Total debt in two groups: short-term (mobile loans) and long-term (car loan, card, other big loans) | [2.3], [3.7] |
 | R3 | Savings total; tapping it shows each savings account | [2.3] |
 | R5 | Loan repayment allocation: choose what % of income goes to loans and see the split | [3.5] |
-| R6 | Net position from current balances: available minus short-term debt (long-term shown separately) | [3.7] |
+| R6 | Net position from current balances: wallets, bank, cash and savings minus short-term debt (long-term shown separately). Changed 2026-11-01, see D-010 | [3.7] |
 | R7 | Categories ranked by where most money goes | [2.2], [2.4] |
 | R8 | Monthly view | [2.4] |
 | R9 | Month-to-month comparison | [2.4] |

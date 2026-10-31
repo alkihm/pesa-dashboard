@@ -32,7 +32,7 @@ from pickers, kept in history.
 | `name`, `emoji` | |
 | `kind` | `wallet` · `bank` · `cash` · `savings` · `loan` · `card` (an overdraft is a `loan`) |
 | `debt_term` | `short` · `long` — loans and cards only; the two debt groups of R2 |
-| `counts_in_net` | Defaults: true for wallet, bank, cash and short-term debt; false for savings and long-term debt |
+| `counts_in_net` | Defaults: true for wallet, bank, cash, savings and short-term debt; false for long-term debt (D-010) |
 | `sms_sender`, `sms_account_hint` | `sms_account_hint` is the parser's account key that lands here, ignoring case: `mpesa`, `fuliza`, `mshwari`, `kcb-mpesa` (its savings side), `kcb-mpesa-loan`, `airtel-money`, a bank name (`KCB`) or a card (`KCB card 0042`). Cash goes to the `cash` account. An SMS for an account nobody claims goes to review |
 | `limit_cents` | Card or overdraft limit |
 | `original_cents` | Loan principal, for the progress bar |
@@ -164,7 +164,8 @@ spending, fees, borrowed, repaid, saved per Nairobi month) and `category_month_t
 
 ## Key rules
 
-- **Net position** = sum of the balances of accounts that count in net. Short-term debt is negative, so it
+- **Net position** = sum of the balances of accounts that count in net: wallets, bank, cash and savings.
+  Short-term debt is negative, so it
   subtracts. Long-term debt is shown separately.
 - **Bill status** comes from days to the due date: overdue or due today → red, ≤3 days → orange,
   ≤7 → amber, later → blue, paid → green, skipped → grey.

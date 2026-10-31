@@ -122,3 +122,13 @@ To review → `needs_review`) · Category → `category_id` · Currency and Amou
 
 **Rules out:** a stored balance column; one-row transfers with from/to columns; hard-deleting transactions;
 a `saving` category kind; editing the amount of an SMS transaction that is not under review.
+
+## D-010 · 2026-11-01 · Savings count in net position
+
+**Decided:** Net position = wallets + bank + cash + savings − short-term debt. Long-term debt (car loan, card)
+stays on its own card, as before. New savings accounts get `counts_in_net` on by default; it can still be
+switched off per account. Changes R6 and the default in D-009.
+**Why:** The owner wants net position to be "my balances and savings minus debts". Savings such as KCB
+M-PESA savings and M-Shwari are the owner's money, even if not spent day to day.
+**Rules out:** Net position as spendable money only. The Savings card still shows savings on their own (R3).
+
