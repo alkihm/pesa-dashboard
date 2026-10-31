@@ -67,6 +67,35 @@
   --tone-grey-text: light-dark(#5a677a, #cbd4e0);
   --tone-grey-dot: #8a94a6;
 
+  /*
+   * Category palette — categories store the key (cat-1 … cat-12), never a colour (D-009 rule 12).
+   * Names and order match the colour picker in src/lib/categoryColours.ts. Use -tint for tiles.
+   */
+  --cat-1: #05da93; /* mint */
+  --cat-2: light-dark(#4f8fd0, #6fa8e0); /* blue */
+  --cat-3: #f5a623; /* amber */
+  --cat-4: #7db8ea; /* sky */
+  --cat-5: #f0705a; /* coral */
+  --cat-6: #9d8cff; /* violet */
+  --cat-7: #2ec4b6; /* teal */
+  --cat-8: #ed7d31; /* orange */
+  --cat-9: #f2c14e; /* gold */
+  --cat-10: #e5679b; /* rose */
+  --cat-11: #9bcb4a; /* lime */
+  --cat-12: light-dark(#8a94a6, #a3adbf); /* slate */
+  --cat-1-tint: color-mix(in srgb, var(--cat-1) 20%, transparent);
+  --cat-2-tint: color-mix(in srgb, var(--cat-2) 20%, transparent);
+  --cat-3-tint: color-mix(in srgb, var(--cat-3) 20%, transparent);
+  --cat-4-tint: color-mix(in srgb, var(--cat-4) 20%, transparent);
+  --cat-5-tint: color-mix(in srgb, var(--cat-5) 20%, transparent);
+  --cat-6-tint: color-mix(in srgb, var(--cat-6) 20%, transparent);
+  --cat-7-tint: color-mix(in srgb, var(--cat-7) 20%, transparent);
+  --cat-8-tint: color-mix(in srgb, var(--cat-8) 20%, transparent);
+  --cat-9-tint: color-mix(in srgb, var(--cat-9) 20%, transparent);
+  --cat-10-tint: color-mix(in srgb, var(--cat-10) 20%, transparent);
+  --cat-11-tint: color-mix(in srgb, var(--cat-11) 20%, transparent);
+  --cat-12-tint: color-mix(in srgb, var(--cat-12) 20%, transparent);
+
   /* Type */
   --font-sans: "Poppins", system-ui, sans-serif;
   --font-weight-regular: 400;

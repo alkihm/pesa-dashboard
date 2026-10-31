@@ -11,6 +11,8 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
+    // Lets tests read the tokens with ?raw; other stylesheets stay stubbed.
+    css: { include: [/tokens\.css/] },
     setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.test.{ts,tsx}"],
   },
