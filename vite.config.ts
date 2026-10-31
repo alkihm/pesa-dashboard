@@ -39,6 +39,9 @@ export default defineConfig({
   resolve: {
     alias: { "@": fileURLToPath(new URL("./src", import.meta.url)) },
   },
+  // Phones reach the server through Tailscale (HTTPS on *.ts.net), which the PWA needs.
+  server: { allowedHosts: [".ts.net"] },
+  preview: { allowedHosts: [".ts.net"] },
   test: {
     environment: "jsdom",
     globals: true,
