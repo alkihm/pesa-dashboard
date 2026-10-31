@@ -1,0 +1,15 @@
+.page {
+  max-width: var(--shell-max-width);
+  margin: 0 auto;
+  padding: 0 var(--shell-gutter) 24px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(380px, 100%), 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.note {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
