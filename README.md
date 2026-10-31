@@ -47,4 +47,24 @@ Tests use made-up fixtures.
 ## Working on it
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for branches, pull requests and the two-laptop routine.
-Setup steps land with issue `[0.1]`.
+
+### Setup
+
+Needs Node 22 (see `.nvmrc`) and pnpm 9.
+
+```sh
+nvm use
+corepack enable   # or install pnpm 9 another way
+pnpm install
+pnpm dev
+```
+
+| Command | Does |
+|---|---|
+| `pnpm dev` | Start the dev server |
+| `pnpm lint` | Lint with ESLint |
+| `pnpm typecheck` | Type check (strict TypeScript) |
+| `pnpm test` | Run the Vitest suite |
+| `pnpm build` | Production build into `dist/` |
+| `pnpm preview` | Serve the production build |
+| `pnpm format` | Format with Prettier |

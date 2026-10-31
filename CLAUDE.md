@@ -37,4 +37,18 @@ Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/DESIGN.md](docs/DESI
 
 ## Commands
 
-Filled in by issue `[0.1]`.
+Node 22 (`.nvmrc`) and pnpm 9. On the server, run `source ~/.nvm/nvm.sh` first in non-interactive shells.
+
+| Command | Does |
+|---|---|
+| `pnpm install` | Install dependencies |
+| `pnpm dev --host --port <port>` | Dev server — port per laptop in `SERVER.md` |
+| `pnpm lint` | ESLint |
+| `pnpm typecheck` | TypeScript, strict |
+| `pnpm test` | Vitest once (`pnpm test:watch` to watch) |
+| `pnpm build` | Type check and production build into `dist/` |
+| `pnpm preview` | Serve the production build |
+| `pnpm format` / `pnpm format:check` | Prettier (Markdown is formatted by hand) |
+
+Source layout: `src/app` (entry, shell, routes), `src/features/<feature>` (screens and their logic),
+`src/components` (shared UI), `src/lib` (shared helpers). Import from `src` with the `@/` alias.
