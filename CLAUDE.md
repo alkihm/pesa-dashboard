@@ -33,6 +33,7 @@ Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/DESIGN.md](docs/DESI
 - Every screen supports light and dark mode and works from 360px to desktop widths.
 - Colours, fonts, radii and shadows come from the design tokens — no hard-coded hex values in components.
 - Money logic (net position, loan allocation, bill status, reconciliation) gets unit tests with Vitest.
+- Every new table gets row-level security and an owner policy in the same migration; `supabase test db` checks it.
 - Keep the raw SMS text on every transaction that came from one; the review screens show it.
 
 ## Commands
@@ -53,6 +54,7 @@ Node 22 (`.nvmrc`) and pnpm 9. On the server, run `source ~/.nvm/nvm.sh` first i
 | `supabase migration new <name>` | New migration in `supabase/migrations/` — only in the one PR labelled `db-migration` |
 | `supabase db reset` | Rebuild the shared local database — run in `integration/` only |
 | `supabase gen types typescript --local > src/lib/database.types.ts` | Regenerate the database types after a migration, then `pnpm format` |
+| `supabase test db` | Database tests (pgTAP) in `supabase/tests/database/` — row-level security and other rules |
 
 Config comes from env only: copy `.env.example` to `.env.local` and fill it from `supabase status`.
 `src/lib/env.ts` fails at start-up if a value is missing.
