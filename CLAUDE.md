@@ -52,6 +52,7 @@ Node 22 (`.nvmrc`) and pnpm 9. On the server, run `source ~/.nvm/nvm.sh` first i
 | `supabase status` | Local stack URLs and keys (the stack is shared, project id `pesa-dashboard`) |
 | `supabase migration new <name>` | New migration in `supabase/migrations/` — only in the one PR labelled `db-migration` |
 | `supabase db reset` | Rebuild the shared local database — run in `integration/` only |
+| `supabase gen types typescript --local > src/lib/database.types.ts` | Regenerate the database types after a migration, then `pnpm format` |
 
 Config comes from env only: copy `.env.example` to `.env.local` and fill it from `supabase status`.
 `src/lib/env.ts` fails at start-up if a value is missing.
