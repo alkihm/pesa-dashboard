@@ -26,5 +26,7 @@ export default tseslint.config(
       ],
     },
   },
+  // The web manifest needs literal colours; they mirror the tokens.
+  { files: ["vite.config.ts"], rules: { "no-restricted-syntax": "off" } },
   prettier,
 );
