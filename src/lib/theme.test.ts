@@ -1,4 +1,11 @@
-import { applyTheme, getThemePreference, resolveTheme, setThemePreference, THEME_STORAGE_KEY } from "./theme";
+import {
+  applyTheme,
+  getThemePreference,
+  resolveTheme,
+  setThemePreference,
+  syncThemeColor,
+  THEME_STORAGE_KEY,
+} from "./theme";
 
 describe("theme", () => {
   afterEach(() => {
@@ -35,5 +42,20 @@ describe("theme", () => {
     vi.stubGlobal("matchMedia", (query: string) => ({ matches: query === "(prefers-color-scheme: dark)" }));
     expect(resolveTheme("system")).toBe("dark");
     expect(resolveTheme("light")).toBe("light");
+  });
+
+  it("points every theme-color tag at the header colour on screen", () => {
+    document.head.innerHTML =
+      '<meta name="theme-color" content="old" media="(prefers-color-scheme: light)">' +
+      '<meta name="theme-color" content="old" media="(prefers-color-scheme: dark)">';
+    document.body.style.backgroundColor = "rgb(23, 37, 62)";
+
+    syncThemeColor();
+
+    const tags = [...document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]')];
+    expect(tags.map((t) => t.content)).toEqual(["rgb(23, 37, 62)", "rgb(23, 37, 62)"]);
+
+    document.head.innerHTML = "";
+    document.body.removeAttribute("style");
   });
 });
