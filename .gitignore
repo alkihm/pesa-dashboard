@@ -1,0 +1,41 @@
+# Dependencies and builds
+node_modules/
+dist/
+build/
+coverage/
+.vite/
+.vercel/
+.wrangler/
+supabase/.temp/
+*.tsbuildinfo
+
+# Secrets — .env.example is the only env file that belongs in git
+.env
+.env.*
+!.env.example
+
+# Real financial data must never be committed (this repo is public)
+*.csv
+*.xlsx
+*.xls
+*.pdf
+*.ofx
+*.qif
+data/
+private/
+ledgers/
+statements/
+work/
+exports/
+backups/
+*.sqlite
+*.db
+*.dump
+# Synthetic test fixtures are allowed only here
+!tests/fixtures/**/*.csv
+
+# OS and editors
+.DS_Store
+Thumbs.db
+.idea/
+*.swp
