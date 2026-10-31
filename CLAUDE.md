@@ -59,3 +59,7 @@ Config comes from env only: copy `.env.example` to `.env.local` and fill it from
 
 Source layout: `src/app` (entry, shell, routes), `src/features/<feature>` (screens and their logic),
 `src/components` (shared UI), `src/lib` (shared helpers). Import from `src` with the `@/` alias.
+
+Screens are built from `src/components` (Card, KpiCard, Chip, Segmented, Switch, StatusPill, EmojiTile,
+fields, Button, ViewAllLink, Donut, BarChart) — open `/dev/components` on the dev server to see them all.
+Format money with `src/lib/money.ts` (`formatKes`, `formatAmount`, `formatCompact`).

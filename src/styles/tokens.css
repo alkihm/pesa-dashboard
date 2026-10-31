@@ -28,6 +28,7 @@
   --color-on-header-muted: #dce3ec;
   --color-on-header-faint: rgb(255 255 255 / 0.08);
   --color-on-header-line: rgb(255 255 255 / 0.18);
+  --color-knob: #ffffff;
 
   /* Accent (buttons) */
   --color-accent: #05da93;
@@ -41,7 +42,7 @@
   /* Charts */
   --color-income: light-dark(#ed7d31, #f28c45);
   --color-income-text: light-dark(#b4541a, #f6a66e);
-  --color-expense: light-dark(#1f6e8c, #4fa3c7);
+  --color-expense: light-dark(#077396, #4fa3c7);
   --color-expense-text: light-dark(#1f6e8c, #7cc0de);
 
   /*
@@ -71,19 +72,22 @@
   /*
    * Category palette — categories store the key (cat-1 … cat-12), never a colour (D-009 rule 12).
    * Names and order match the colour picker in src/lib/categoryColours.ts. Use -tint for tiles.
+   * Checked with the dataviz palette validator: cat-1 … cat-11 sit in the lightness band with enough
+   * chroma, and neighbours stay apart under simulated colour blindness, in both themes. Not every pair
+   * is distinct, so charts always pair colour with a label (legend, direct label or table).
    */
-  --cat-1: #05da93; /* mint */
-  --cat-2: light-dark(#4f8fd0, #6fa8e0); /* blue */
-  --cat-3: #f5a623; /* amber */
-  --cat-4: #7db8ea; /* sky */
-  --cat-5: #f0705a; /* coral */
-  --cat-6: #9d8cff; /* violet */
-  --cat-7: #2ec4b6; /* teal */
-  --cat-8: #ed7d31; /* orange */
-  --cat-9: #f2c14e; /* gold */
-  --cat-10: #e5679b; /* rose */
-  --cat-11: #9bcb4a; /* lime */
-  --cat-12: light-dark(#8a94a6, #a3adbf); /* slate */
+  --cat-1: light-dark(#01c283, #05ad74); /* mint */
+  --cat-2: light-dark(#3375b5, #2a6cab); /* blue */
+  --cat-3: light-dark(#ea9b06, #c58209); /* amber */
+  --cat-4: light-dark(#58a5e4, #4593d0); /* sky */
+  --cat-5: light-dark(#d65944, #c84c38); /* coral */
+  --cat-6: light-dark(#7662d1, #6b56c3); /* violet */
+  --cat-7: light-dark(#19baac, #07a599); /* teal */
+  --cat-8: light-dark(#c75e04, #b55502); /* orange */
+  --cat-9: light-dark(#c95fda, #bc52cc); /* plum */
+  --cat-10: light-dark(#bb4177, #ad336b); /* rose */
+  --cat-11: light-dark(#85b32e, #73a00c); /* lime */
+  --cat-12: light-dark(#8a94a6, #a3adbf); /* slate — neutral, used for Other */
   --cat-1-tint: color-mix(in srgb, var(--cat-1) 20%, transparent);
   --cat-2-tint: color-mix(in srgb, var(--cat-2) 20%, transparent);
   --cat-3-tint: color-mix(in srgb, var(--cat-3) 20%, transparent);
@@ -125,6 +129,7 @@
   --tabbar-height: 76px;
 
   /* Shadows */
+  --shadow-knob: 0 1px 3px rgb(0 0 0 / 0.3);
   --shadow-card:
     0 12px 28px light-dark(rgb(23 37 62 / 0.1), rgb(0 0 0 / 0.38)),
     0 2px 6px light-dark(rgb(23 37 62 / 0.06), rgb(0 0 0 / 0.24));

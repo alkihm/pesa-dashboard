@@ -1,6 +1,6 @@
 import { useEffect, type ReactNode } from "react";
 import { Link, NavLink } from "react-router";
-import { Icon } from "./icons";
+import { Icon } from "@/components/Icon";
 import { Logo } from "./Logo";
 import { DESKTOP_NAV } from "./navigation";
 import { ThemeToggle } from "./ThemeToggle";

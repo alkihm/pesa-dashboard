@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { getThemePreference, resolveTheme, setThemePreference } from "@/lib/theme";
-import { Icon } from "./icons";
+import { Icon } from "@/components/Icon";
 import styles from "./PageHeader.module.css";
 
 // Flips between light and dark. Settings ([4.9]) adds "follow the system" back as a choice.
