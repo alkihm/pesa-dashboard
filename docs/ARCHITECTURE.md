@@ -4,10 +4,13 @@
 
 1. **Capture.** An iPhone Shortcut runs on every incoming money SMS and POSTs
    `{ sender, body, received_at }` to the intake function with a secret key header.
-2. **Intake** (Supabase Edge Function): checks the key, stores the raw message in `sms_messages`,
-   parses it, de-duplicates by the reference code, writes a `transactions` row, records the
-   "balance after" figure in `balance_snapshots`, applies payee rules, and marks a matching bill paid.
-   Anything it cannot parse is saved as `to_review` with the raw text kept.
+2. **Intake** (`supabase/functions/intake`): checks the key, parses the message (`src/lib/sms`), matches
+   accounts and applies payee rules (`src/lib/intake/plan.ts`), then `ingest_sms` stores the raw message and
+   its rows and balance readings in one database transaction. A repeat message (same hash) or a payment
+   already recorded by another message (same `dedupe_key`) writes nothing. A transfer a payee rule names
+   creates the other leg flagged for review; when the other account's SMS arrives it claims that leg.
+   Anything it cannot parse or place is saved as `to_review` with the raw text kept. One-time codes are
+   never stored. Marking a bill paid comes with [3.2].
 3. **App** (React PWA) reads and writes through Supabase with row-level security. Edits made offline
    are queued in IndexedDB and replayed when the connection returns.
 4. **Backup.** A scheduled job copies the ledger to a Google Sheet every night.
@@ -30,7 +33,7 @@ from pickers, kept in history.
 | `kind` | `wallet` · `bank` · `cash` · `savings` · `loan` · `card` (an overdraft is a `loan`) |
 | `debt_term` | `short` · `long` — loans and cards only; the two debt groups of R2 |
 | `counts_in_net` | Defaults: true for wallet, bank, cash and short-term debt; false for savings and long-term debt |
-| `sms_sender`, `sms_account_hint` | Match an SMS to this account (sender id, account or card suffix) |
+| `sms_sender`, `sms_account_hint` | `sms_account_hint` is the parser's account key that lands here, ignoring case: `mpesa`, `fuliza`, `mshwari`, `kcb-mpesa`, `airtel-money`, a bank name (`KCB`) or a card (`KCB card 0042`). Cash goes to the `cash` account. An SMS for an account nobody claims goes to review |
 | `limit_cents` | Card or overdraft limit |
 | `original_cents` | Loan principal, for the progress bar |
 | `due_day` | 1–31, repayment day of a loan or card |

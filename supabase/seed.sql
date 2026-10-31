@@ -22,7 +22,7 @@ values ('00000000-0000-4000-8000-000000000001', 3, 30);
 insert into public.accounts (id, user_id, name, emoji, kind, debt_term, sms_sender, sms_account_hint, limit_cents, original_cents, due_day, sort_order)
 select v.id::uuid, '00000000-0000-4000-8000-000000000001', v.name, v.emoji, v.kind, v.debt_term, v.sender, v.hint, v.lim, v.orig, v.due, v.sort
 from (values
-  ('a0000000-0000-4000-8000-000000000001', 'M-PESA',   '📱', 'wallet',  null,    'MPESA', null,         null::bigint, null::bigint, null::smallint, 1),
+  ('a0000000-0000-4000-8000-000000000001', 'M-PESA',   '📱', 'wallet',  null,    'MPESA', 'mpesa',       null::bigint, null::bigint, null::smallint, 1),
   ('a0000000-0000-4000-8000-000000000002', 'KCB',      '🏦', 'bank',    null,    'KCB',   'KCB',        null,         null,         null,           2),
   ('a0000000-0000-4000-8000-000000000003', 'Cash',     '💵', 'cash',    null,    null,    null,         null,         null,         null,           3),
   ('a0000000-0000-4000-8000-000000000004', 'Sacco',    '🐷', 'savings', null,    null,    null,         null,         null,         null,           4),

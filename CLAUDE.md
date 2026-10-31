@@ -55,6 +55,8 @@ Node 22 (`.nvmrc`) and pnpm 9. On the server, run `source ~/.nvm/nvm.sh` first i
 | `supabase db reset` | Rebuild the shared local database — run in `integration/` only |
 | `supabase gen types typescript --local > src/lib/database.types.ts` | Regenerate the database types after a migration, then `pnpm format` |
 | `supabase test db` | Database tests (pgTAP) in `supabase/tests/database/` — row-level security and other rules |
+| `node scripts/sync-functions.mjs` | Copy `src/lib/sms` and `src/lib/intake` into `supabase/functions/_shared/lib` after changing them (a test fails until you do) |
+| `supabase functions serve --env-file supabase/functions/.env` | Run the intake function locally; `.env` holds `INTAKE_KEY` and `INTAKE_USER_ID` (never committed) |
 
 Config comes from env only: copy `.env.example` to `.env.local` and fill it from `supabase status`.
 `src/lib/env.ts` fails at start-up if a value is missing.
