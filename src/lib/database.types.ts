@@ -954,6 +954,21 @@ export type Database = {
           version: number;
         }[];
       };
+      ingest_sms: {
+        Args: {
+          p_user_id: string;
+          p_sender: string;
+          p_body: string;
+          p_received_at: string;
+          p_hash: string;
+          p_status: string;
+          p_error: string;
+          p_parser_version: string;
+          p_rows?: Json;
+          p_snapshots?: Json;
+        };
+        Returns: Json;
+      };
     };
     Enums: {
       [_ in never]: never;

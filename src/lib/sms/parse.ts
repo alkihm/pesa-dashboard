@@ -31,7 +31,9 @@ function notATransaction(t: string): string | undefined {
 function route(sender: string, t: string, opts: ParseOptions): { source: Source; draft: Draft } | undefined {
   const mpesaFormat = /^[A-Z0-9]{10}\s+Confirmed/i.test(t);
   // A KCB notice can quote an M-PESA code; an M-PESA confirmation can mention KCB. The format decides.
-  if (/KCB/i.test(sender) && !mpesaFormat) return { source: "bank", draft: parseBank(t, "KCB", opts) };
+  // Batched messages from the Shortcut carry no sender, so the text has to say who sent it.
+  const kcb = /KCB/i.test(sender) || (!sender.trim() && /\bKCB\b/i.test(t));
+  if (kcb && !mpesaFormat) return { source: "bank", draft: parseBank(t, "KCB", opts) };
   if (/M-?PESA/i.test(sender) || mpesaFormat) return { source: "mpesa", draft: parseMpesa(t) };
   if (/AIRTEL/i.test(sender) || /Airtel Money/i.test(t)) return { source: "airtel", draft: parseAirtel(t) };
   return undefined;
