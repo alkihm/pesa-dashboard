@@ -62,3 +62,63 @@ UTC, shown in `Africa/Nairobi`. History is never edited to fix balances — diff
 
 **Decided:** Test on the fastest rung first: unit tests → dev server in your workspace (open on laptop and
 phone) → integration preview of `dev` on the server → hosting preview per pull request → production from `main`.
+
+## D-009 · 2026-10-31 · Data model
+
+**Decided:** The tables and rules in [ARCHITECTURE.md](ARCHITECTURE.md) "Data model", built on D-007. The
+choices behind it:
+
+1. **Balances are worked out, never stored.** An account's balance is the sum of its live transactions.
+   **Why:** one source of truth; reconciling compares that sum with the SMS balance, and nothing can drift.
+2. **The sign is the effect on the account; `kind` says what the money was.** Spending is negative and
+   income positive; a refund is positive spending in the same category, so the category total goes down.
+   Loans and cards carry negative balances. **Why:** a balance is a plain sum for every kind of account.
+   The old ledger stored positive amounts plus a class, so every total needed its own rule per class.
+3. **A transfer is two rows sharing a `transfer_id`, summing to zero.** Borrowing, repaying a loan, saving
+   and an overdraft draw are all transfers between your own accounts; interest and fees are spending.
+   The old classes Borrowing, Debt repayment and Saving become views over transfers by account kind.
+   **Why:** each account stays correct on its own and can be checked against its own SMS. Own money
+   moving is never counted as income or spending.
+   **Consequence for [1.4]:** an overdraft draw must be written as a transfer from the overdraft account.
+   The old ledger skipped draws, which would leave the wallet out of line with its SMS balance.
+4. **Fees are their own spending rows**, pointing at their payment with `parent_id`. **Why:** fees show
+   up in "Where the money went", as they did in the old ledger, and the payment keeps its real amount.
+5. **Corrections never edit history.** A missing payment is added; a remaining difference becomes an
+   `adjustment` with a reason. The starting balance of an account is one `opening` row. Amounts and
+   accounts on SMS rows are locked unless the row needs review. **Why:** keeps the ledger matching what
+   the bank said (D-007), and keeps adjustments out of income and spending totals.
+6. **Duplicates are stopped twice.** `sms_messages.hash` drops the same message posted again;
+   `transactions.dedupe_key` drops the same payment reported by a second message (two senders, a bank's
+   copy of an M-PESA payment, two loan-repayment notices). **Why:** the old Shortcut fired twice and banks
+   repeat M-PESA payments; both happen in practice.
+7. **Bill months are stored rows**, made by an idempotent `ensure_bill_months(month)`. Only `due`, `paid`
+   and `skipped` are stored; the colour comes from the days to `due_on`. `due_on` and the amount are
+   copied when the row is made. **Why:** skipping and paying need a row to live on, and changing a bill
+   must not rewrite past months.
+8. **Delete or archive:** accounts, categories and bills are archived once anything uses them (foreign keys
+   stop a hard delete). Transactions are soft-deleted with a reason. SMS messages, bill months and
+   reviews are never deleted; budget items are cancelled. Payee rules and push subscriptions are deleted
+   for real. **Why:** history and reports stay whole; a soft-deleted SMS row keeps its `dedupe_key`, so a
+   resent message cannot bring it back; offline deletes can be checked for conflicts like any other edit.
+9. **IDs are UUIDs the app can make, and every row has a `version`.** **Why:** offline-created rows can be
+   referenced before they sync, and a replayed edit whose version is stale is shown to the user instead of
+   overwriting (R25).
+10. **The PIN hash sits in a table the app cannot read**, reachable only through `verify_pin` and `set_pin`.
+    **Why:** a 4–6 digit PIN hash can be cracked in moments if the client can read it.
+11. **Categories are only `spending` or `income`** (the draft also had `saving`). Saving is a transfer into a
+    savings account. **Why:** a Sacco deposit would otherwise count both as a transfer and as a saving
+    category. Something saved without an account (a pension, say) gets a savings account with
+    `counts_in_net` off.
+12. **Category colours are palette keys** (`cat-1` … `cat-12`) defined in the design tokens. **Why:** no hex
+    values in components, and each colour needs a light and a dark version. [0.5] adds the palette.
+13. **Accounts are KES.** A foreign card purchase keeps the charged amount in `original_currency` and
+    `original_minor`, books a KES estimate and is flagged for review until the statement amount is known.
+
+**Old ledger columns, for the history import:** Date → `occurred_at` · Month → worked out · Account →
+`account_id` · Type → `channel` · Description → `payee` · Class → `kind` (Expense → spending, Income →
+income, Transfer / Borrowing / Debt repayment / Saving → transfer with the matching account,
+To review → `needs_review`) · Category → `category_id` · Currency and Amount → `original_currency`,
+`original_minor` · Amount (KES) → `amount_cents` with the sign from rule 2 · Ref → `ref` · Note → `note`.
+
+**Rules out:** a stored balance column; one-row transfers with from/to columns; hard-deleting transactions;
+a `saving` category kind; editing the amount of an SMS transaction that is not under review.
