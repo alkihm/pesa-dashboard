@@ -1,6 +1,7 @@
 import { Link } from "react-router";
+import { Card } from "@/components/Card";
 import { HeaderIconLink, PageHeader } from "./shell/PageHeader";
-import { Icon } from "./shell/icons";
+import { Icon } from "@/components/Icon";
 import styles from "./Placeholder.module.css";
 
 interface PlaceholderProps {
@@ -17,10 +18,9 @@ interface PlaceholderProps {
 
 export function Placeholder({ title, issue, phoneTitle, back, home, bare }: PlaceholderProps) {
   const card = (
-    <section className={styles.card}>
-      <h2 className={styles.heading}>{title}</h2>
+    <Card title={title}>
       <p className={styles.text}>This screen is built in [{issue}].</p>
-    </section>
+    </Card>
   );
 
   if (bare) {
@@ -58,12 +58,11 @@ export function NotFound() {
     <>
       <PageHeader title="Not found" back="/" />
       <div className={styles.content}>
-        <section className={styles.card}>
-          <h2 className={styles.heading}>This page does not exist</h2>
+        <Card title="This page does not exist">
           <p className={styles.text}>
             <Link to="/">Back to the overview</Link>
           </p>
-        </section>
+        </Card>
       </div>
     </>
   );

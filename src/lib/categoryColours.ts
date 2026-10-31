@@ -8,7 +8,7 @@ export const CATEGORY_COLOURS = [
   { key: "cat-6", name: "Violet" },
   { key: "cat-7", name: "Teal" },
   { key: "cat-8", name: "Orange" },
-  { key: "cat-9", name: "Gold" },
+  { key: "cat-9", name: "Plum" },
   { key: "cat-10", name: "Rose" },
   { key: "cat-11", name: "Lime" },
   { key: "cat-12", name: "Slate" },

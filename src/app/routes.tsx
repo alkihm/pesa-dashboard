@@ -26,6 +26,14 @@ export const routes: RouteObject[] = [
       },
       { path: "settings", element: <Placeholder title="Settings" issue="4.9" back="/" /> },
       { path: "report", element: <Placeholder title="Month report" issue="4.8" back="/month" /> },
+      ...(import.meta.env.DEV
+        ? [
+            {
+              path: "dev/components",
+              lazy: () => import("./dev/ComponentGallery").then((m) => ({ Component: m.ComponentGallery })),
+            },
+          ]
+        : []),
       { path: "*", element: <NotFound /> },
     ],
   },

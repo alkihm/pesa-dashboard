@@ -1,0 +1,73 @@
+.group {
+  display: grid;
+  gap: 4px;
+  padding: 5px;
+  border-radius: 16px;
+}
+
+.option {
+  min-height: 40px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.option:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 1px;
+}
+
+/* On the page header */
+.header {
+  background: var(--color-on-header-faint);
+}
+
+.header .option {
+  color: var(--color-on-header-muted);
+}
+
+.header .option:hover {
+  color: var(--color-on-header);
+}
+
+.header .option[aria-pressed="true"] {
+  background: var(--color-header-selected);
+  color: var(--color-on-header);
+}
+
+/* On a card or the page background */
+.surface {
+  background: var(--color-sunk);
+}
+
+.surface .option {
+  color: var(--color-text-muted);
+}
+
+.surface .option:hover {
+  color: var(--color-text);
+}
+
+.surface .option[aria-pressed="true"] {
+  background: var(--color-hero);
+  color: var(--color-on-header);
+}
+
+@media (min-width: 900px) {
+  .group {
+    display: inline-grid;
+    border-radius: 14px;
+  }
+
+  .option {
+    min-height: 36px;
+    padding: 0 16px;
+    border-radius: var(--radius-sm);
+    font-size: 13px;
+  }
+}

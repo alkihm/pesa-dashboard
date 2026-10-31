@@ -1,5 +1,5 @@
 import { NavLink } from "react-router";
-import { Icon } from "./icons";
+import { Icon } from "@/components/Icon";
 import { PHONE_TABS } from "./navigation";
 import styles from "./TabBar.module.css";
 
