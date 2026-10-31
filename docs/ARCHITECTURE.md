@@ -81,7 +81,7 @@ codes are dropped at intake and never stored.
 | `source` | `sms` · `manual` · `import` |
 | `sms_id` | The message it came from; a payment and its fee share one |
 | `ref` | The M-PESA or bank code, shown and searchable |
-| `dedupe_key` | Set by intake, unique when present, e.g. `mpesa:<ref>:main`, `mpesa:<ref>:fee`, `kcb:<date>:<amount>` |
+| `dedupe_key` | From the parser, unique when present: `<source>:<ref>:<entry>` (`mpesa:<ref>:main`, `mpesa:<ref>:fee`), or `<source>:<minute>:<amount>:<entry>` when the SMS has no code |
 | `original_currency`, `original_minor` | Foreign card purchases: the amount as charged; `amount_cents` is the KES estimate |
 | `needs_review` | Parser unsure, uncategorised, or a foreign-currency estimate |
 | `budget_item_id` | The approved budget item this spends |
