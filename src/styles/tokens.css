@@ -1,0 +1,98 @@
+/*
+ * Design tokens — the only file allowed to hold colour values (see scripts/check-hex.mjs).
+ * Values come from the approved design canvas; docs/DESIGN.md lists the main ones.
+ *
+ * Each colour is light-dark(<light>, <dark>). The theme follows the system through `color-scheme`;
+ * `data-theme="light" | "dark"` on <html> overrides it (src/lib/theme.ts).
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* Surfaces and text */
+  --color-bg: light-dark(#e3e9f2, #1f5f7a);
+  --color-surface: light-dark(#ffffff, #26395a);
+  --color-sunk: light-dark(#f1f4f9, #2c4166);
+  --color-text: light-dark(#17253e, #ecf0f3);
+  --color-text-muted: light-dark(#5a677a, #cbd4e0);
+  --color-line: light-dark(#e0e3e7, #34496e);
+  --color-border-strong: light-dark(#b8c2ce, #4a6290);
+  --color-track: light-dark(#e6eaee, #33476b);
+  --color-link: light-dark(#20639b, #7ff0c6);
+
+  /* Header and hero card */
+  --color-header: light-dark(#1f5f7a, #17253e);
+  --color-header-selected: light-dark(#16475c, #0f1a2e);
+  --color-hero: light-dark(#1f5f7a, #17253e);
+  --color-on-header: #ffffff;
+  --color-on-header-muted: #dce3ec;
+  --color-on-header-faint: rgb(255 255 255 / 0.08);
+
+  /* Accent (buttons) */
+  --color-accent: #05da93;
+  --color-on-accent: #152032;
+
+  /* Tab bar (phone) */
+  --color-tabbar: #17253e;
+  --color-tabbar-active: #05da93;
+  --color-tabbar-inactive: #aeb9c8;
+
+  /* Charts */
+  --color-income: light-dark(#ed7d31, #f28c45);
+  --color-income-text: light-dark(#b4541a, #f6a66e);
+  --color-expense: light-dark(#1f6e8c, #4fa3c7);
+  --color-expense-text: light-dark(#1f6e8c, #7cc0de);
+
+  /*
+   * Status tones: -bg for pills and tiles, -text on that background, -dot for legends and bars.
+   * red: due or overdue, mismatch · orange: ≤3 days · amber: ≤7 days, review due
+   * blue: later · green: paid, ok · grey: skipped
+   */
+  --tone-red-bg: light-dark(#fde3e3, #3d2030);
+  --tone-red-text: light-dark(#a12626, #ff9c9c);
+  --tone-red-dot: light-dark(#d93a3a, #ff6b6b);
+  --tone-orange-bg: light-dark(#fde7d6, #3e2a1e);
+  --tone-orange-text: light-dark(#b4541a, #f6a66e);
+  --tone-orange-dot: #ed7d31;
+  --tone-amber-bg: light-dark(#fdf1d8, #3a3220);
+  --tone-amber-text: light-dark(#8a5a00, #f8c76a);
+  --tone-amber-dot: light-dark(#e09612, #f5b13d);
+  --tone-blue-bg: light-dark(#e1ecf7, #1e3a5c);
+  --tone-blue-text: light-dark(#20639b, #8fbce6);
+  --tone-blue-dot: light-dark(#4b8fd0, #4fa3c7);
+  --tone-green-bg: light-dark(#d5f8ea, #123b3a);
+  --tone-green-text: light-dark(#03724e, #05da93);
+  --tone-green-dot: light-dark(#04a673, #05da93);
+  --tone-grey-bg: light-dark(#eef1f5, #2c4166);
+  --tone-grey-text: light-dark(#5a677a, #cbd4e0);
+  --tone-grey-dot: #8a94a6;
+
+  /* Type */
+  --font-sans: "Poppins", system-ui, sans-serif;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Radii */
+  --radius-sm: 10px;
+  --radius-control: 12px;
+  --radius-card: 20px;
+  --radius-hero: 22px;
+  --radius-pill: 999px;
+  --radius-header: 40px;
+  --radius-header-desktop: 56px;
+
+  /* Shadows */
+  --shadow-card:
+    0 12px 28px light-dark(rgb(23 37 62 / 0.1), rgb(0 0 0 / 0.38)),
+    0 2px 6px light-dark(rgb(23 37 62 / 0.06), rgb(0 0 0 / 0.24));
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
