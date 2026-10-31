@@ -2,7 +2,7 @@
 
 The handover note. Read it at the start of every session; update it when something important changes.
 
-_Last updated: 2026-10-31 by Hydracore_
+_Last updated: 2026-10-31 by Alfie_
 
 ## Where things stand
 
@@ -13,6 +13,7 @@ _Last updated: 2026-10-31 by Hydracore_
   pnpm 9.15.0, GitHub CLI, Supabase CLI 2.20.5); GitHub login done, all three clones can push.
   Details and ports in `SERVER.md` on the server.
 - **Build:** not started. Hydracore begins with [0.1].
+- **Data model:** settled in [0.9] — tables in [ARCHITECTURE.md](ARCHITECTURE.md), reasons in D-009. Migrations follow it.
 
 ## First time on Alfie
 
@@ -30,9 +31,9 @@ _Last updated: 2026-10-31 by Hydracore_
 | Laptop | Next issues |
 |---|---|
 | Hydracore | [0.1] scaffold (#1) → [0.2] CI (#2) → [0.5] tokens (#5) → [0.6] app shell (#6) |
-| Alfie | [0.9] data-model decision (#9) → [0.3] Supabase local stack (#3) → [1.4] SMS parser (#13) |
+| Alfie | [0.3] Supabase local stack (#3) → [1.4] SMS parser (#13) |
 
-[0.1] goes first — Alfie starts [0.9], which is writing, while it is in progress.
+[1.4] must write overdraft (Fuliza) draws as transfers from an overdraft account — see D-009 rule 3.
 
 ## Open questions
 
