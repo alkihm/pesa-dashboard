@@ -1,4 +1,5 @@
 import type { RouteObject } from "react-router";
+import { SettingsScreen } from "@/features/settings/SettingsScreen";
 import { AppShell } from "./shell/AppShell";
 import { NotFound, Placeholder } from "./Placeholder";
 
@@ -24,7 +25,7 @@ export const routes: RouteObject[] = [
         path: "categories/new",
         element: <Placeholder title="New category" issue="2.8" back="/categories" />,
       },
-      { path: "settings", element: <Placeholder title="Settings" issue="4.9" back="/" /> },
+      { path: "settings", element: <SettingsScreen /> },
       { path: "report", element: <Placeholder title="Month report" issue="4.8" back="/month" /> },
       ...(import.meta.env.DEV
         ? [
