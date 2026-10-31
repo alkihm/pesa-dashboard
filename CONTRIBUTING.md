@@ -1,7 +1,9 @@
 # Contributing
 
-One person, two laptops. Work moves through GitHub issues, one branch per issue, merged into `dev`
-by pull request. `main` is what the live app runs.
+One person, two laptops (Hydracore and Alfie), both building on the home server. Work moves through
+GitHub issues, one branch per issue, merged into `dev` by pull request. `main` is what the live app runs.
+The day-to-day routine for each laptop is in [docs/WORKFLOW.md](docs/WORKFLOW.md); the current state is in
+[docs/STATUS.md](docs/STATUS.md).
 
 ## Branches
 

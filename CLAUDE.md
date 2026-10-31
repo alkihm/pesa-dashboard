@@ -5,6 +5,18 @@
 Personal budget dashboard. SMS → Shortcut → Supabase intake → Postgres → installable React app.
 Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/DESIGN.md](docs/DESIGN.md) before a first change.
 
+## At the start of every session
+
+1. Work out which laptop you are on (`hostname` on the laptop, or the workspace folder name on the server):
+   Hydracore → `ws-hydracore`, label `laptop:A`; Alfie → `ws-alfie`, label `laptop:B`.
+2. Follow [docs/WORKFLOW.md](docs/WORKFLOW.md) "Start of a session" — pull `dev`, read [docs/STATUS.md](docs/STATUS.md),
+   pick or resume an issue.
+3. Requirements live in [docs/REQUIREMENTS.md](docs/REQUIREMENTS.md), decisions in [docs/DECISIONS.md](docs/DECISIONS.md).
+   Do not re-open a recorded decision without the owner.
+4. Never edit the other laptop's workspace or `integration/`. Host details are in `SERVER.md` on the server.
+5. Before ending, push the branch, comment on the issue where you stopped, and update STATUS.md if anything
+   important changed.
+
 ## Rules
 
 - The repo is public. Never read real data into code, fixtures, docs or commit messages. Never copy
