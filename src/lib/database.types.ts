@@ -88,6 +88,48 @@ export type Database = {
         };
         Relationships: [];
       };
+      backup_runs: {
+        Row: {
+          created_at: string;
+          error: string | null;
+          finished_at: string | null;
+          id: string;
+          rows_written: number | null;
+          started_at: string;
+          status: string;
+          tabs: string[] | null;
+          updated_at: string;
+          user_id: string;
+          version: number;
+        };
+        Insert: {
+          created_at?: string;
+          error?: string | null;
+          finished_at?: string | null;
+          id?: string;
+          rows_written?: number | null;
+          started_at?: string;
+          status?: string;
+          tabs?: string[] | null;
+          updated_at?: string;
+          user_id?: string;
+          version?: number;
+        };
+        Update: {
+          created_at?: string;
+          error?: string | null;
+          finished_at?: string | null;
+          id?: string;
+          rows_written?: number | null;
+          started_at?: string;
+          status?: string;
+          tabs?: string[] | null;
+          updated_at?: string;
+          user_id?: string;
+          version?: number;
+        };
+        Relationships: [];
+      };
       balance_snapshots: {
         Row: {
           account_id: string;
@@ -980,6 +1022,10 @@ export type Database = {
           p_snapshots?: Json;
         };
         Returns: Json;
+      };
+      run_sheet_backup: {
+        Args: Record<PropertyKey, never>;
+        Returns: number;
       };
     };
     Enums: {

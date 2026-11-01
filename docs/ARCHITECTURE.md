@@ -13,7 +13,9 @@
    never stored. Marking a bill paid comes with [3.2].
 3. **App** (React PWA) reads and writes through Supabase with row-level security. Edits made offline
    are queued in IndexedDB and replayed when the connection returns.
-4. **Backup.** A scheduled job copies the ledger to a Google Sheet every night.
+4. **Backup.** At 23:30 Nairobi time pg_cron calls `public.run_sheet_backup()`, which posts to the
+   `sheet-backup` Edge Function. It rewrites one tab per year of a Google Sheet with the whole ledger and logs
+   the run in `backup_runs` (status, rows, tabs, error), which Settings shows. See D-013.
 
 ## Data model
 
