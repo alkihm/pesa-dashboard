@@ -2,26 +2,44 @@
 
 The handover note. Read it at the start of every session; update it when something important changes.
 
-_Last updated: 2026-11-01 by Alfie_
+_Last updated: 2026-11-01 by Hydracore_
 
 ## Where things stand
 
 - **Design:** complete — every phone and desktop screen, both themes, app icon. Screen list in [DESIGN.md](DESIGN.md).
-- **Repo:** public, `dev`/`main` protected, 50 issues across M0–M5, labels and milestones in place.
-- **Server:** project folder laid out with `integration/`, `ws-hydracore/`, `ws-alfie/` and `private/`, and
-  excluded from Syncthing on the server and on Hydracore. Toolchain installed (Node 24.22.2 via nvm,
-  pnpm 9.15.0, GitHub CLI, Supabase CLI 2.20.5); GitHub login done, all three clones can push.
-  Details and ports in `SERVER.md` on the server.
-- **Build:** M0 foundation merged — scaffold, CI, tokens, app shell, shared components, PWA basics (Hydracore).
-  M1 data and intake: schema [1.1], row-level security [1.2], SMS parser [1.4] and intake function [1.5] merged (Alfie).
+- **Repo:** public, `dev`/`main` protected (required check `checks`), 50 issues across M0–M5.
+- **Releases:** **M0 released to `main`** on 2026-11-01 (#75) — production is live with the app shell and
+  placeholder screens. Release PRs `dev` → `main` merge with **Create a merge commit**; feature PRs into `dev` squash.
+- **Build:**
+  - **M0 Foundation — done (9/9).** Scaffold, CI, Supabase setup, Vercel hosting, design tokens and category palette,
+    app shell with every route, shared components and charts, PWA (installs, opens offline, reopens on the last
+    screen), data model.
+  - **M1 Data & intake — 7/9.** Schema, row-level security, SMS parser, intake function, Shortcut, balance snapshots
+    and payee rules merged (Alfie). Open: [1.3] history import (#12), [1.7] nightly Sheet backup (#16).
+  - **M2 Core screens — not started.**
 - **Intake live on the dev cloud project:** the iPhone Shortcut posts to it alongside the Sheet ([1.6], steps in
-  [SHORTCUT.md](SHORTCUT.md)). The first real messages exposed four new wordings, now handled. The dev project has no
-  opening balances yet, so its balances do not reconcile until those are entered or history is imported.
-- **Supabase:** cloud projects `pesa-dashboard-dev` and `pesa-dashboard-prod` created (Frankfurt); refs and keys in
-  `private/env/` on the server. Local stack runs on the server without Studio, analytics, Inbucket and storage
-  (about 400 MB). `.env.example` lists the app's config.
+  [SHORTCUT.md](SHORTCUT.md)). The dev project has no opening balances yet, so its balances do not reconcile until
+  those are entered or history is imported.
+- **Toolchain:** Node **24** LTS (`.nvmrc`, `engines: 24.x`, #74), pnpm 9.15.0, GitHub CLI,
+  Supabase CLI 2.20.5 on the server. After pulling #74, run `nvm use && pnpm install` once in a workspace.
+- **Supabase:** cloud projects `pesa-dashboard-dev` and `pesa-dashboard-prod` (Frankfurt); refs and keys in
+  `private/env/` on the server. Local stack runs on the server without Studio, analytics, Inbucket and storage.
+  **The prod project has not had the migrations or the intake function deployed** — that is a deliberate step
+  before production reads data.
 - **Data model:** settled in [0.9] — tables in [ARCHITECTURE.md](ARCHITECTURE.md), reasons in D-009; D-010 made savings
   count in net position.
+
+## Where to look
+
+| What | Where | Notes |
+|---|---|---|
+| Latest `dev` (both laptops' merged work) | https://pesa-dev.autotechfy.com | Server preview, rebuilds itself within ~5 min of a merge (SERVER.md). Public until Cloudflare Access is added. |
+| A pull request | Vercel preview link posted on the PR | Private (Vercel sign-in). Uses the dev Supabase project. |
+| Production (`main`) | Vercel production domain (`pesa-dashboard-livid.vercel.app`) | Public. Uses the prod Supabase project. |
+| Every shared component | `/dev/components` on a workspace dev server | Dev server only; not in builds. |
+
+Install on the iPhone from pesa-dev in Safari (Share → Add to Home Screen). Theme: Settings → Appearance
+(Light / Dark / System). After an update, close and reopen the installed app (twice if needed).
 
 ## First time on Alfie
 
@@ -38,9 +56,14 @@ _Last updated: 2026-11-01 by Alfie_
 
 | Laptop | Next issues |
 |---|---|
-| Hydracore | [0.1] scaffold (#1) → [0.2] CI (#2) → [0.5] tokens (#5) → [0.6] app shell (#6) |
-| Alfie | [1.8] balance snapshots (#17) → [1.9] payee rules on past rows (#18) → [1.3] history import (#12, prod only) |
+| Hydracore | M2: [2.1] sign-in, Google + PIN (#19) → [2.2] Overview and Home (#20) → [2.4] Month (#22) → [2.8] Categories (#26) |
+| Alfie | M1: [1.3] history import (#12, prod only) → [1.7] Sheet backup (#16); then M2 [2.5] Activity (#23) → [2.6] Transaction detail (#24) → [2.7] Add transaction (#25) |
 
+The M2 split is a proposal — confirm or swap at the start of the next session. [2.3] Accounts (#21) and
+[2.9] New account (#27) go to whichever laptop frees up first.
+
+Building a screen: replace its `Placeholder` in `src/app/routes.tsx` with a screen from `src/features/<feature>/`,
+render `PageHeader` at the top, build from `src/components/` (see CLAUDE.md), format money with `src/lib/money.ts`.
 Accounts receive SMS through `sms_account_hint` (ARCHITECTURE: accounts). Real data goes only to the cloud projects,
 never to the repo or the local database.
 
@@ -49,9 +72,15 @@ never to the repo or the local database.
 - The local Supabase database (port 54322, password `postgres`) and API (54321) listen on all interfaces —
   the CLI has no bind setting. The API must stay reachable for phone testing; the database port should be
   firewalled to localhost on the server (owner).
+- Production deploy of the database: when and how migrations and the intake function reach the prod project
+  (before [2.1]/[2.2] read real data).
 
 ## Owner to-dos outside the repo
 
+- **Cloudflare Access on pesa-dev.autotechfy.com** (Zero Trust → Access → Applications, own Google account only,
+  ~1 month session) — before screens show data.
+- **Vercel:** check Settings → Build and Deployment → Node.js Version is 24.x.
+- **iPhone:** confirm Settings → Appearance → Light works in the installed app.
 - Rename the M-PESA statement in `Budget_tracker/statements/` — its file name contains the password.
 - `ledger-postgres` (from `finance-tracker-local`) is exposed on all interfaces on port 5432; bind it to
   `127.0.0.1` or stop it if that project is retired.

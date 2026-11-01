@@ -107,8 +107,10 @@ If both Claude sessions run on the server at the same time, they may also messag
 
 ## Releases
 
-When a milestone's issues are closed: pull request `dev` → `main` titled `Release M<n>`. Merging deploys
-production.
+When a milestone's issues are closed: pull request `dev` → `main` titled `Release M<n>`. Merge it with
+**Create a merge commit** (not squash), so `main` and `dev` share history and the next release PR shows only what is
+new. Merging deploys production on Vercel. Database migrations and Edge Functions are not part of a release; they
+are pushed to the prod Supabase project as a separate step.
 
 ## If something goes wrong
 
