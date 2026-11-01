@@ -9,7 +9,7 @@ _Last updated: 2026-11-01 by Alfie_
 - **Design:** complete — every phone and desktop screen, both themes, app icon. Screen list in [DESIGN.md](DESIGN.md).
 - **Repo:** public, `dev`/`main` protected, 50 issues across M0–M5, labels and milestones in place.
 - **Server:** project folder laid out with `integration/`, `ws-hydracore/`, `ws-alfie/` and `private/`, and
-  excluded from Syncthing on the server and on Hydracore. Toolchain installed (Node 22.23.4 via nvm,
+  excluded from Syncthing on the server and on Hydracore. Toolchain installed (Node 24.22.2 via nvm,
   pnpm 9.15.0, GitHub CLI, Supabase CLI 2.20.5); GitHub login done, all three clones can push.
   Details and ports in `SERVER.md` on the server.
 - **Build:** M0 foundation merged — scaffold, CI, tokens, app shell, shared components, PWA basics (Hydracore).
