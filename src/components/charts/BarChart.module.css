@@ -1,0 +1,135 @@
+.figure {
+  margin: 0;
+  min-width: 0;
+}
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 14px;
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+}
+
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.swatch {
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 50%;
+}
+
+.frame {
+  display: flex;
+  gap: 8px;
+}
+
+.axis {
+  position: relative;
+  width: 36px;
+  flex: none;
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.axis span {
+  position: absolute;
+  right: 0;
+  transform: translateY(50%);
+  white-space: nowrap;
+}
+
+.plotArea {
+  flex: 1;
+  min-width: 0;
+}
+
+.plot {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+
+.grid {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--color-line);
+}
+
+.group {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 2px;
+  border-radius: 6px 6px 0 0;
+}
+
+.groupActive {
+  background: var(--color-sunk);
+}
+
+.bar {
+  width: min(14px, 40%);
+  border-radius: 4px 4px 0 0;
+}
+
+.labels {
+  display: flex;
+  margin-top: 8px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.labels span {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: clip;
+  white-space: nowrap;
+}
+
+.tooltip {
+  position: absolute;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 140px;
+  padding: 10px 12px;
+  border-radius: var(--radius-control);
+  background: var(--color-tabbar);
+  color: var(--color-on-header);
+  font-size: 12px;
+  box-shadow: var(--shadow-card);
+  pointer-events: none;
+  transform: translateX(8px);
+}
+
+.tooltipLeft {
+  transform: translateX(calc(-100% - 8px));
+}
+
+.tooltipRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tooltipRow b {
+  margin-left: auto;
+  padding-left: 12px;
+}

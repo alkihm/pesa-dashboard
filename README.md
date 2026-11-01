@@ -21,7 +21,7 @@ iPhone SMS ──► Shortcut ──► intake function (secret key) ──► P
 | Intake | Supabase Edge Function | The Shortcut posts each SMS; parsing and de-duplication happen server-side |
 | Auth | Google sign-in + app PIN | PIN for quick unlock; reset through the Google account |
 | Backup | Nightly copy to Google Sheets | The familiar Sheet stays as a read-only mirror |
-| Hosting | Vercel or Cloudflare Pages | Free, preview link per pull request |
+| Hosting | Vercel (D-011) | Free, preview link per pull request, production from `main` |
 
 More detail: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/DESIGN.md](docs/DESIGN.md).
 
@@ -47,4 +47,24 @@ Tests use made-up fixtures.
 ## Working on it
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for branches, pull requests and the two-laptop routine.
-Setup steps land with issue `[0.1]`.
+
+### Setup
+
+Needs Node 24 (see `.nvmrc`) and pnpm 9.
+
+```sh
+nvm use
+corepack enable   # or install pnpm 9 another way
+pnpm install
+pnpm dev
+```
+
+| Command | Does |
+|---|---|
+| `pnpm dev` | Start the dev server |
+| `pnpm lint` | Lint with ESLint |
+| `pnpm typecheck` | Type check (strict TypeScript) |
+| `pnpm test` | Run the Vitest suite |
+| `pnpm build` | Production build into `dist/` |
+| `pnpm preview` | Serve the production build |
+| `pnpm format` | Format with Prettier |

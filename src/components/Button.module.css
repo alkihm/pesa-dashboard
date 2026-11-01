@@ -1,0 +1,74 @@
+.button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  font-weight: var(--font-weight-bold);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.md {
+  min-height: 46px;
+  padding: 0 18px;
+  border-radius: var(--radius-control);
+  font-size: 14px;
+}
+
+.sm {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+}
+
+/* 44px touch target around the 34px small button. */
+.sm::after {
+  content: "";
+  position: absolute;
+  inset: -5px 0;
+}
+
+.block {
+  width: 100%;
+}
+
+.primary {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.secondary {
+  background: var(--color-hero);
+  color: var(--color-on-header);
+  font-weight: var(--font-weight-semibold);
+}
+
+.ghost {
+  background: transparent;
+  color: var(--color-text);
+  border: 1.5px solid var(--color-border-strong);
+  font-weight: var(--font-weight-semibold);
+}
+
+.button:hover {
+  filter: brightness(1.06);
+}
+
+.ghost:hover {
+  filter: none;
+  background: var(--color-sunk);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--color-link);
+  outline-offset: 2px;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: none;
+}

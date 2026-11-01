@@ -1,0 +1,29 @@
+.tile {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-sunk);
+  line-height: 1;
+}
+
+.sm {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+}
+
+.md {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-control);
+  font-size: 19px;
+}
+
+.lg {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
+  font-size: 28px;
+}

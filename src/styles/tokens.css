@@ -1,0 +1,150 @@
+/*
+ * Design tokens — the only file allowed to hold colour values (see scripts/check-hex.mjs).
+ * Values come from the approved design canvas; docs/DESIGN.md lists the main ones.
+ *
+ * Each colour is light-dark(<light>, <dark>). The theme follows the system through `color-scheme`;
+ * `data-theme="light" | "dark"` on <html> overrides it (src/lib/theme.ts).
+ */
+
+:root {
+  color-scheme: light dark;
+
+  /* Surfaces and text */
+  --color-bg: light-dark(#e3e9f2, #1f5f7a);
+  --color-surface: light-dark(#ffffff, #26395a);
+  --color-sunk: light-dark(#f1f4f9, #2c4166);
+  --color-text: light-dark(#17253e, #ecf0f3);
+  --color-text-muted: light-dark(#5a677a, #cbd4e0);
+  --color-line: light-dark(#e0e3e7, #34496e);
+  --color-border-strong: light-dark(#b8c2ce, #4a6290);
+  --color-track: light-dark(#e6eaee, #33476b);
+  --color-link: light-dark(#20639b, #7ff0c6);
+
+  /* Header and hero card */
+  --color-header: light-dark(#1f5f7a, #17253e);
+  --color-header-selected: light-dark(#16475c, #0f1a2e);
+  --color-hero: light-dark(#1f5f7a, #17253e);
+  --color-on-header: #ffffff;
+  --color-on-header-muted: #dce3ec;
+  --color-on-header-faint: rgb(255 255 255 / 0.08);
+  --color-on-header-line: rgb(255 255 255 / 0.18);
+  --color-knob: #ffffff;
+
+  /* Accent (buttons) */
+  --color-accent: #05da93;
+  --color-on-accent: #152032;
+
+  /* Tab bar (phone) */
+  --color-tabbar: #17253e;
+  --color-tabbar-active: #05da93;
+  --color-tabbar-inactive: #aeb9c8;
+
+  /* Charts */
+  --color-income: light-dark(#ed7d31, #f28c45);
+  --color-income-text: light-dark(#b4541a, #f6a66e);
+  --color-expense: light-dark(#077396, #4fa3c7);
+  --color-expense-text: light-dark(#1f6e8c, #7cc0de);
+
+  /*
+   * Status tones: -bg for pills and tiles, -text on that background, -dot for legends and bars.
+   * red: due or overdue, mismatch · orange: ≤3 days · amber: ≤7 days, review due
+   * blue: later · green: paid, ok · grey: skipped
+   */
+  --tone-red-bg: light-dark(#fde3e3, #3d2030);
+  --tone-red-text: light-dark(#a12626, #ff9c9c);
+  --tone-red-dot: light-dark(#d93a3a, #ff6b6b);
+  --tone-orange-bg: light-dark(#fde7d6, #3e2a1e);
+  --tone-orange-text: light-dark(#b4541a, #f6a66e);
+  --tone-orange-dot: #ed7d31;
+  --tone-amber-bg: light-dark(#fdf1d8, #3a3220);
+  --tone-amber-text: light-dark(#8a5a00, #f8c76a);
+  --tone-amber-dot: light-dark(#e09612, #f5b13d);
+  --tone-blue-bg: light-dark(#e1ecf7, #1e3a5c);
+  --tone-blue-text: light-dark(#20639b, #8fbce6);
+  --tone-blue-dot: light-dark(#4b8fd0, #4fa3c7);
+  --tone-green-bg: light-dark(#d5f8ea, #123b3a);
+  --tone-green-text: light-dark(#03724e, #05da93);
+  --tone-green-dot: light-dark(#04a673, #05da93);
+  --tone-grey-bg: light-dark(#eef1f5, #2c4166);
+  --tone-grey-text: light-dark(#5a677a, #cbd4e0);
+  --tone-grey-dot: #8a94a6;
+
+  /*
+   * Category palette — categories store the key (cat-1 … cat-12), never a colour (D-009 rule 12).
+   * Names and order match the colour picker in src/lib/categoryColours.ts. Use -tint for tiles.
+   * Checked with the dataviz palette validator: cat-1 … cat-11 sit in the lightness band with enough
+   * chroma, and neighbours stay apart under simulated colour blindness, in both themes. Not every pair
+   * is distinct, so charts always pair colour with a label (legend, direct label or table).
+   */
+  --cat-1: light-dark(#01c283, #05ad74); /* mint */
+  --cat-2: light-dark(#3375b5, #2a6cab); /* blue */
+  --cat-3: light-dark(#ea9b06, #c58209); /* amber */
+  --cat-4: light-dark(#58a5e4, #4593d0); /* sky */
+  --cat-5: light-dark(#d65944, #c84c38); /* coral */
+  --cat-6: light-dark(#7662d1, #6b56c3); /* violet */
+  --cat-7: light-dark(#19baac, #07a599); /* teal */
+  --cat-8: light-dark(#c75e04, #b55502); /* orange */
+  --cat-9: light-dark(#c95fda, #bc52cc); /* plum */
+  --cat-10: light-dark(#bb4177, #ad336b); /* rose */
+  --cat-11: light-dark(#85b32e, #73a00c); /* lime */
+  --cat-12: light-dark(#8a94a6, #a3adbf); /* slate — neutral, used for Other */
+  --cat-1-tint: color-mix(in srgb, var(--cat-1) 20%, transparent);
+  --cat-2-tint: color-mix(in srgb, var(--cat-2) 20%, transparent);
+  --cat-3-tint: color-mix(in srgb, var(--cat-3) 20%, transparent);
+  --cat-4-tint: color-mix(in srgb, var(--cat-4) 20%, transparent);
+  --cat-5-tint: color-mix(in srgb, var(--cat-5) 20%, transparent);
+  --cat-6-tint: color-mix(in srgb, var(--cat-6) 20%, transparent);
+  --cat-7-tint: color-mix(in srgb, var(--cat-7) 20%, transparent);
+  --cat-8-tint: color-mix(in srgb, var(--cat-8) 20%, transparent);
+  --cat-9-tint: color-mix(in srgb, var(--cat-9) 20%, transparent);
+  --cat-10-tint: color-mix(in srgb, var(--cat-10) 20%, transparent);
+  --cat-11-tint: color-mix(in srgb, var(--cat-11) 20%, transparent);
+  --cat-12-tint: color-mix(in srgb, var(--cat-12) 20%, transparent);
+
+  /* App icon ring (same in both themes) */
+  --brand-ring-1: #ed7d31;
+  --brand-ring-2: #4fa3c7;
+  --brand-ring-3: #f0705a;
+  --brand-ring-4: #f5b13d;
+
+  /* Type */
+  --font-sans: "Poppins", system-ui, sans-serif;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Radii */
+  --radius-sm: 10px;
+  --radius-control: 12px;
+  --radius-card: 20px;
+  --radius-hero: 22px;
+  --radius-pill: 999px;
+  --radius-header: 40px;
+  --radius-header-desktop: 56px;
+
+  /* Layout — the desktop layout starts at 900px (media queries cannot read variables) */
+  --shell-max-width: 1360px;
+  --shell-gutter: 16px;
+  --tabbar-height: 76px;
+
+  /* Shadows */
+  --shadow-knob: 0 1px 3px rgb(0 0 0 / 0.3);
+  --shadow-card:
+    0 12px 28px light-dark(rgb(23 37 62 / 0.1), rgb(0 0 0 / 0.38)),
+    0 2px 6px light-dark(rgb(23 37 62 / 0.06), rgb(0 0 0 / 0.24));
+}
+
+@media (min-width: 900px) {
+  :root {
+    --shell-gutter: 24px;
+  }
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
