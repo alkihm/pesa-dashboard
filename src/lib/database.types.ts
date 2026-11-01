@@ -938,6 +938,14 @@ export type Database = {
       };
     };
     Functions: {
+      apply_payee_rule: {
+        Args: {
+          p_rule_id: string;
+          p_overwrite?: boolean;
+          p_dry_run?: boolean;
+        };
+        Returns: number;
+      };
       ensure_bill_months: {
         Args: {
           p_month: string;
