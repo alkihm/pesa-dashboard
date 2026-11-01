@@ -6,7 +6,7 @@
 import { cpSync, mkdirSync, readdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
-export const SHARED = ["sms", "intake"];
+export const SHARED = ["sms", "intake", "backup"];
 const from = "src/lib";
 const to = "supabase/functions/_shared/lib";
 const isSource = (f) => f.endsWith(".ts") && !f.endsWith(".test.ts") && f !== "fixtures.ts";

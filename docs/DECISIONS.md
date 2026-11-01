@@ -143,3 +143,16 @@ preview of `dev` stays at pesa-dev.autotechfy.com on the server (see SERVER.md).
 **Why:** Owner's choice. Preview per pull request with no setup, Vercel Authentication keeps previews private by
 default, and the Vite preset needs no build configuration.
 **Rules out:** Cloudflare Pages (the alternative named in the README) and self-hosting production on the server.
+
+## D-013 · 2026-11-01 · Nightly Sheet backup
+
+**Decided:** A `sheet-backup` Edge Function rewrites a dedicated Google Sheet ("Pesa Dashboard backup", not the
+old Budget_data Sheet) with one tab per year of the whole ledger, in a layout close to the old one. pg_cron in
+the Supabase project calls it at 23:30 Nairobi time through `public.run_sheet_backup()`, which reads the function
+URL and key from Vault and does nothing while they are missing. Each run is logged in `backup_runs`; the owner
+can read it (Settings), only the function writes it. Google access is a service account whose JSON key and the
+Sheet ID are function secrets.
+**Why:** Rewriting every tab each night is idempotent and picks up edits to past years. Scheduling inside
+Supabase keeps the backup running when the home server is off. A new Sheet keeps the old one untouched.
+**Rules out:** Appending rows (not idempotent); a server cron job; storing the service role key in Vault.
+

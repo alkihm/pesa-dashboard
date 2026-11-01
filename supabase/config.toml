@@ -314,3 +314,7 @@ s3_secret_key = "env(S3_SECRET_KEY)"
 # The iPhone Shortcut has no Supabase session; the function checks its own intake key instead.
 [functions.intake]
 verify_jwt = false
+
+# Called by pg_cron with its own backup key (D-013).
+[functions.sheet-backup]
+verify_jwt = false

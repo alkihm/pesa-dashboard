@@ -1,4 +1,4 @@
-// The intake Edge Function runs copies of src/lib/sms and src/lib/intake (scripts/sync-functions.mjs).
+// The Edge Functions run copies of src/lib/sms, src/lib/intake and src/lib/backup (scripts/sync-functions.mjs).
 // This fails when a copy is missing, stale or left over.
 
 const isSource = (path: string) => !path.endsWith(".test.ts") && !path.endsWith("/fixtures.ts");
@@ -13,7 +13,7 @@ const strip = (files: Record<string, string>, prefix: string) =>
 describe("Edge Function copies of shared code", () => {
   it("match src/lib exactly — run `node scripts/sync-functions.mjs`", () => {
     const source = strip(
-      import.meta.glob(["/src/lib/sms/*.ts", "/src/lib/intake/*.ts"], {
+      import.meta.glob(["/src/lib/sms/*.ts", "/src/lib/intake/*.ts", "/src/lib/backup/*.ts"], {
         query: "?raw",
         import: "default",
         eager: true,
