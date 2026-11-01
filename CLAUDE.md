@@ -55,6 +55,7 @@ Node 24 (`.nvmrc`) and pnpm 9. On the server, run `source ~/.nvm/nvm.sh` first i
 | `supabase db reset` | Rebuild the shared local database — run in `integration/` only |
 | `supabase gen types typescript --local > src/lib/database.types.ts` | Regenerate the database types after a migration, then `pnpm format` |
 | `supabase test db` | Database tests (pgTAP) in `supabase/tests/database/` — row-level security and other rules |
+| `node scripts/import-ledger.ts --env <env file> --user <owner id> [--dry-run] <csv…>` | Import old ledger CSVs from `private/data/` (D-012); safe to re-run |
 | `node scripts/sync-functions.mjs` | Copy `src/lib/sms` and `src/lib/intake` into `supabase/functions/_shared/lib` after changing them (a test fails until you do) |
 | `supabase functions serve --env-file supabase/functions/.env` | Run the intake function locally; `.env` holds `INTAKE_KEY` and `INTAKE_USER_ID` (never committed) |
 

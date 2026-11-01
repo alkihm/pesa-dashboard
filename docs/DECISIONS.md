@@ -144,6 +144,28 @@ preview of `dev` stays at pesa-dev.autotechfy.com on the server (see SERVER.md).
 default, and the Vite preset needs no build configuration.
 **Rules out:** Cloudflare Pages (the alternative named in the README) and self-hosting production on the server.
 
+## D-012 · 2026-11-01 · How the old ledgers are imported
+
+**Decided:** `scripts/import-ledger.ts` imports the yearly ledger CSVs ([1.3]) with these rules:
+
+1. **As recorded.** Own-money moves, borrowing, repayments and saving become transfers (D-009 rule 3). Where
+   the ledger has the move on both accounts (a KCB send and its M-PESA receipt: opposite amounts, within 3
+   days) the two rows are paired; otherwise the other leg is created and noted.
+2. **Nothing invented.** The old ledger never tracked cash spending or Fuliza draws, so historic cash
+   withdrawals stay spending (category "Cash withdrawals") and Fuliza fees stay on M-PESA. New SMS follow
+   D-009 (withdrawal = transfer to cash, Fuliza fee on the Fuliza account).
+3. **Categories keep their old names**; "uncategorised" rows have none and, with "(check)" rows and foreign-
+   currency estimates, go to review.
+4. **No names in the code.** Accounts and loans are derived from the ledger's own text (account column,
+   "Loan - X" categories), so lenders, Saccos and card providers are not named in this public repo.
+5. **Re-runs are safe.** Each row's dedupe key is a hash of its contents plus how many identical rows came
+   before it, so editing nothing and running again inserts nothing.
+
+**Why:** Totals must match what the owner already trusts. Checked on the dev project: row counts and income,
+expense, borrowing, debt repaid and saving per year match `ledgers/SUMMARY.md` for 2020–2025 to the
+shilling; 2026 matches the CSV (the summary predates two repayments added on 2026-10-24).
+**Consequence:** Historic balances do not reconcile until opening balances are set; the owner enters those.
+
 ## D-013 · 2026-11-01 · Nightly Sheet backup
 
 **Decided:** A `sheet-backup` Edge Function rewrites a dedicated Google Sheet ("Pesa Dashboard backup", not the
