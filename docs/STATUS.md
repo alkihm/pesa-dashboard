@@ -46,7 +46,6 @@ never to the repo or the local database.
 
 ## Open questions
 
-- Vercel or Cloudflare Pages — decide in [0.4].
 - The local Supabase database (port 54322, password `postgres`) and API (54321) listen on all interfaces —
   the CLI has no bind setting. The API must stay reachable for phone testing; the database port should be
   firewalled to localhost on the server (owner).

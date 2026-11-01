@@ -132,3 +132,14 @@ switched off per account. Changes R6 and the default in D-009.
 M-PESA savings and M-Shwari are the owner's money, even if not spent day to day.
 **Rules out:** Net position as spendable money only. The Savings card still shows savings on their own (R3).
 
+
+## D-011 · 2026-11-01 · Hosting on Vercel
+
+**Decided:** The app is hosted on Vercel, connected to the GitHub repo. Production deploys from `main`; every other
+branch and pull request gets its own preview link. `vercel.json` sends every route to `index.html` (client-side
+routing) and keeps `sw.js` and the manifest uncached so app updates reach installed phones. Supabase settings are
+Vercel environment variables: Production uses the prod project, Preview uses the dev project. The owner's own
+preview of `dev` stays at pesa-dev.autotechfy.com on the server (see SERVER.md).
+**Why:** Owner's choice. Preview per pull request with no setup, Vercel Authentication keeps previews private by
+default, and the Vite preset needs no build configuration.
+**Rules out:** Cloudflare Pages (the alternative named in the README) and self-hosting production on the server.
