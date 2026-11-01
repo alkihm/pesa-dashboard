@@ -20,8 +20,8 @@ _Last updated: 2026-11-01 by Alfie_
 - **Intake live on the dev cloud project:** the iPhone Shortcut posts to it alongside the Sheet ([1.6], steps in
   [SHORTCUT.md](SHORTCUT.md)).
 - **Dev cloud data:** the old ledgers (2020–2026) are imported — about 20,600 transactions, 3,823 flagged for review.
-  No opening balances yet, so historic balances do not reconcile until the owner enters them. Production gets the
-  same import once the owner has checked dev.
+  No opening balances yet, so historic balances do not reconcile until the owner enters them. **Owner: test on dev
+  only for now — do not import into production** until they say so.
 - **Sheet backup live on dev:** pg_cron runs `sheet-backup` at 23:30 Nairobi time into the "Pesa Dashboard backup"
   Sheet; each run is logged in `backup_runs` (for Settings). Secrets in `private/env/` on the server.
 - **Toolchain:** Node **24** LTS (`.nvmrc`, `engines: 24.x`, #74), pnpm 9.15.0, GitHub CLI,
@@ -63,8 +63,9 @@ Install on the iPhone from pesa-dev in Safari (Share → Add to Home Screen). Th
 | Hydracore | M2: [2.1] sign-in, Google + PIN (#19) → [2.2] Overview and Home (#20) → [2.4] Month (#22) → [2.8] Categories (#26) |
 | Alfie | M2: [2.5] Activity (#23) → [2.6] Transaction detail (#24) → [2.7] Add transaction (#25) — after [2.1] lands the Supabase client and session |
 
-The M2 split is a proposal — confirm or swap at the start of the next session. [2.3] Accounts (#21) and
-[2.9] New account (#27) go to whichever laptop frees up first.
+The M2 split above is **confirmed by the owner** (2026-11-01). [2.3] Accounts (#21) and [2.9] New account (#27)
+go to whichever laptop frees up first. The shared Supabase client is `src/lib/supabase.ts` (Alfie, ahead of [2.1]);
+[2.1] adds sign-in and the session on top of it.
 
 Building a screen: replace its `Placeholder` in `src/app/routes.tsx` with a screen from `src/features/<feature>/`,
 render `PageHeader` at the top, build from `src/components/` (see CLAUDE.md), format money with `src/lib/money.ts`.
