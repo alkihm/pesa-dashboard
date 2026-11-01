@@ -58,7 +58,8 @@ Debt accounts have negative balances.
 
 `pattern` (case-insensitive "payee contains"), `priority` (lowest first, first match wins), and exactly one of
 `category_id` (→ spending or income) or `transfer_account_id` (→ a transfer to that account, e.g. a Sacco
-deposit or a loan repayment).
+deposit or a loan repayment). Rules apply to each new message in the intake; `apply_payee_rule(rule, overwrite, dry_run)`
+applies one to past rows (by default only uncategorised ones; `dry_run` returns the count for the screen).
 
 ### `sms_messages`
 
