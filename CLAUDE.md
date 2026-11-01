@@ -38,7 +38,7 @@ Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/DESIGN.md](docs/DESI
 
 ## Commands
 
-Node 22 (`.nvmrc`) and pnpm 9. On the server, run `source ~/.nvm/nvm.sh` first in non-interactive shells.
+Node 24 (`.nvmrc`) and pnpm 9. On the server, run `source ~/.nvm/nvm.sh` first in non-interactive shells.
 
 | Command | Does |
 |---|---|

@@ -50,7 +50,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for branches, pull requests and the two-l
 
 ### Setup
 
-Needs Node 22 (see `.nvmrc`) and pnpm 9.
+Needs Node 24 (see `.nvmrc`) and pnpm 9.
 
 ```sh
 nvm use
