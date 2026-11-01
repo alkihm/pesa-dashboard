@@ -141,7 +141,7 @@ written only through the `verify_pin` and `set_pin` functions.
 
 ### Views
 
-`account_balances` (balance, latest snapshot, difference, last activity), `month_totals` (income,
+`account_balances` (balance, latest snapshot and its source, difference at the snapshot's time, last activity, emoji, sort order, archived; maths for the screens in `src/lib/balances.ts`), `month_totals` (income,
 spending, fees, borrowed, repaid, saved per Nairobi month) and `category_month_totals`. All views use
 `security_invoker`, so row-level security applies. Months are grouped in `Africa/Nairobi` time.
 
