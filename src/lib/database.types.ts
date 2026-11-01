@@ -887,15 +887,19 @@ export type Database = {
       account_balances: {
         Row: {
           account_id: string | null;
+          archived_at: string | null;
           balance_cents: number | null;
           counts_in_net: boolean | null;
           debt_term: string | null;
           difference_cents: number | null;
+          emoji: string | null;
           kind: string | null;
           last_activity: string | null;
           name: string | null;
           snapshot_at: string | null;
           snapshot_cents: number | null;
+          snapshot_source: string | null;
+          sort_order: number | null;
           user_id: string | null;
         };
         Relationships: [];
