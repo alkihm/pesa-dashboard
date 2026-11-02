@@ -104,7 +104,8 @@ choices behind it:
    referenced before they sync, and a replayed edit whose version is stale is shown to the user instead of
    overwriting (R25).
 10. **The PIN hash sits in a table the app cannot read**, reachable only through `verify_pin` and `set_pin`.
-    **Why:** a 4–6 digit PIN hash can be cracked in moments if the client can read it.
+    **Why:** a 4–6 digit PIN hash can be cracked in moments if the client can read it. (Offline unlock, D-014,
+    keeps a separate hash on the device.)
 11. **Categories are only `spending` or `income`** (the draft also had `saving`). Saving is a transfer into a
     savings account. **Why:** a Sacco deposit would otherwise count both as a transfer and as a saving
     category. Something saved without an account (a pension, say) gets a savings account with
@@ -178,3 +179,17 @@ Sheet ID are function secrets.
 Supabase keeps the backup running when the home server is off. A new Sheet keeps the old one untouched.
 **Rules out:** Appending rows (not idempotent); a server cron job; storing the service role key in Vault.
 
+## D-014 · 2026-11-02 · The PIN also works offline
+
+**Decided:** After each PIN the database accepts or sets, the app keeps a PBKDF2-SHA-256 hash of it (random salt,
+600 000 iterations) in the device's local storage, with the count and lock the database last reported. When the
+database cannot be reached (no answer, not a refusal), the PIN is checked against that hash and wrong tries count
+on the device: 5 lock it for 15 minutes, as online. Whenever the database answers, it decides. Choosing or
+resetting a PIN still needs a connection. The device's copy only exists after the PIN has been entered online
+once on that device. The choose-a-PIN screen says not to use an M-PESA or bank PIN.
+**Why:** The owner wants the installed app to open without a connection. The session it unlocks is already stored
+on the device, so the hash adds little for someone holding the device's storage; the real risk is a PIN reused
+elsewhere, hence the warning.
+**Rules out:** Keeping the PIN hash in the database only (the D-009 rule 10 position before this decision); a
+device-only PIN with no database check. A PIN changed on another device takes effect here once this device is
+back online.

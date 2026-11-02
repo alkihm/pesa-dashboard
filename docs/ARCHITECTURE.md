@@ -142,6 +142,8 @@ account's available amount until transactions with its `budget_item_id` spend it
 and written only through `pin_status`, `verify_pin` and `set_pin`. 5 wrong tries lock it for 15 minutes.
 Changing a PIN needs a sign-in in the last 10 minutes (the newest `amr` timestamp in the token), which is how
 "reset with Google" works. The app asks for the PIN once per tab, and not straight after a Google sign-in.
+Offline, the device checks it against its own PBKDF2 hash of the last accepted PIN (D-014,
+`src/features/auth/offlinePin.ts`).
 `push_subscriptions`: `endpoint`, `keys`, `device_label`.
 
 ### Views

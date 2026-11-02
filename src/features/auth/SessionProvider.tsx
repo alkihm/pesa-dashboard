@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { supabase } from "@/lib/supabase";
+import { withOfflineCheck } from "./offlinePin";
 import { pinApi, type PinApi } from "./pin";
 import { SessionContext, type AuthClient, type SessionState } from "./session";
 
 const defaultAuth = () => supabase().auth;
-const defaultPin = () => pinApi(supabase());
+const defaultPin = (userId: string) => withOfflineCheck(pinApi(supabase()), userId);
 
 // Reads the saved session once (it lives in this device's storage, so it works offline), then follows sign-in,
 // sign-out and token refreshes.
@@ -15,7 +16,7 @@ export function SessionProvider({
   children,
 }: {
   auth?: () => AuthClient;
-  pin?: () => PinApi;
+  pin?: (userId: string) => PinApi;
   children: ReactNode;
 }) {
   const [state, setState] = useState<SessionState>({ status: "loading" });

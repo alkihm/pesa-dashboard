@@ -1,5 +1,6 @@
-// The PIN unlock. The database keeps the hash and the count (pin_status, verify_pin, set_pin); this tab only
-// remembers that it has been unlocked, so a reload does not ask again. Closing the app forgets it.
+// The PIN unlock. The database keeps the hash and the count (pin_status, verify_pin, set_pin), and offlinePin.ts
+// checks it on this device when the database cannot be reached. This tab remembers that it has been unlocked,
+// so a reload does not ask again. Closing the app forgets it.
 
 import type { Db } from "@/lib/supabase";
 
@@ -12,6 +13,8 @@ export interface PinState {
   lockedUntil: Date | null;
   /** Signed in within the last 10 minutes: the PIN can be changed, and is not asked for. */
   recentSignIn: boolean;
+  /** The database could not be reached; the PIN is checked on this device. */
+  offline?: boolean;
 }
 
 export interface PinCheck {
