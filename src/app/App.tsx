@@ -1,4 +1,5 @@
 import { createBrowserRouter, RouterProvider } from "react-router";
+import { SessionProvider } from "@/features/auth/SessionProvider";
 import { launchPath, rememberRoute } from "./lastRoute";
 import { routes } from "./routes";
 
@@ -10,5 +11,9 @@ router.subscribe(({ location }) => rememberRoute(location.pathname, location.sea
 rememberRoute(window.location.pathname, window.location.search);
 
 export function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <SessionProvider>
+      <RouterProvider router={router} />
+    </SessionProvider>
+  );
 }

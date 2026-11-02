@@ -1,14 +1,20 @@
 import type { RouteObject } from "react-router";
 import { ActivityScreen } from "@/features/activity/ActivityScreen";
+import { RequireSession } from "@/features/auth/RequireSession";
+import { SignInScreen } from "@/features/auth/SignInScreen";
 import { SettingsScreen } from "@/features/settings/SettingsScreen";
 import { AppShell } from "./shell/AppShell";
 import { NotFound, Placeholder } from "./Placeholder";
 
 // Every screen in docs/DESIGN.md. Placeholders name the issue that builds the real screen.
 export const routes: RouteObject[] = [
-  { path: "/sign-in", element: <Placeholder title="Sign in" issue="2.1" bare /> },
+  { path: "/sign-in", element: <SignInScreen /> },
   {
-    element: <AppShell />,
+    element: (
+      <RequireSession>
+        <AppShell />
+      </RequireSession>
+    ),
     children: [
       { index: true, element: <Placeholder title="Overview" phoneTitle="Budget" issue="2.2" home /> },
       { path: "activity", element: <ActivityScreen /> },

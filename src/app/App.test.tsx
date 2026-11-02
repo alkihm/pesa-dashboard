@@ -1,10 +1,19 @@
+import type { Session } from "@supabase/supabase-js";
 import { render, screen, within } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router";
+import { SessionProvider } from "@/features/auth/SessionProvider";
+import { fakeAuth, fakeSession } from "@/test/fakeAuth";
 import { routes } from "./routes";
 
-function renderAt(path: string) {
+function renderAt(path: string, session: Session | null = fakeSession()) {
   const router = createMemoryRouter(routes, { initialEntries: [path] });
-  render(<RouterProvider router={router} />);
+  const { client } = fakeAuth(session);
+  render(
+    <SessionProvider auth={() => client}>
+      <RouterProvider router={router} />
+    </SessionProvider>,
+  );
+  return router;
 }
 
 describe("app shell", () => {
@@ -24,32 +33,33 @@ describe("app shell", () => {
     ["/categories/new", "New category"],
     ["/settings", "Settings"],
     ["/report", "Month report"],
-  ])("renders %s inside the shell", (path, title) => {
+  ])("renders %s inside the shell", async (path, title) => {
     renderAt(path);
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(title);
+    expect(await screen.findByRole("heading", { level: 1 })).toHaveTextContent(title);
     expect(screen.getByRole("navigation", { name: "Main" })).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Tabs" })).toBeInTheDocument();
   });
 
-  it("renders sign-in without the shell", () => {
-    renderAt("/sign-in");
-    expect(screen.getByRole("heading", { name: "Sign in" })).toBeInTheDocument();
+  it("renders sign-in without the shell", async () => {
+    renderAt("/sign-in", null);
+    expect(await screen.findByRole("heading", { name: "Sign in" })).toBeInTheDocument();
     expect(screen.queryByRole("navigation")).not.toBeInTheDocument();
   });
 
-  it("marks the current section in the desktop nav and the phone tabs", () => {
+  it("marks the current section in the desktop nav and the phone tabs", async () => {
     renderAt("/accounts/savings");
-    const nav = screen.getByRole("navigation", { name: "Main" });
+    const nav = await screen.findByRole("navigation", { name: "Main" });
     expect(within(nav).getByRole("link", { name: "Accounts" })).toHaveAttribute("aria-current", "page");
     expect(within(nav).getByRole("link", { name: "Overview" })).not.toHaveAttribute("aria-current");
 
     renderAt("/bills");
+    await screen.findAllByRole("navigation", { name: "Tabs" });
     const tabs = screen.getAllByRole("navigation", { name: "Tabs" }).at(-1)!;
     expect(within(tabs).getByRole("link", { name: "Bills" })).toHaveAttribute("aria-current", "page");
   });
 
-  it("shows a not-found page for unknown paths", () => {
+  it("shows a not-found page for unknown paths", async () => {
     renderAt("/nope");
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Not found");
+    expect(await screen.findByRole("heading", { level: 1 })).toHaveTextContent("Not found");
   });
 });
