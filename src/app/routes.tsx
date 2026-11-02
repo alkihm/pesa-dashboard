@@ -4,6 +4,7 @@ import { TransactionScreen } from "@/features/activity/TransactionScreen";
 import { RequireSession } from "@/features/auth/RequireSession";
 import { SignInScreen } from "@/features/auth/SignInScreen";
 import { SettingsScreen } from "@/features/settings/SettingsScreen";
+import { AddTransactionScreen } from "@/features/transactions/AddTransactionScreen";
 import { AppShell } from "./shell/AppShell";
 import { NotFound, Placeholder } from "./Placeholder";
 
@@ -20,7 +21,7 @@ export const routes: RouteObject[] = [
       { index: true, element: <Placeholder title="Overview" phoneTitle="Budget" issue="2.2" home /> },
       { path: "activity", element: <ActivityScreen /> },
       { path: "activity/:id", element: <TransactionScreen /> },
-      { path: "transactions/new", element: <Placeholder title="Add transaction" issue="2.7" back="/" /> },
+      { path: "transactions/new", element: <AddTransactionScreen /> },
       { path: "month", element: <Placeholder title="Month" issue="2.4" /> },
       { path: "bills", element: <Placeholder title="Bills & budget" issue="3.1" /> },
       { path: "review", element: <Placeholder title="Review & reconcile" issue="4.1" /> },
