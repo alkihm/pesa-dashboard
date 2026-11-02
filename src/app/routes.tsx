@@ -1,4 +1,5 @@
 import type { RouteObject } from "react-router";
+import { ActivityScreen } from "@/features/activity/ActivityScreen";
 import { RequireSession } from "@/features/auth/RequireSession";
 import { SignInScreen } from "@/features/auth/SignInScreen";
 import { SettingsScreen } from "@/features/settings/SettingsScreen";
@@ -16,7 +17,7 @@ export const routes: RouteObject[] = [
     ),
     children: [
       { index: true, element: <Placeholder title="Overview" phoneTitle="Budget" issue="2.2" home /> },
-      { path: "activity", element: <Placeholder title="Activity" issue="2.5" /> },
+      { path: "activity", element: <ActivityScreen /> },
       { path: "activity/:id", element: <Placeholder title="Transaction" issue="2.6" back="/activity" /> },
       { path: "transactions/new", element: <Placeholder title="Add transaction" issue="2.7" back="/" /> },
       { path: "month", element: <Placeholder title="Month" issue="2.4" /> },

@@ -1,0 +1,150 @@
+/* Phone list: one card per transaction. */
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row {
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: 18px;
+}
+
+.review {
+  border-color: var(--tone-amber-dot);
+}
+
+.main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.payee {
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sub {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.review .sub {
+  color: var(--tone-amber-text);
+}
+
+.note {
+  margin: -4px 0 0;
+  padding: 0 14px 12px 66px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.amount {
+  font-size: 14px;
+  font-weight: var(--font-weight-bold);
+  white-space: nowrap;
+}
+
+.in {
+  color: var(--tone-green-text);
+}
+
+/* Desktop table. */
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  min-width: 640px;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.table th {
+  padding: 8px;
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+  text-align: left;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid var(--color-line);
+  vertical-align: middle;
+}
+
+.table th:first-child,
+.table td:first-child {
+  padding-left: 0;
+}
+
+.table th:last-child,
+.table td:last-child {
+  padding-right: 0;
+}
+
+.reviewRow td {
+  background: var(--tone-amber-bg);
+}
+
+.date {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+}
+
+.payeeCell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.tableNote {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.category {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1.5px solid var(--color-line);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+}
+
+.categoryReview {
+  border-color: var(--tone-amber-dot);
+}
+
+.right {
+  text-align: right;
+}

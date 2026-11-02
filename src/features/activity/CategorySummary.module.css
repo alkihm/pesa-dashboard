@@ -1,0 +1,48 @@
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: minmax(0, 118px) minmax(0, 1fr) 64px;
+  gap: 10px;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 12px;
+}
+
+.review {
+  color: var(--tone-amber-text);
+  font-weight: var(--font-weight-semibold);
+}
+
+.label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.track {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--color-track);
+}
+
+.bar {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+}
+
+.amount {
+  text-align: right;
+  font-weight: var(--font-weight-semibold);
+}
+
+.empty {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
