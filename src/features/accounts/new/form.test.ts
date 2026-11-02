@@ -1,8 +1,10 @@
 import { accountKey } from "../../../lib/intake/plan";
 import {
-  buildRow,
+  buildAccount,
+  buildOpening,
   countsInNet,
   emptyForm,
+  labels,
   problem,
   smsSources,
   withKind,
@@ -33,7 +35,7 @@ describe("SMS sources", () => {
     const kinds: Kind[] = ["wallet", "bank", "card", "savings", "loan"];
     const hints = kinds.flatMap((kind) =>
       smsSources(kind).map(
-        (s) => buildRow(form({ kind, name: "x", source: s.value, last4: "0042" }), []).sms_account_hint,
+        (s) => buildAccount(form({ kind, name: "x", source: s.value, last4: "0042" }), []).sms_account_hint,
       ),
     );
     expect(hints.sort()).toEqual(parserKeys.sort());
@@ -41,28 +43,32 @@ describe("SMS sources", () => {
   });
 });
 
-describe("counts in net", () => {
-  it("follows D-010 by default and the switch when flipped", () => {
+describe("labels and defaults", () => {
+  it("name the balance and limit as the board does", () => {
+    expect(labels("bank")).toMatchObject({ balance: "Current balance" });
+    expect(labels("loan")).toEqual({ balance: "Amount owed now", limit: "Amount borrowed" });
+    expect(labels("card")).toEqual({ balance: "Amount owed now", limit: "Card limit" });
+  });
+
+  it("count in net position by D-010 until changed", () => {
     expect(countsInNet(form({ kind: "savings" }))).toBe(true);
-    expect(countsInNet(form({ kind: "card" }))).toBe(true); // cards start short term
-    expect(countsInNet(form({ kind: "loan" }))).toBe(false); // loans start long term
+    expect(countsInNet(form({ kind: "card" }))).toBe(true); // cards start short-term
+    expect(countsInNet(form({ kind: "loan" }))).toBe(false); // loans start long-term
     expect(countsInNet(form({ kind: "loan", debtTerm: "short" }))).toBe(true);
     expect(countsInNet(form({ kind: "wallet", countsInNet: false }))).toBe(false);
   });
-});
 
-describe("withKind", () => {
-  it("keeps the name and a chosen emoji, and resets kind fields", () => {
+  it("keep the name, balance and a chosen icon when the type changes", () => {
     const next = withKind(
-      form({ kind: "loan", name: "Fuliza", emoji: "⚡", limit: "5,000", source: "fuliza" }),
+      form({ kind: "loan", name: "Fuliza", emoji: "📲", balance: "300", limit: "5,000" }),
       "card",
     );
     expect(next).toMatchObject({
       kind: "card",
       name: "Fuliza",
-      emoji: "⚡",
+      emoji: "📲",
+      balance: "300",
       limit: "",
-      source: "",
       debtTerm: "short",
     });
     expect(withKind(form({ kind: "wallet" }), "bank").emoji).toBe("🏦");
@@ -77,7 +83,11 @@ describe("problem", () => {
   });
 
   it("checks amounts, the due day and the card digits", () => {
-    expect(problem(form({ kind: "loan", name: "Car", borrowed: "abc" }), [])).toMatch(/borrowed/);
+    expect(problem(form({ name: "A", balance: "lots" }), [])).toBe("Current balance must be an amount.");
+    expect(problem(form({ name: "A", balance: "0" }), [])).toBeUndefined();
+    expect(problem(form({ kind: "loan", name: "Car", limit: "0" }), [])).toBe(
+      "Amount borrowed must be above zero.",
+    );
     expect(problem(form({ kind: "loan", name: "Car", dueDay: "32" }), [])).toMatch(/1 to 31/);
     expect(problem(form({ kind: "card", name: "Visa", source: "kcb-card", last4: "42" }), [])).toMatch(
       /four digits/,
@@ -93,43 +103,63 @@ describe("problem", () => {
   });
 });
 
-describe("buildRow", () => {
-  it("builds a short-term loan with its limit, due day and SMS matching, after the last account", () => {
-    const row = buildRow(
-      form({
-        kind: "loan",
-        name: " Fuliza ",
-        emoji: "⚡",
-        debtTerm: "short",
-        limit: "5,000",
-        dueDay: "5",
-        source: "fuliza",
-      }),
-      existing,
-    );
-    expect(row).toEqual({
+describe("buildAccount and buildOpening", () => {
+  it("builds a short-term loan with what was borrowed, the due day and SMS matching, after the last account", () => {
+    const loan = form({
+      kind: "loan",
+      name: " Fuliza ",
+      emoji: "📲",
+      balance: "4,320",
+      debtTerm: "short",
+      limit: "6,000",
+      dueDay: "5",
+      source: "fuliza",
+    });
+    expect(buildAccount(loan, existing)).toEqual({
       name: "Fuliza",
-      emoji: "⚡",
+      emoji: "📲",
       kind: "loan",
       debt_term: "short",
       counts_in_net: true,
-      limit_cents: 500000,
-      original_cents: null,
+      limit_cents: null,
+      original_cents: 600000,
       due_day: 5,
       sms_account_hint: "fuliza",
       sms_sender: "MPESA",
       sort_order: 8,
     });
+    const now = new Date("2026-11-02T08:00:00Z");
+    expect(buildOpening(loan, "acc-1", now)).toEqual({
+      account_id: "acc-1",
+      kind: "opening",
+      amount_cents: -432000,
+      occurred_at: now.toISOString(),
+      source: "manual",
+    });
   });
 
-  it("leaves debt fields off accounts that are not debt", () => {
-    const row = buildRow(form({ kind: "savings", name: "Sacco", limit: "100", dueDay: "3" }), []);
-    expect(row).toMatchObject({
+  it("puts a card limit in limit_cents, and leaves debt fields off other kinds", () => {
+    expect(buildAccount(form({ kind: "card", name: "Visa", limit: "50,000" }), [])).toMatchObject({
+      limit_cents: 5000000,
+      original_cents: null,
+    });
+    expect(
+      buildAccount(form({ kind: "savings", name: "Sacco", limit: "100", dueDay: "3" }), []),
+    ).toMatchObject({
       debt_term: null,
       limit_cents: null,
+      original_cents: null,
       due_day: null,
       sms_account_hint: null,
       sort_order: 1,
     });
+  });
+
+  it("makes no opening row without a balance, and a positive one for money held", () => {
+    expect(buildOpening(form({ name: "A" }), "x")).toBeUndefined();
+    expect(buildOpening(form({ name: "A", balance: "0" }), "x")).toBeUndefined();
+    expect(buildOpening(form({ kind: "savings", name: "A", balance: "250,000" }), "x")?.amount_cents).toBe(
+      25000000,
+    );
   });
 });

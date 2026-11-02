@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, within } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router";
 
 import type { Db } from "@/lib/supabase";
@@ -6,17 +6,22 @@ import { NewAccountScreen } from "./NewAccountScreen";
 
 const existing = [{ name: "M-PESA", sms_account_hint: "mpesa", archived_at: null, sort_order: 3 }];
 
-// A stand-in for the client: answers the accounts read and records inserts.
-function fakeDb(insertError: { message: string } | null = null) {
-  const inserts: unknown[] = [];
+// A stand-in for the client: answers the accounts read, records inserts per table, fails the opening on request.
+function fakeDb({ openingError }: { openingError?: string } = {}) {
+  const inserts: { table: string; row: unknown }[] = [];
   const db = {
-    from: () => {
+    from: (table: string) => {
       let writing = false;
+      const answer = () => {
+        if (!writing) return { data: existing, error: null };
+        if (table === "transactions" && openingError) return { data: null, error: { message: openingError } };
+        return { data: { id: "new-account" }, error: null };
+      };
       const chain = {
         select: () => chain,
-        insert: (row: unknown) => (inserts.push(row), (writing = true), chain),
-        then: (resolve: (v: unknown) => void) =>
-          resolve(writing ? { data: null, error: insertError } : { data: existing, error: null }),
+        insert: (row: unknown) => (inserts.push({ table, row }), (writing = true), chain),
+        single: () => Promise.resolve(answer()),
+        then: (resolve: (v: unknown) => void) => resolve(answer()),
       };
       return chain;
     },
@@ -35,76 +40,98 @@ function renderNew(db: () => Db) {
   render(<RouterProvider router={router} />);
 }
 
-const type = (name: string) =>
-  within(screen.getByRole("group", { name: "Type" })).getByRole("button", { name: new RegExp(name) });
+// The type tiles are in the header on phones and on the card on desktop; both work the same.
+const pickType = (label: string) =>
+  fireEvent.click(
+    within(screen.getAllByRole("radiogroup", { name: "Account type" })[0]!).getByRole("radio", {
+      name: new RegExp(label),
+    }),
+  );
 
 describe("New account", () => {
-  it("saves a short-term loan with its limit and SMS source, then goes to Accounts", async () => {
+  it("saves a loan with its SMS source and the amount owed as an opening balance, then goes to Accounts", async () => {
     const { db, inserts } = fakeDb();
     renderNew(db);
 
-    fireEvent.click(type("Loan"));
+    pickType("Loan");
     fireEvent.change(screen.getByRole("textbox", { name: "Name" }), { target: { value: "Fuliza" } });
-    fireEvent.click(screen.getByRole("button", { name: "Short term" }));
-    fireEvent.change(screen.getByRole("textbox", { name: "Limit (KES) · optional" }), {
-      target: { value: "5,000" },
+    fireEvent.click(screen.getByRole("button", { name: "phone" }));
+    fireEvent.change(screen.getByRole("textbox", { name: "Amount owed now" }), {
+      target: { value: "4,320" },
     });
+    fireEvent.change(screen.getByRole("textbox", { name: "Amount borrowed" }), {
+      target: { value: "6,000" },
+    });
+    fireEvent.click(screen.getByRole("radio", { name: "⚡ Short-term" }));
     fireEvent.click(
-      within(screen.getByRole("group", { name: "SMS matching" })).getByRole("button", { name: "Fuliza" }),
+      within(screen.getByRole("group", { name: "Sender" })).getByRole("button", { name: "Fuliza" }),
     );
-    expect(screen.getByRole("switch", { name: "Counts in net position" })).toHaveAttribute(
-      "aria-checked",
-      "true",
-    );
+    expect(screen.getByRole("checkbox", { name: "Count in net position" })).toBeChecked();
 
     fireEvent.click(screen.getByRole("button", { name: "Save account" }));
     expect(await screen.findByRole("heading", { name: "Accounts list" })).toBeInTheDocument();
     expect(inserts).toEqual([
-      expect.objectContaining({
-        name: "Fuliza",
-        kind: "loan",
-        debt_term: "short",
-        limit_cents: 500000,
-        counts_in_net: true,
-        sms_account_hint: "fuliza",
-        sms_sender: "MPESA",
-        sort_order: 4,
-      }),
+      {
+        table: "accounts",
+        row: expect.objectContaining({
+          name: "Fuliza",
+          emoji: "📲",
+          kind: "loan",
+          debt_term: "short",
+          original_cents: 600000,
+          counts_in_net: true,
+          sms_account_hint: "fuliza",
+          sort_order: 4,
+        }),
+      },
+      {
+        table: "transactions",
+        row: expect.objectContaining({ account_id: "new-account", kind: "opening", amount_cents: -432000 }),
+      },
     ]);
   });
 
   it("shows the fields of each type", () => {
     renderNew(fakeDb().db);
-    expect(screen.queryByRole("group", { name: "Debt term" })).not.toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Current balance" })).toBeInTheDocument();
+    expect(screen.queryByRole("radiogroup", { name: "Debt group" })).not.toBeInTheDocument();
 
-    fireEvent.click(type("Loan"));
-    expect(screen.getByRole("textbox", { name: "Borrowed (KES) · optional" })).toBeInTheDocument();
-    expect(screen.getByRole("switch", { name: "Counts in net position" })).toHaveAttribute(
-      "aria-checked",
-      "false",
-    );
-
-    fireEvent.click(type("Card"));
+    pickType("Card");
+    expect(screen.getByRole("textbox", { name: "Card limit" })).toBeInTheDocument();
     fireEvent.click(
-      within(screen.getByRole("group", { name: "SMS matching" })).getByRole("button", { name: "KCB card" }),
+      within(screen.getByRole("group", { name: "Sender" })).getByRole("button", { name: "KCB card" }),
     );
-    expect(screen.getByRole("textbox", { name: "Card ends in" })).toBeInTheDocument();
+    expect(screen.getByRole("textbox", { name: "Card ends with" })).toBeInTheDocument();
 
-    fireEvent.click(type("Cash"));
-    expect(screen.queryByRole("group", { name: "SMS matching" })).not.toBeInTheDocument();
+    pickType("Loan");
+    expect(screen.getByRole("checkbox", { name: "Count in net position" })).not.toBeChecked();
+
+    pickType("Cash");
+    expect(screen.queryByRole("region", { name: "Match SMS automatically" })).not.toBeInTheDocument();
   });
 
   it("refuses an SMS source another account already receives", async () => {
     const { db, inserts } = fakeDb();
     renderNew(db);
-    await waitFor(() => expect(screen.getByRole("textbox", { name: "Name" })).toBeInTheDocument());
 
     fireEvent.change(screen.getByRole("textbox", { name: "Name" }), { target: { value: "Phone 2" } });
     fireEvent.click(
-      within(screen.getByRole("group", { name: "SMS matching" })).getByRole("button", { name: "M-PESA" }),
+      within(screen.getByRole("group", { name: "Sender" })).getByRole("button", { name: "M-PESA" }),
     );
     fireEvent.click(screen.getByRole("button", { name: "Save account" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("M-PESA already receives these SMS");
     expect(inserts).toEqual([]);
+  });
+
+  it("says so when the account saved but its balance did not", async () => {
+    const { db } = fakeDb({ openingError: "network down" });
+    renderNew(db);
+
+    fireEvent.change(screen.getByRole("textbox", { name: "Name" }), { target: { value: "Bank" } });
+    fireEvent.change(screen.getByRole("textbox", { name: "Current balance" }), { target: { value: "100" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save account" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "The account was saved, but not its balance (network down)",
+    );
   });
 });
