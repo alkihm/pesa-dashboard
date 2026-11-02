@@ -60,6 +60,11 @@ export interface RowLook {
   review: boolean;
 }
 
+/** Only spending and income carry a category; transfers and adjustments are edited for their note only. */
+export function canCategorise(row: Pick<ActivityRow, "kind">) {
+  return row.kind === "spending" || row.kind === "income";
+}
+
 /** What a row shows for its category: "To review" wins, then the category, then the transaction kind. */
 export function rowLook(row: Pick<ActivityRow, "kind" | "needs_review" | "category">): RowLook {
   if (row.needs_review) return { label: "To review", emoji: "❓", review: true };

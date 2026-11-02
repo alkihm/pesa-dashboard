@@ -20,10 +20,12 @@ export interface ActivityQuery {
   pageSize?: number;
 }
 
-const COLUMNS = `id, occurred_at, amount_cents, kind, payee, note, channel, needs_review, transfer_id, parent_id,
-  original_currency, original_minor,
+// The SMS comes with each row so opening one ([2.6]) shows it at once; version guards edits against stale rows.
+export const COLUMNS = `id, occurred_at, amount_cents, kind, payee, note, channel, needs_review, transfer_id, parent_id,
+  original_currency, original_minor, source, version,
   account:accounts!inner(id, name, emoji),
-  category:categories(id, name, emoji, colour)`;
+  category:categories(id, name, emoji, colour),
+  sms:sms_messages(sender, body, received_at)`;
 
 export interface Search {
   /** Text to match in payee or note, with characters that break the filter syntax removed. */
@@ -69,6 +71,11 @@ function searchGroup({ text, amountCents }: Search) {
 
 function cursorGroup({ occurredAt, id }: Cursor) {
   return `or(occurred_at.lt."${occurredAt}",and(occurred_at.eq."${occurredAt}",id.lt.${id}))`;
+}
+
+/** One transaction by id, with the same columns as the list: the /activity/:id page. */
+export function transactionQuery(db: Db, id: string) {
+  return db.from("transactions").select(COLUMNS).eq("id", id).is("deleted_at", null).maybeSingle();
 }
 
 export type ActivityRow = NonNullable<Awaited<ReturnType<typeof activityQuery>>["data"]>[number];

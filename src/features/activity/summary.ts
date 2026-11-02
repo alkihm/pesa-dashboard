@@ -1,7 +1,7 @@
 // The parts of Activity above the list: this month's spending by category and how many rows wait for review.
 // Both are totals the database already keeps (category_month_totals) or counts, so they cost one small query each.
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { supabase, type Db } from "../../lib/supabase";
 import { monthStart } from "./format";
@@ -56,6 +56,7 @@ export function useActivitySummary(db: () => Db = supabase, now = new Date()) {
   const month = monthStart(now);
   const [byCategory, setByCategory] = useState<CategoryTotal[]>();
   const [reviewCount, setReviewCount] = useState<number>();
+  const [version, setVersion] = useState(0);
 
   useEffect(() => {
     let live = true;
@@ -66,7 +67,10 @@ export function useActivitySummary(db: () => Db = supabase, now = new Date()) {
     return () => {
       live = false;
     };
-  }, [db, month]);
+  }, [db, month, version]);
 
-  return { month, byCategory, reviewCount };
+  /** Fetches the totals again after an edit, so a new category shows in the month at once. */
+  const reload = useCallback(() => setVersion((v) => v + 1), []);
+
+  return { month, byCategory, reviewCount, reload };
 }

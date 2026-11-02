@@ -31,6 +31,8 @@ backups/
 *.sqlite
 *.db
 *.dump
+# Source code only: shared data hooks (no data files; the file-type rules above still apply)
+!src/lib/data/
 # Synthetic test fixtures are allowed only here
 !tests/fixtures/**/*.csv
 
