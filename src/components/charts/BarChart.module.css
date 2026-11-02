@@ -133,3 +133,33 @@
   margin-left: auto;
   padding-left: 12px;
 }
+
+.notes {
+  display: flex;
+  height: 16px;
+  line-height: 16px;
+  margin-bottom: 6px;
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+}
+
+.notes span {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.notes .good {
+  color: var(--tone-green-text);
+}
+
+.notes .bad {
+  color: var(--tone-amber-text);
+}
+
+/* Keeps the ticks level with the plot when the notes row sits above it (16px + 6px). */
+.axisNoted {
+  margin-top: 22px;
+}

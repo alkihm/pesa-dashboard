@@ -23,7 +23,7 @@ describe("app shell", () => {
     ["/activity", "Activity"],
     ["/activity/abc", "Transaction"],
     ["/transactions/new", "Add transaction"],
-    ["/month", "Month"],
+    ["/month", /^[A-Z][a-z]+ \d{4}/],
     ["/bills", "Bills & budget"],
     ["/review", "Review & reconcile"],
     ["/accounts", "Accounts"],
