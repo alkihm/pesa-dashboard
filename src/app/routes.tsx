@@ -4,6 +4,7 @@ import { ActivityScreen } from "@/features/activity/ActivityScreen";
 import { TransactionScreen } from "@/features/activity/TransactionScreen";
 import { RequireSession } from "@/features/auth/RequireSession";
 import { SignInScreen } from "@/features/auth/SignInScreen";
+import { CategoriesScreen, CategoryScreen } from "@/features/categories/CategoriesScreen";
 import { MonthScreen } from "@/features/month/MonthScreen";
 import { SettingsScreen } from "@/features/settings/SettingsScreen";
 import { AddTransactionScreen } from "@/features/transactions/AddTransactionScreen";
@@ -31,11 +32,9 @@ export const routes: RouteObject[] = [
       { path: "accounts/savings", element: <Placeholder title="Savings" issue="2.3" back="/accounts" /> },
       { path: "accounts/debt", element: <Placeholder title="Debt" issue="2.3" back="/accounts" /> },
       { path: "accounts/new", element: <NewAccountScreen /> },
-      { path: "categories", element: <Placeholder title="Categories" issue="2.8" back="/" /> },
-      {
-        path: "categories/new",
-        element: <Placeholder title="New category" issue="2.8" back="/categories" />,
-      },
+      { path: "categories", element: <CategoriesScreen /> },
+      { path: "categories/new", element: <CategoryScreen /> },
+      { path: "categories/:id", element: <CategoryScreen /> },
       { path: "settings", element: <SettingsScreen /> },
       { path: "report", element: <Placeholder title="Month report" issue="4.8" back="/month" /> },
       ...(import.meta.env.DEV
