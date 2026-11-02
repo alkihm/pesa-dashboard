@@ -1,17 +1,21 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 
 import { supabase } from "@/lib/supabase";
+import { pinApi, type PinApi } from "./pin";
 import { SessionContext, type AuthClient, type SessionState } from "./session";
 
 const defaultAuth = () => supabase().auth;
+const defaultPin = () => pinApi(supabase());
 
 // Reads the saved session once (it lives in this device's storage, so it works offline), then follows sign-in,
 // sign-out and token refreshes.
 export function SessionProvider({
   auth = defaultAuth,
+  pin = defaultPin,
   children,
 }: {
   auth?: () => AuthClient;
+  pin?: () => PinApi;
   children: ReactNode;
 }) {
   const [state, setState] = useState<SessionState>({ status: "loading" });
@@ -32,6 +36,6 @@ export function SessionProvider({
     };
   }, [auth]);
 
-  const value = useMemo(() => ({ state, auth }), [state, auth]);
+  const value = useMemo(() => ({ state, auth, pin }), [state, auth, pin]);
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }

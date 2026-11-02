@@ -4,11 +4,11 @@ import { Navigate, useSearchParams } from "react-router";
 import { Logo } from "@/app/shell/Logo";
 import { Button } from "@/components/Button";
 import { TextField } from "@/components/Field";
-import { safeNext, useSessionContext } from "./session";
+import { safeNext, signInWithGoogle, useSessionContext } from "./session";
 import styles from "./auth.module.css";
 
 // Google is the only way in. Dev builds also get an email form for the local stack's seed user, which has no
-// Google identity. The PIN unlock that follows sign-in comes in the second part of [2.1].
+// Google identity. After sign-in, PinGate asks for the PIN (or for one to be chosen).
 export function SignInScreen({ devForm = import.meta.env.DEV }: { devForm?: boolean }) {
   const { state, auth } = useSessionContext();
   const [params] = useSearchParams();
@@ -21,9 +21,7 @@ export function SignInScreen({ devForm = import.meta.env.DEV }: { devForm?: bool
   const google = async () => {
     setBusy(true);
     setError(undefined);
-    // Comes back to this screen with the session in the URL; the redirect above then opens `next`.
-    const redirectTo = `${window.location.origin}/sign-in?next=${encodeURIComponent(next)}`;
-    const { error } = await auth().signInWithOAuth({ provider: "google", options: { redirectTo } });
+    const { error } = await signInWithGoogle(auth(), next);
     if (error) {
       setError("Google sign-in did not start. Try again.");
       setBusy(false);

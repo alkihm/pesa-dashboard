@@ -1,0 +1,128 @@
+/* The "PIN sign-in · mobile" board: logo, title, hint, six dots, a 3 × 4 keypad, the reset link at the foot. */
+
+.page {
+  min-height: 100dvh;
+  box-sizing: border-box;
+  padding: 64px 28px 36px;
+  background: var(--color-bg);
+  color: var(--color-text);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.title {
+  margin: 22px 0 6px;
+  font-size: 24px;
+  font-weight: var(--font-weight-bold);
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+
+.hint,
+.alert {
+  margin: 0;
+  min-height: 1.5em;
+  font-size: 14px;
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.alert {
+  font-weight: var(--font-weight-semibold);
+  color: var(--tone-red-text);
+}
+
+.dots {
+  display: flex;
+  gap: 16px;
+  margin: 36px 0 44px;
+}
+
+.dot,
+.dotFilled {
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 2px solid var(--color-border-strong);
+}
+
+.dotFilled {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+}
+
+.keys {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px 22px;
+  width: 100%;
+  max-width: 300px;
+}
+
+.key,
+.ghostKey {
+  height: 64px;
+  border: 0;
+  border-radius: 20px;
+  font: inherit;
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+}
+
+.key {
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 26px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ghostKey {
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 14px;
+}
+
+.backKey {
+  font-size: 22px;
+}
+
+.key:disabled,
+.ghostKey:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.key:focus-visible,
+.ghostKey:focus-visible,
+.link:focus-visible {
+  outline: 2px solid var(--color-link);
+  outline-offset: 2px;
+}
+
+.footer {
+  margin-top: auto;
+  padding-top: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.link {
+  padding: 12px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-link);
+  cursor: pointer;
+}
+
+.note {
+  margin: 6px 0 0;
+  font-size: 12px;
+  text-align: center;
+  color: var(--color-text-muted);
+}

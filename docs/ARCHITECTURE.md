@@ -138,8 +138,10 @@ account's available amount until transactions with its `budget_item_id` spend it
 
 `settings` (one row): `review_interval_days` (default 3), `alerts` (jsonb switches), `theme`
 (`system` · `light` · `dark`), `loan_allocation_pct`.
-`pin_credentials`: `pin_hash`, `failed_attempts`, `locked_until`. No client policy at all — read and
-written only through the `verify_pin` and `set_pin` functions.
+`pin_credentials`: `pin_hash` (bcrypt), `failed_attempts`, `locked_until`. No client policy at all — read
+and written only through `pin_status`, `verify_pin` and `set_pin`. 5 wrong tries lock it for 15 minutes.
+Changing a PIN needs a sign-in in the last 10 minutes (the newest `amr` timestamp in the token), which is how
+"reset with Google" works. The app asks for the PIN once per tab, and not straight after a Google sign-in.
 `push_subscriptions`: `endpoint`, `keys`, `device_label`.
 
 ### Views
@@ -152,7 +154,7 @@ spending, fees, borrowed, repaid, saved per Nairobi month) and `category_month_t
 
 | Screen | Tables and views |
 |---|---|
-| PIN sign-in | Supabase auth (Google), `pin_credentials` via `verify_pin` |
+| PIN sign-in | Supabase auth (Google), `pin_credentials` via `pin_status`, `verify_pin`, `set_pin` |
 | Home · Overview | `account_balances`, `accounts`, `month_totals`, `category_month_totals`, `bill_months`, `settings.loan_allocation_pct` |
 | Month & compare | `month_totals`, `category_month_totals`, `transactions` |
 | Activity · edit categories | `transactions`, `sms_messages` (original text), `categories`, `payee_rules` ("always use this category") |
