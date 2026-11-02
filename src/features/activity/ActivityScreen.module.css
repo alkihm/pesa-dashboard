@@ -1,0 +1,183 @@
+/* Phone layout first; the desktop layout starts at 900px (as in the shell). */
+
+.page {
+  max-width: var(--shell-max-width);
+  margin: 0 auto;
+  padding: 0 var(--shell-gutter) 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Phones show the month summary above the list. */
+.side {
+  order: -1;
+}
+
+.phoneOnly {
+  display: block;
+}
+
+.desktopOnly {
+  display: none;
+}
+
+.headerButton {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  border: 1px solid var(--color-on-header-line);
+  background: transparent;
+  color: var(--color-on-header);
+  cursor: pointer;
+}
+
+.headerButton:hover {
+  background: var(--color-on-header-faint);
+}
+
+.add {
+  min-width: 44px;
+  height: 44px;
+  padding: 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 14px;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.headerButton:focus-visible,
+.add:focus-visible,
+.search:focus-visible,
+.moreButton:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.transactions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.heading {
+  display: none;
+  margin: 0;
+  font-size: 16px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.search {
+  display: none;
+  flex: 1 1 200px;
+  min-width: 0;
+  height: 44px;
+  padding: 0 14px;
+  border: 1.5px solid var(--color-line);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 14px;
+}
+
+.searchOpen {
+  display: block;
+}
+
+.status {
+  margin: 0;
+  padding: 12px 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.more {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0;
+}
+
+.moreButton {
+  height: 40px;
+  padding: 0 18px;
+  border: 1.5px solid var(--color-line);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+@media (min-width: 900px) {
+  .page {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    align-items: start;
+    gap: 16px;
+  }
+
+  .side {
+    order: 0;
+  }
+
+  .phoneOnly {
+    display: none;
+  }
+
+  .desktopOnly {
+    display: block;
+  }
+
+  .add .desktopOnly {
+    display: inline;
+  }
+
+  .transactions {
+    background: var(--color-surface);
+    border: 1px solid var(--color-line);
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-card);
+    padding: 22px;
+  }
+
+  .toolbar {
+    margin-bottom: 8px;
+  }
+
+  .heading {
+    display: block;
+    flex: 1 1 auto;
+  }
+
+  .search {
+    display: block;
+    flex: 0 1 260px;
+    height: 40px;
+    background: var(--color-sunk);
+  }
+
+  .add {
+    height: 40px;
+    border-radius: var(--radius-control);
+  }
+}

@@ -46,5 +46,7 @@ export default defineConfig({
     css: { include: [/tokens\.css/] },
     setupFiles: ["./src/test/setup.ts"],
     include: ["src/**/*.test.{ts,tsx}"],
+    // Same values locally and in CI, so no test reaches a real Supabase through a workspace's .env.local.
+    env: { VITE_SUPABASE_URL: "http://supabase.invalid", VITE_SUPABASE_ANON_KEY: "test-anon-key" },
   },
 });
