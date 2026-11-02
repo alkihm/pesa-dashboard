@@ -108,6 +108,26 @@ describe("New account", () => {
 
     pickType("Cash");
     expect(screen.queryByRole("region", { name: "Match SMS automatically" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("textbox", { name: "🎯 Goal · optional" })).not.toBeInTheDocument();
+  });
+
+  it("saves a savings account with its goal and lock date", async () => {
+    const { db, inserts } = fakeDb();
+    renderNew(db);
+
+    pickType("Savings");
+    fireEvent.change(screen.getByRole("textbox", { name: "Name" }), { target: { value: "M-Shwari Lock" } });
+    fireEvent.change(screen.getByRole("textbox", { name: "🎯 Goal · optional" }), {
+      target: { value: "300,000" },
+    });
+    fireEvent.change(screen.getByLabelText("🔒 Locked until"), { target: { value: "2027-01-15" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save account" }));
+
+    expect(await screen.findByRole("heading", { name: "Accounts list" })).toBeInTheDocument();
+    expect(inserts[0]).toEqual({
+      table: "accounts",
+      row: expect.objectContaining({ kind: "savings", goal_cents: 30000000, locked_until: "2027-01-15" }),
+    });
   });
 
   it("refuses an SMS source another account already receives", async () => {

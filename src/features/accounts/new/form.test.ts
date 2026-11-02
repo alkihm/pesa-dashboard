@@ -124,6 +124,8 @@ describe("buildAccount and buildOpening", () => {
       limit_cents: null,
       original_cents: 600000,
       due_day: 5,
+      goal_cents: null,
+      locked_until: null,
       sms_account_hint: "fuliza",
       sms_sender: "MPESA",
       sort_order: 8,
@@ -153,6 +155,19 @@ describe("buildAccount and buildOpening", () => {
       sms_account_hint: null,
       sort_order: 1,
     });
+  });
+
+  it("keeps a goal and lock date on savings only", () => {
+    const savings = form({ kind: "savings", name: "Sacco", goal: "300,000", lockedUntil: "2027-01-15" });
+    expect(problem(savings, [])).toBeUndefined();
+    expect(buildAccount(savings, [])).toMatchObject({ goal_cents: 30000000, locked_until: "2027-01-15" });
+    expect(problem({ ...savings, goal: "0" }, [])).toBe("The goal must be an amount above zero.");
+    // Left over from before a type change, they are dropped: the database refuses them on other kinds.
+    expect(buildAccount({ ...savings, kind: "bank" }, [])).toMatchObject({
+      goal_cents: null,
+      locked_until: null,
+    });
+    expect(withKind(savings, "bank")).toMatchObject({ goal: "", lockedUntil: "" });
   });
 
   it("makes no opening row without a balance, and a positive one for money held", () => {
