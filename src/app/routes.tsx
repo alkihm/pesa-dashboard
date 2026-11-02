@@ -1,4 +1,5 @@
 import type { RouteObject } from "react-router";
+import { NewAccountScreen } from "@/features/accounts/new/NewAccountScreen";
 import { ActivityScreen } from "@/features/activity/ActivityScreen";
 import { TransactionScreen } from "@/features/activity/TransactionScreen";
 import { RequireSession } from "@/features/auth/RequireSession";
@@ -28,7 +29,7 @@ export const routes: RouteObject[] = [
       { path: "accounts", element: <Placeholder title="Accounts" issue="2.3" back="/" /> },
       { path: "accounts/savings", element: <Placeholder title="Savings" issue="2.3" back="/accounts" /> },
       { path: "accounts/debt", element: <Placeholder title="Debt" issue="2.3" back="/accounts" /> },
-      { path: "accounts/new", element: <Placeholder title="New account" issue="2.9" back="/accounts" /> },
+      { path: "accounts/new", element: <NewAccountScreen /> },
       { path: "categories", element: <Placeholder title="Categories" issue="2.8" back="/" /> },
       {
         path: "categories/new",
