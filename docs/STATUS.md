@@ -2,7 +2,7 @@
 
 The handover note. Read it at the start of every session; update it when something important changes.
 
-_Last updated: 2026-11-01 by Alfie_
+_Last updated: 2026-11-02 by Alfie_
 
 ## Where things stand
 
@@ -16,7 +16,14 @@ _Last updated: 2026-11-01 by Alfie_
     screen), data model.
   - **M1 Data & intake — done (9/9).** Schema, row-level security, SMS parser, intake function, Shortcut, balance
     snapshots, payee rules, history import (D-012) and nightly Sheet backup (D-013).
-  - **M2 Core screens — not started.**
+  - **M2 Core screens — 6/9.** Done: [2.1] sign-in with Google and PIN, offline PIN (D-014); [2.4] Month;
+    [2.5] Activity; [2.6] transaction detail (SMS, category, note, "always for this payee", `/activity/:id`);
+    [2.7] add transaction (form, paste an SMS, unread SMS list); [2.9] new account (SMS matching, opening balance,
+    savings goal and lock date). Open, all Hydracore: [2.2] Overview (#20), [2.3] Accounts (#21), [2.8] Categories
+    (#26, PR #91).
+- **Latest migration:** `20261102010000_savings_goal` (`accounts.goal_cents`, `locked_until`, also in
+  `account_balances`). Applied to the shared local database and pushed to the dev cloud project. The db-migration
+  slot is free.
 - **Intake live on the dev cloud project:** the iPhone Shortcut posts to it alongside the Sheet ([1.6], steps in
   [SHORTCUT.md](SHORTCUT.md)).
 - **Dev cloud data:** the old ledgers (2020–2026) are imported — about 20,600 transactions, 3,823 flagged for review.
@@ -60,12 +67,23 @@ Install on the iPhone from pesa-dev in Safari (Share → Add to Home Screen). Th
 
 | Laptop | Next issues |
 |---|---|
-| Hydracore | M2: [2.1] sign-in, Google + PIN (#19) → [2.2] Overview and Home (#20) → [2.4] Month (#22) → [2.8] Categories (#26) |
-| Alfie | M2: [2.5] Activity (#23) → [2.6] Transaction detail (#24) → [2.7] Add transaction (#25) — after [2.1] lands the Supabase client and session |
+| Hydracore | M2: [2.8] Categories (#26, PR #91) → [2.3] Accounts (#21) → [2.2] Overview and Home (#20). Then M3: [3.6] Category budgets (#33), [3.7] Net position and net worth (#34) |
+| Alfie | M3 bills: [3.1] Recurring bills (#28) → [3.2] Mark bills paid from SMS (#29) → [3.3] Pay, skip and undo (#30) → [3.4] Budget items with approval (#31) → [3.5] Loan repayment from income (#32) |
 
-The M2 split above is **confirmed by the owner** (2026-11-01). [2.3] Accounts (#21) and [2.9] New account (#27)
-go to whichever laptop frees up first. The shared Supabase client is `src/lib/supabase.ts` (Alfie, ahead of [2.1]);
-[2.1] adds sign-in and the session on top of it.
+The **M3 split is proposed by Alfie (2026-11-02), not yet confirmed by the owner.** Bills build on the SMS intake
+(Alfie's M1 work); budgets and net position build on Hydracore's Categories and Overview. Nobody starts an M3 issue
+until the owner confirms in progress/NOTES.md.
+
+Shared pieces from M2 to build on:
+- **Supabase:** one client, `src/lib/supabase.ts`. Every screen sits behind the session and PIN gate ([2.1]).
+- **Data hooks** in `src/lib/data/`: `useCategories` (Alfie), `useAccounts` (Hydracore). `.gitignore` has a
+  `!src/lib/data/` exception because the `data/` rule for real ledgers matched it.
+- **Transactions:** `activityQuery` (optional `range`) in `src/features/activity/query.ts`. `TransactionTable` and
+  `TransactionList` are reusable, read-only without their editing props. A row opens at `/activity/:id`.
+- **New account card:** `NewAccountCard` from `src/features/accounts/new/NewAccountScreen.tsx`, for the Accounts page.
+- **Saving several rows at once:** pass `{ defaultToNull: false }` to `insert`, or fields some rows leave out become
+  null (`needs_review` is not null). Transfer legs must be inserted together, because the database refuses a lone leg.
+- **Tests:** vitest sets a dummy Supabase env (vite.config.ts), so tests never read a workspace's `.env.local`.
 
 Building a screen: replace its `Placeholder` in `src/app/routes.tsx` with a screen from `src/features/<feature>/`,
 render `PageHeader` at the top, build from `src/components/` (see CLAUDE.md), format money with `src/lib/money.ts`.
