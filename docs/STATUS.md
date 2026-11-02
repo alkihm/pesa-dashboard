@@ -2,7 +2,7 @@
 
 The handover note. Read it at the start of every session; update it when something important changes.
 
-_Last updated: 2026-11-01 by Hydracore_
+_Last updated: 2026-11-01 by Alfie_
 
 ## Where things stand
 
@@ -14,12 +14,16 @@ _Last updated: 2026-11-01 by Hydracore_
   - **M0 Foundation — done (9/9).** Scaffold, CI, Supabase setup, Vercel hosting, design tokens and category palette,
     app shell with every route, shared components and charts, PWA (installs, opens offline, reopens on the last
     screen), data model.
-  - **M1 Data & intake — 7/9.** Schema, row-level security, SMS parser, intake function, Shortcut, balance snapshots
-    and payee rules merged (Alfie). Open: [1.3] history import (#12), [1.7] nightly Sheet backup (#16).
+  - **M1 Data & intake — done (9/9).** Schema, row-level security, SMS parser, intake function, Shortcut, balance
+    snapshots, payee rules, history import (D-012) and nightly Sheet backup (D-013).
   - **M2 Core screens — not started.**
 - **Intake live on the dev cloud project:** the iPhone Shortcut posts to it alongside the Sheet ([1.6], steps in
-  [SHORTCUT.md](SHORTCUT.md)). The dev project has no opening balances yet, so its balances do not reconcile until
-  those are entered or history is imported.
+  [SHORTCUT.md](SHORTCUT.md)).
+- **Dev cloud data:** the old ledgers (2020–2026) are imported — about 20,600 transactions, 3,823 flagged for review.
+  No opening balances yet, so historic balances do not reconcile until the owner enters them. **Owner: test on dev
+  only for now — do not import into production** until they say so.
+- **Sheet backup live on dev:** pg_cron runs `sheet-backup` at 23:30 Nairobi time into the "Pesa Dashboard backup"
+  Sheet; each run is logged in `backup_runs` (for Settings). Secrets in `private/env/` on the server.
 - **Toolchain:** Node **24** LTS (`.nvmrc`, `engines: 24.x`, #74), pnpm 9.15.0, GitHub CLI,
   Supabase CLI 2.20.5 on the server. After pulling #74, run `nvm use && pnpm install` once in a workspace.
 - **Supabase:** cloud projects `pesa-dashboard-dev` and `pesa-dashboard-prod` (Frankfurt); refs and keys in
@@ -57,10 +61,11 @@ Install on the iPhone from pesa-dev in Safari (Share → Add to Home Screen). Th
 | Laptop | Next issues |
 |---|---|
 | Hydracore | M2: [2.1] sign-in, Google + PIN (#19) → [2.2] Overview and Home (#20) → [2.4] Month (#22) → [2.8] Categories (#26) |
-| Alfie | M1: [1.3] history import (#12, prod only) → [1.7] Sheet backup (#16); then M2 [2.5] Activity (#23) → [2.6] Transaction detail (#24) → [2.7] Add transaction (#25) |
+| Alfie | M2: [2.5] Activity (#23) → [2.6] Transaction detail (#24) → [2.7] Add transaction (#25) — after [2.1] lands the Supabase client and session |
 
-The M2 split is a proposal — confirm or swap at the start of the next session. [2.3] Accounts (#21) and
-[2.9] New account (#27) go to whichever laptop frees up first.
+The M2 split above is **confirmed by the owner** (2026-11-01). [2.3] Accounts (#21) and [2.9] New account (#27)
+go to whichever laptop frees up first. The shared Supabase client is `src/lib/supabase.ts` (Alfie, ahead of [2.1]);
+[2.1] adds sign-in and the session on top of it.
 
 Building a screen: replace its `Placeholder` in `src/app/routes.tsx` with a screen from `src/features/<feature>/`,
 render `PageHeader` at the top, build from `src/components/` (see CLAUDE.md), format money with `src/lib/money.ts`.
@@ -72,8 +77,8 @@ never to the repo or the local database.
 - The local Supabase database (port 54322, password `postgres`) and API (54321) listen on all interfaces —
   the CLI has no bind setting. The API must stay reachable for phone testing; the database port should be
   firewalled to localhost on the server (owner).
-- Production deploy of the database: when and how migrations and the intake function reach the prod project
-  (before [2.1]/[2.2] read real data).
+- Production deploy of the database: when and how migrations, the intake and sheet-backup functions and the
+  history import reach the prod project (before [2.1]/[2.2] read real data).
 
 ## Owner to-dos outside the repo
 
