@@ -185,6 +185,23 @@ function Fields({ state }: { state: NewAccount }) {
         </>
       )}
 
+      {form.kind === "savings" && (
+        <div className={styles.row}>
+          <NumberField
+            label="🎯 Goal · optional"
+            placeholder="KES 0"
+            value={form.goal}
+            onChange={(e) => set({ goal: e.target.value })}
+          />
+          <TextField
+            label="🔒 Locked until"
+            type="date"
+            value={form.lockedUntil}
+            onChange={(e) => set({ lockedUntil: e.target.value })}
+          />
+        </div>
+      )}
+
       {sources.length > 0 && (
         <section aria-label="Match SMS automatically" className={styles.sms}>
           <h3 className={styles.smsTitle}>📩 Match SMS automatically</h3>

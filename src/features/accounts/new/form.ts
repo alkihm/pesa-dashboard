@@ -79,6 +79,9 @@ export interface Form {
   /** Card limit (cards) or amount borrowed (loans), as typed. */
   limit: string;
   dueDay: string;
+  /** Savings only: the goal, as typed, and the day the money unlocks ("2027-01-15"). */
+  goal: string;
+  lockedUntil: string;
   /** "" for no SMS matching. */
   source: string;
   last4: string;
@@ -95,6 +98,8 @@ export function emptyForm(kind: Kind = "wallet"): Form {
     debtTerm: kind === "card" ? "short" : kind === "loan" ? "long" : null,
     limit: "",
     dueDay: "",
+    goal: "",
+    lockedUntil: "",
     source: "",
     last4: "",
   };
@@ -163,6 +168,11 @@ export function problem(form: Form, existing: ExistingAccount[]): string | undef
       return "The due day is a day of the month, 1 to 31.";
     }
   }
+  if (form.kind === "savings") {
+    if (form.goal.trim() && !amountCents(form.goal)) return "The goal must be an amount above zero.";
+    if (form.lockedUntil && !/^\d{4}-\d{2}-\d{2}$/.test(form.lockedUntil))
+      return "Choose the day it unlocks.";
+  }
   if (form.source === "kcb-card" && !/^\d{4}$/.test(form.last4.trim()))
     return "Enter the last four digits of the card.";
   const match = hintFor(form);
@@ -176,6 +186,7 @@ export type AccountInsert = Database["public"]["Tables"]["accounts"]["Insert"];
 
 export function buildAccount(form: Form, existing: ExistingAccount[]): AccountInsert {
   const debt = isDebt(form.kind);
+  const savings = form.kind === "savings";
   const limit = debt && form.limit.trim() ? amountCents(form.limit)! : null;
   const match = hintFor(form);
   return {
@@ -187,6 +198,9 @@ export function buildAccount(form: Form, existing: ExistingAccount[]): AccountIn
     limit_cents: form.kind === "card" ? limit : null,
     original_cents: form.kind === "loan" ? limit : null,
     due_day: debt && form.dueDay.trim() ? Number(form.dueDay.trim()) : null,
+    // The database allows these on savings accounts only (accounts_goal_for_savings).
+    goal_cents: savings && form.goal.trim() ? amountCents(form.goal)! : null,
+    locked_until: savings && form.lockedUntil ? form.lockedUntil : null,
     sms_account_hint: match?.hint ?? null,
     sms_sender: match?.sender ?? null,
     sort_order: Math.max(0, ...existing.map((a) => a.sort_order)) + 1,
