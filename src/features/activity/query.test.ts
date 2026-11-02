@@ -5,8 +5,7 @@ import { activityQuery, nextCursor, parseSearch, type ActivityRow } from "./quer
 
 // A client that is never called: the tests read the URL a query would request.
 const db = createClient<Database>("http://127.0.0.1:54321", "test-anon-key");
-const params = (q: ReturnType<typeof activityQuery>) =>
-  (q as unknown as { url: URL }).url.searchParams;
+const params = (q: ReturnType<typeof activityQuery>) => (q as unknown as { url: URL }).url.searchParams;
 
 describe("parseSearch", () => {
   it("reads amounts with commas, cents or a KES prefix", () => {
@@ -59,7 +58,10 @@ describe("activityQuery", () => {
 });
 
 describe("nextCursor", () => {
-  const rows = [{ id: "a", occurred_at: "t2" }, { id: "b", occurred_at: "t1" }] as ActivityRow[];
+  const rows = [
+    { id: "a", occurred_at: "t2" },
+    { id: "b", occurred_at: "t1" },
+  ] as ActivityRow[];
 
   it("continues from the last row of a full page", () => {
     expect(nextCursor(rows, 2)).toEqual({ occurredAt: "t1", id: "b" });

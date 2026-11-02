@@ -31,7 +31,10 @@ function fakeDb(pages: Record<string, { id: string; occurred_at: string }[]>) {
 }
 
 const rows = (n: number, prefix = "r") =>
-  Array.from({ length: n }, (_, i) => ({ id: `${prefix}${i}`, occurred_at: `2026-10-${String(30 - i).padStart(2, "0")}` }));
+  Array.from({ length: n }, (_, i) => ({
+    id: `${prefix}${i}`,
+    occurred_at: `2026-10-${String(30 - i).padStart(2, "0")}`,
+  }));
 
 describe("useActivity", () => {
   it("loads the first page, then more from where it stopped", async () => {

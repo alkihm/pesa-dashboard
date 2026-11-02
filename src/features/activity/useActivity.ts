@@ -71,7 +71,13 @@ export function useActivity(db: () => Db = supabase) {
   };
 }
 
-function merge(prev: Result | undefined, query: Query, from: Cursor | undefined, data: ActivityRow[], error?: string) {
+function merge(
+  prev: Result | undefined,
+  query: Query,
+  from: Cursor | undefined,
+  data: ActivityRow[],
+  error?: string,
+) {
   const same = prev?.query === query ? prev : undefined;
   if (from && !same) return prev; // a "load more" for a query that has since changed
   if (error) return { query, rows: same?.rows ?? [], cursor: same?.cursor, error };

@@ -33,8 +33,14 @@ export interface Search {
 }
 
 export function parseSearch(raw: string): Search {
-  const text = raw.replace(/[,()"\\%*]/g, " ").replace(/\s+/g, " ").trim();
-  const number = raw.trim().replace(/^(kes|ksh)\s*/i, "").replace(/,/g, "");
+  const text = raw
+    .replace(/[,()"\\%*]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  const number = raw
+    .trim()
+    .replace(/^(kes|ksh)\s*/i, "")
+    .replace(/,/g, "");
   const amountCents = /^\d+(\.\d{1,2})?$/.test(number) ? Math.round(Number(number) * 100) : undefined;
   return amountCents ? { text, amountCents } : { text };
 }
