@@ -2,6 +2,7 @@ import { act, fireEvent, render, screen } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { routes } from "@/app/routes";
 import { fakeAuth, fakeSession } from "@/test/fakeAuth";
+import { fakePin } from "@/test/fakePin";
 import { SessionProvider } from "./SessionProvider";
 import { safeNext } from "./session";
 import { SignInScreen } from "./SignInScreen";
@@ -12,7 +13,7 @@ function renderApp(path: string, auth: ReturnType<typeof fakeAuth>, devForm = fa
   );
   const router = createMemoryRouter(withForm, { initialEntries: [path] });
   render(
-    <SessionProvider auth={() => auth.client}>
+    <SessionProvider auth={() => auth.client} pin={() => fakePin().api}>
       <RouterProvider router={router} />
     </SessionProvider>,
   );

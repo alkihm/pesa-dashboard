@@ -3,13 +3,14 @@ import { render, screen, within } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { SessionProvider } from "@/features/auth/SessionProvider";
 import { fakeAuth, fakeSession } from "@/test/fakeAuth";
+import { fakePin } from "@/test/fakePin";
 import { routes } from "./routes";
 
 function renderAt(path: string, session: Session | null = fakeSession()) {
   const router = createMemoryRouter(routes, { initialEntries: [path] });
   const { client } = fakeAuth(session);
   render(
-    <SessionProvider auth={() => client}>
+    <SessionProvider auth={() => client} pin={() => fakePin().api}>
       <RouterProvider router={router} />
     </SessionProvider>,
   );

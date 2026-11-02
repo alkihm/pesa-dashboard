@@ -2,10 +2,12 @@ import type { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router";
 
 import { Logo } from "@/app/shell/Logo";
+import { PinGate } from "./PinGate";
 import { useSession } from "./session";
 import styles from "./auth.module.css";
 
-// Every screen except sign-in sits behind this: no session, no data. Screens can assume a signed-in user.
+// Every screen except sign-in sits behind this: no session, no data. Then PinGate asks for the PIN. Screens
+// can assume a signed-in, unlocked user.
 export function RequireSession({ children }: { children: ReactNode }) {
   const state = useSession();
   const location = useLocation();
@@ -24,5 +26,5 @@ export function RequireSession({ children }: { children: ReactNode }) {
     return <Navigate to={to} replace />;
   }
 
-  return children;
+  return <PinGate key={state.session.user.id}>{children}</PinGate>;
 }

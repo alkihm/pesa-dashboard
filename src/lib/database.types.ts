@@ -1023,16 +1023,46 @@ export type Database = {
         };
         Returns: Json;
       };
+      pin_recent_sign_in: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
+      };
+      pin_status: {
+        Args: Record<PropertyKey, never>;
+        Returns: Database["public"]["CompositeTypes"]["pin_state"];
+      };
       run_sheet_backup: {
         Args: Record<PropertyKey, never>;
         Returns: number;
+      };
+      set_pin: {
+        Args: {
+          p_pin: string;
+        };
+        Returns: undefined;
+      };
+      verify_pin: {
+        Args: {
+          p_pin: string;
+        };
+        Returns: Database["public"]["CompositeTypes"]["pin_check"];
       };
     };
     Enums: {
       [_ in never]: never;
     };
     CompositeTypes: {
-      [_ in never]: never;
+      pin_check: {
+        ok: boolean | null;
+        tries_left: number | null;
+        locked_until: string | null;
+      };
+      pin_state: {
+        has_pin: boolean | null;
+        tries_left: number | null;
+        locked_until: string | null;
+        recent_sign_in: boolean | null;
+      };
     };
   };
 };

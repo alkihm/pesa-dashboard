@@ -4,6 +4,7 @@ import { createContext, useContext } from "react";
 import type { Session } from "@supabase/supabase-js";
 
 import type { Db } from "@/lib/supabase";
+import type { PinApi } from "./pin";
 
 export type SessionState =
   { status: "loading" } | { status: "signed-out" } | { status: "signed-in"; session: Session };
@@ -17,6 +18,7 @@ export type AuthClient = Pick<
 export interface SessionContextValue {
   state: SessionState;
   auth: () => AuthClient;
+  pin: () => PinApi;
 }
 
 export const SessionContext = createContext<SessionContextValue | null>(null);
@@ -34,4 +36,10 @@ export function useSession(): SessionState {
 /** Only same-site paths, so a crafted ?next= cannot send the browser elsewhere after sign-in. */
 export function safeNext(next: string | null | undefined) {
   return next?.startsWith("/") && !next.startsWith("//") && !next.startsWith("/sign-in") ? next : "/";
+}
+
+/** Leaves for Google; it comes back to the sign-in screen with the session in the URL, which then opens `next`. */
+export function signInWithGoogle(auth: AuthClient, next: string) {
+  const redirectTo = `${window.location.origin}/sign-in?next=${encodeURIComponent(next)}`;
+  return auth.signInWithOAuth({ provider: "google", options: { redirectTo } });
 }
