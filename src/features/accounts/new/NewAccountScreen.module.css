@@ -1,0 +1,209 @@
+/* Phone layout first; the desktop layout starts at 900px (as in the shell). */
+
+.page {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 0 var(--shell-gutter) 24px;
+}
+
+.phoneOnly {
+  display: block;
+}
+
+.desktopOnly {
+  display: none;
+}
+
+.card,
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+}
+
+/* Account type tiles: on the header (phones) or on the card. */
+.kinds {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.kind {
+  min-height: 60px;
+  padding: 6px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border-radius: 14px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.kind:focus-visible,
+.icon:focus-visible,
+.term:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.kindEmoji {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.header .kind {
+  border: 1.5px solid var(--color-on-header-line);
+  background: var(--color-on-header-faint);
+  color: var(--color-on-header);
+}
+
+.header .kind[aria-checked="true"] {
+  border-color: var(--color-accent);
+  background: var(--color-header-selected);
+}
+
+.surface .kind {
+  border: 1.5px solid var(--color-line);
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+.surface .kind[aria-checked="true"] {
+  border-color: var(--color-hero);
+  background: var(--color-hero);
+  color: var(--color-on-header);
+}
+
+.fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.icons {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 4px;
+  padding: 6px;
+  border: 1.5px solid var(--color-line);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+}
+
+.icon {
+  aspect-ratio: 1;
+  min-height: 36px;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  font-size: 19px;
+  cursor: pointer;
+}
+
+.icon[aria-pressed="true"] {
+  border-color: var(--color-accent);
+  background: var(--tone-green-bg);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.terms {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.term {
+  height: 44px;
+  border: 1.5px solid var(--color-line);
+  border-radius: 12px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.term[aria-checked="true"] {
+  border-color: var(--color-hero);
+  background: var(--color-hero);
+  color: var(--color-on-header);
+}
+
+.sms {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid var(--color-line);
+  border-radius: 18px;
+  background: var(--color-surface);
+}
+
+.smsTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.check input {
+  width: 20px;
+  height: 20px;
+  accent-color: var(--color-accent);
+}
+
+.error {
+  margin: 0;
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--tone-red-text);
+}
+
+@media (min-width: 900px) {
+  .phoneOnly {
+    display: none;
+  }
+
+  .desktopOnly {
+    display: block;
+  }
+}
