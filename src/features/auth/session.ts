@@ -18,7 +18,7 @@ export type AuthClient = Pick<
 export interface SessionContextValue {
   state: SessionState;
   auth: () => AuthClient;
-  pin: () => PinApi;
+  pin: (userId: string) => PinApi;
 }
 
 export const SessionContext = createContext<SessionContextValue | null>(null);

@@ -152,6 +152,19 @@ describe("PIN unlock", () => {
     expect(wantsReset()).toBe(false);
   });
 
+  it("says when the PIN is being checked on this device", async () => {
+    const pin = fakePin({ recentSignIn: false });
+    pin.mock.status.mockResolvedValueOnce({
+      hasPin: true,
+      triesLeft: 5,
+      lockedUntil: null,
+      recentSignIn: false,
+      offline: true,
+    });
+    renderGate(pin);
+    expect(await screen.findByText("🔒 Offline · checked on this device")).toBeInTheDocument();
+  });
+
   it("says when the PIN cannot be checked, and tries again", async () => {
     const pin = fakePin({ recentSignIn: true });
     pin.mock.status.mockRejectedValueOnce(new Error("offline"));

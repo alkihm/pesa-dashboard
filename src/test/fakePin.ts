@@ -2,7 +2,7 @@
 
 import { vi } from "vitest";
 
-import type { PinApi } from "@/features/auth/pin";
+import type { PinApi, PinState } from "@/features/auth/pin";
 
 interface FakePinOptions {
   /** The PIN already set, or null for none. */
@@ -24,7 +24,7 @@ export function fakePin({
   const locked = () => lock !== null && lock.getTime() > Date.now();
 
   const api = {
-    status: vi.fn(async () => ({
+    status: vi.fn(async (): Promise<PinState> => ({
       hasPin: current !== null,
       triesLeft: locked() ? 0 : tries,
       lockedUntil: locked() ? lock : null,

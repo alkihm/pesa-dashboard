@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { useLocation } from "react-router";
 
 import { Logo } from "@/app/shell/Logo";
@@ -27,10 +27,11 @@ type Stage =
 const time = new Intl.DateTimeFormat("en-GB", { hour: "2-digit", minute: "2-digit" });
 
 // After sign-in: no PIN yet → choose one. Just signed in with Google → straight in (or choose a new PIN after
-// "Forgot PIN?"). Otherwise → enter the PIN. The database checks it, so this needs a connection.
+// "Forgot PIN?"). Otherwise → enter the PIN. The database checks it; offline, this device does (D-014).
 export function PinGate({ children }: { children: ReactNode }) {
   const { state, pin } = useSessionContext();
   const userId = state.status === "signed-in" ? state.session.user.id : "";
+  const api = useMemo(() => pin(userId), [pin, userId]);
   const [stage, setStage] = useState<Stage>(() =>
     isUnlocked(userId) ? { name: "unlocked" } : { name: "checking" },
   );
@@ -44,7 +45,7 @@ export function PinGate({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (stage.name !== "checking") return;
     let active = true;
-    pin()
+    api
       .status()
       .then((s) => {
         if (!active) return;
@@ -57,7 +58,7 @@ export function PinGate({ children }: { children: ReactNode }) {
     return () => {
       active = false;
     };
-  }, [stage.name, pin, unlock]);
+  }, [stage.name, api, unlock]);
 
   switch (stage.name) {
     case "unlocked":
@@ -74,7 +75,9 @@ export function PinGate({ children }: { children: ReactNode }) {
           <div className={authStyles.panel}>
             <Logo size={72} />
             <h1 className={authStyles.title}>Can’t check your PIN</h1>
-            <p className={authStyles.text}>The PIN is checked online. Connect and try again.</p>
+            <p className={authStyles.text}>
+              Connect once to unlock. After that, this device can check your PIN offline too.
+            </p>
             <Button block onClick={() => setStage({ name: "checking" })}>
               Try again
             </Button>
@@ -85,13 +88,13 @@ export function PinGate({ children }: { children: ReactNode }) {
       return (
         <EnterPin
           initial={stage.state}
-          pin={pin}
+          api={api}
           onUnlock={unlock}
           onLockOver={() => setStage({ name: "checking" })}
         />
       );
     case "choose":
-      return <ChoosePin reset={stage.reset} pin={pin} onChosen={unlock} />;
+      return <ChoosePin reset={stage.reset} api={api} onChosen={unlock} />;
   }
 }
 
@@ -99,12 +102,12 @@ type Problem = "wrong" | "offline" | "google" | null;
 
 function EnterPin({
   initial,
-  pin,
+  api,
   onUnlock,
   onLockOver,
 }: {
   initial: PinState;
-  pin: () => PinApi;
+  api: PinApi;
   onUnlock: () => void;
   onLockOver: () => void;
 }) {
@@ -123,7 +126,7 @@ function EnterPin({
 
   const check = async (value: string) => {
     try {
-      const result = await pin().verify(value);
+      const result = await api.verify(value);
       if (result.ok) return onUnlock();
       setTriesLeft(result.triesLeft);
       setLockedUntil(result.lockedUntil);
@@ -151,7 +154,9 @@ function EnterPin({
         ? "Could not check the PIN. Check your connection."
         : problem === "google"
           ? "Google sign-in did not start. Try again."
-          : "🔒 Locked";
+          : initial.offline
+            ? "🔒 Offline · checked on this device"
+            : "🔒 Locked";
 
   return (
     <PinPad
@@ -172,7 +177,7 @@ function EnterPin({
   );
 }
 
-function ChoosePin({ reset, pin, onChosen }: { reset: boolean; pin: () => PinApi; onChosen: () => void }) {
+function ChoosePin({ reset, api, onChosen }: { reset: boolean; api: PinApi; onChosen: () => void }) {
   const [first, setFirst] = useState<string | null>(null);
   const [problem, setProblem] = useState<"mismatch" | "save" | null>(null);
 
@@ -185,7 +190,7 @@ function ChoosePin({ reset, pin, onChosen }: { reset: boolean; pin: () => PinApi
     setFirst(null);
     if (value !== first) return setProblem("mismatch");
     try {
-      await pin().set(value);
+      await api.set(value);
       onChosen();
     } catch {
       setProblem("save");
@@ -199,7 +204,7 @@ function ChoosePin({ reset, pin, onChosen }: { reset: boolean; pin: () => PinApi
         ? "Those did not match. Choose a PIN again."
         : problem === "save"
           ? "Could not save the PIN. Try again."
-          : "6 digits, for quick unlock";
+          : "6 digits · not your M-PESA or bank PIN";
 
   return (
     <PinPad
