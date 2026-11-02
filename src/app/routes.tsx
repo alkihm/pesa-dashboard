@@ -3,6 +3,7 @@ import { ActivityScreen } from "@/features/activity/ActivityScreen";
 import { TransactionScreen } from "@/features/activity/TransactionScreen";
 import { RequireSession } from "@/features/auth/RequireSession";
 import { SignInScreen } from "@/features/auth/SignInScreen";
+import { MonthScreen } from "@/features/month/MonthScreen";
 import { SettingsScreen } from "@/features/settings/SettingsScreen";
 import { AddTransactionScreen } from "@/features/transactions/AddTransactionScreen";
 import { AppShell } from "./shell/AppShell";
@@ -22,7 +23,7 @@ export const routes: RouteObject[] = [
       { path: "activity", element: <ActivityScreen /> },
       { path: "activity/:id", element: <TransactionScreen /> },
       { path: "transactions/new", element: <AddTransactionScreen /> },
-      { path: "month", element: <Placeholder title="Month" issue="2.4" /> },
+      { path: "month", element: <MonthScreen /> },
       { path: "bills", element: <Placeholder title="Bills & budget" issue="3.1" /> },
       { path: "review", element: <Placeholder title="Review & reconcile" issue="4.1" /> },
       { path: "accounts", element: <Placeholder title="Accounts" issue="2.3" back="/" /> },

@@ -21,6 +21,8 @@ interface BarChartProps {
   /** Axis labels; defaults to formatValue. */
   formatTick?: (value: number) => string;
   height?: number;
+  /** A short line above each group, e.g. the month's net: "+26.5k". Shown, not read: put it in the title. */
+  notes?: { text: string; tone?: "good" | "bad" }[];
 }
 
 /** Grouped bars on one axis: one group per category, one bar per series. */
@@ -32,6 +34,7 @@ export function BarChart({
   formatValue,
   formatTick = formatValue,
   height = 220,
+  notes,
 }: BarChartProps) {
   const [active, setActive] = useState<number | null>(null);
   const top = niceMax(Math.max(0, ...values.flat()));
@@ -51,7 +54,7 @@ export function BarChart({
       )}
 
       <div className={styles.frame} aria-hidden="true">
-        <div className={styles.axis} style={{ height }}>
+        <div className={notes ? `${styles.axis} ${styles.axisNoted}` : styles.axis} style={{ height }}>
           {ticks.map((t) => (
             <span key={t} style={{ bottom: `${(t / top) * 100}%` }}>
               {formatTick(t)}
@@ -60,6 +63,15 @@ export function BarChart({
         </div>
 
         <div className={styles.plotArea}>
+          {notes && (
+            <div className={styles.notes}>
+              {categories.map((category, i) => (
+                <span key={category} className={notes[i]?.tone ? styles[notes[i].tone] : undefined}>
+                  {notes[i]?.text}
+                </span>
+              ))}
+            </div>
+          )}
           <div className={styles.plot} style={{ height }} onMouseLeave={() => setActive(null)}>
             {ticks.map((t) => (
               <span key={t} className={styles.grid} style={{ bottom: `${(t / top) * 100}%` }} />

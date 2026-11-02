@@ -29,8 +29,8 @@ describe("sign-in gate", () => {
   });
 
   it("opens the app straight away with a saved session", async () => {
-    renderApp("/month", fakeAuth(fakeSession()));
-    expect(await screen.findByRole("heading", { level: 1 })).toHaveTextContent("Month");
+    renderApp("/bills", fakeAuth(fakeSession()));
+    expect(await screen.findByRole("heading", { level: 1 })).toHaveTextContent("Bills");
   });
 
   it("returns to the screen asked for once signed in", async () => {

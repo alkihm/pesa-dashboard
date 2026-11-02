@@ -18,6 +18,8 @@ export interface ActivityQuery {
   search: string;
   cursor?: Cursor;
   pageSize?: number;
+  /** Only rows from `from` (inclusive) to `to` (exclusive), ISO times: one month on the Month screen ([2.4]). */
+  range?: { from: string; to: string };
 }
 
 // The SMS comes with each row so opening one ([2.6]) shows it at once; version guards edits against stale rows.
@@ -47,8 +49,12 @@ export function parseSearch(raw: string): Search {
   return amountCents ? { text, amountCents } : { text };
 }
 
-export function activityQuery(db: Db, { filter, search, cursor, pageSize = PAGE_SIZE }: ActivityQuery) {
+export function activityQuery(
+  db: Db,
+  { filter, search, cursor, pageSize = PAGE_SIZE, range }: ActivityQuery,
+) {
   let q = db.from("transactions").select(COLUMNS).is("deleted_at", null);
+  if (range) q = q.gte("occurred_at", range.from).lt("occurred_at", range.to);
 
   if (filter === "review") q = q.eq("needs_review", true);
   if (filter === "notes") q = q.not("note", "is", null).neq("note", "");

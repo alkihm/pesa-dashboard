@@ -45,6 +45,14 @@ describe("activityQuery", () => {
     );
   });
 
+  it("limits to a date range when given one (the Month screen)", () => {
+    const range = { from: "2026-10-01T00:00:00+03:00", to: "2026-11-01T00:00:00+03:00" };
+    expect(params(activityQuery(db, { filter: "all", search: "", range })).getAll("occurred_at")).toEqual([
+      "gte.2026-10-01T00:00:00+03:00",
+      "lt.2026-11-01T00:00:00+03:00",
+    ]);
+  });
+
   it("joins search and paging under one and(…)", () => {
     const cursor = { occurredAt: "2026-10-20T06:00:00+00:00", id: "b" };
     expect(params(activityQuery(db, { filter: "all", search: "", cursor })).get("or")).toBe(
