@@ -12,20 +12,14 @@ interface PlaceholderProps {
   back?: string;
   /** The home screen: settings and review buttons in the phone header. */
   home?: boolean;
-  /** No shell (sign-in). */
-  bare?: boolean;
 }
 
-export function Placeholder({ title, issue, phoneTitle, back, home, bare }: PlaceholderProps) {
+export function Placeholder({ title, issue, phoneTitle, back, home }: PlaceholderProps) {
   const card = (
     <Card title={title}>
       <p className={styles.text}>This screen is built in [{issue}].</p>
     </Card>
   );
-
-  if (bare) {
-    return <main className={styles.bare}>{card}</main>;
-  }
 
   return (
     <>
