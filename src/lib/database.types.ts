@@ -36,9 +36,11 @@ export type Database = {
           debt_term: string | null;
           due_day: number | null;
           emoji: string | null;
+          goal_cents: number | null;
           id: string;
           kind: string;
           limit_cents: number | null;
+          locked_until: string | null;
           name: string;
           original_cents: number | null;
           sms_account_hint: string | null;
@@ -55,9 +57,11 @@ export type Database = {
           debt_term?: string | null;
           due_day?: number | null;
           emoji?: string | null;
+          goal_cents?: number | null;
           id?: string;
           kind: string;
           limit_cents?: number | null;
+          locked_until?: string | null;
           name: string;
           original_cents?: number | null;
           sms_account_hint?: string | null;
@@ -74,9 +78,11 @@ export type Database = {
           debt_term?: string | null;
           due_day?: number | null;
           emoji?: string | null;
+          goal_cents?: number | null;
           id?: string;
           kind?: string;
           limit_cents?: number | null;
+          locked_until?: string | null;
           name?: string;
           original_cents?: number | null;
           sms_account_hint?: string | null;
@@ -935,8 +941,10 @@ export type Database = {
           debt_term: string | null;
           difference_cents: number | null;
           emoji: string | null;
+          goal_cents: number | null;
           kind: string | null;
           last_activity: string | null;
+          locked_until: string | null;
           name: string | null;
           snapshot_at: string | null;
           snapshot_cents: number | null;

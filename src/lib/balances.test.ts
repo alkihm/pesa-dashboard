@@ -15,6 +15,8 @@ const row = (r: Partial<AccountBalance> & Pick<AccountBalance, "account_id" | "k
   sort_order: 0,
   archived_at: null,
   snapshot_source: null,
+  goal_cents: null,
+  locked_until: null,
   ...r,
 });
 

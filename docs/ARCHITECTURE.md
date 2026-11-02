@@ -39,6 +39,8 @@ from pickers, kept in history.
 | `limit_cents` | Card or overdraft limit |
 | `original_cents` | Loan principal, for the progress bar |
 | `due_day` | 1–31, repayment day of a loan or card |
+| `goal_cents` | Savings only: what the owner is saving towards, above zero |
+| `locked_until` | Savings only: the day the money can be withdrawn (fixed deposit, Sacco lock) |
 | `sort_order` | Home shows the first four |
 | `archived_at` | |
 
