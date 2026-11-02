@@ -1,0 +1,24 @@
+.page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 var(--shell-gutter) 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.status {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.saved {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--tone-green-bg);
+  color: var(--tone-green-text);
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+}

@@ -58,7 +58,17 @@ export function useActivity(db: () => Db = supabase) {
     void fetchPage(current.cursor);
   }, [current, fetchPage]);
 
+  /** Shows a saved row in place, without reloading; it stays even if it no longer fits the filter. */
+  const replaceRow = useCallback((row: ActivityRow) => {
+    setResult((prev) => prev && { ...prev, rows: prev.rows.map((r) => (r.id === row.id ? row : r)) });
+  }, []);
+
+  /** Starts again from the newest row, e.g. after a payee rule changed rows anywhere in the list. */
+  const reload = useCallback(() => setQuery((q) => ({ ...q })), []);
+
   return {
+    replaceRow,
+    reload,
     filter,
     setFilter,
     search,

@@ -181,3 +181,38 @@
     border-radius: var(--radius-control);
   }
 }
+
+.saved,
+.failed {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.saved {
+  background: var(--tone-green-bg);
+  color: var(--tone-green-text);
+}
+
+.failed {
+  background: var(--tone-red-bg);
+  color: var(--tone-red-text);
+}
+
+/* Desktop: the opened row's SMS, note and rule, under the table. */
+.panel {
+  margin-top: 16px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-control);
+  overflow: hidden;
+}
+
+.panelTitle {
+  margin: 0;
+  padding: 12px 14px 0;
+  background: var(--color-sunk);
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+}
