@@ -1,5 +1,6 @@
 // Balance maths for the screens, on rows of the `account_balances` view: whether each account agrees with
-// its latest SMS or count, and the totals on Home (net position D-010, savings R3, debt R2).
+// its latest SMS or count, and the headline totals ([3.7]) used by Overview, Accounts and the month report:
+// net position (R6, D-010), savings (R3), debt by term (R2) and the after-all-debt figure.
 
 import type { Database } from "./database.types";
 
@@ -23,6 +24,8 @@ export interface BalanceSummary {
   longDebtCents: number;
   /** Sum of the accounts that count in net: available + savings − short-term debt by default (D-010). */
   netPositionCents: number;
+  /** Everything owned minus everything owed: every account, whatever its counts_in_net switch says. */
+  afterAllDebtCents: number;
   /** Ids of accounts whose latest reading disagrees with the ledger. */
   mismatched: string[];
 }
@@ -57,6 +60,7 @@ export function summarise(rows: AccountBalance[]): BalanceSummary {
       live.filter((a) => a.counts_in_net),
       balance,
     ),
+    afterAllDebtCents: sum(live, balance),
     mismatched: live.filter((a) => reconcileState(a) === "mismatch").map((a) => a.account_id!),
   };
 }

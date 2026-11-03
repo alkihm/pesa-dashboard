@@ -178,7 +178,8 @@ spending, fees, borrowed, repaid, saved per Nairobi month) and `category_month_t
 
 - **Net position** = sum of the balances of accounts that count in net: wallets, bank, cash and savings.
   Short-term debt is negative, so it
-  subtracts. Long-term debt is shown separately.
+  subtracts. Long-term debt is shown separately. **After all debt** = the balances of every account added up,
+  whatever its `counts_in_net` switch says (month report). Both come from `summarise()` in `src/lib/balances.ts` ([3.7]).
 - **Bill status** comes from days to the due date: overdue or due today → red, ≤3 days → orange,
   ≤7 → amber, later → blue, paid → green, skipped → grey.
 - **Review status**: green within the interval and all balances match; amber after the interval;
