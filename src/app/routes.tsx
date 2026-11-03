@@ -1,4 +1,5 @@
 import type { RouteObject } from "react-router";
+import { AccountsScreen, DebtScreen, SavingsScreen } from "@/features/accounts/AccountsScreen";
 import { NewAccountScreen } from "@/features/accounts/new/NewAccountScreen";
 import { ActivityScreen } from "@/features/activity/ActivityScreen";
 import { TransactionScreen } from "@/features/activity/TransactionScreen";
@@ -28,9 +29,9 @@ export const routes: RouteObject[] = [
       { path: "month", element: <MonthScreen /> },
       { path: "bills", element: <Placeholder title="Bills & budget" issue="3.1" /> },
       { path: "review", element: <Placeholder title="Review & reconcile" issue="4.1" /> },
-      { path: "accounts", element: <Placeholder title="Accounts" issue="2.3" back="/" /> },
-      { path: "accounts/savings", element: <Placeholder title="Savings" issue="2.3" back="/accounts" /> },
-      { path: "accounts/debt", element: <Placeholder title="Debt" issue="2.3" back="/accounts" /> },
+      { path: "accounts", element: <AccountsScreen /> },
+      { path: "accounts/savings", element: <SavingsScreen /> },
+      { path: "accounts/debt", element: <DebtScreen /> },
       { path: "accounts/new", element: <NewAccountScreen /> },
       { path: "categories", element: <CategoriesScreen /> },
       { path: "categories/new", element: <CategoryScreen /> },
