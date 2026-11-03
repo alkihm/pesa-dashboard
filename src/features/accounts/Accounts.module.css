@@ -1,0 +1,424 @@
+/* Phone layout first; desktop from 900px, as in the shell. Boards: Accounts, savings & debt · desktop,
+   Savings · view all, Debt · view all. */
+
+.page {
+  max-width: var(--shell-max-width);
+  margin: 0 auto;
+  padding: 0 var(--shell-gutter) 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.narrow {
+  max-width: 640px;
+}
+
+.phoneOnly {
+  display: flex;
+}
+
+.desktopOnly {
+  display: none;
+}
+
+.muted {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.status {
+  margin: 0;
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+}
+
+.headerButton {
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 16px;
+  border-radius: 14px;
+  border: 1px solid var(--color-on-header-line);
+  color: var(--color-on-header);
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+/* ---- totals and layout -------------------------------------------------------------------------------- */
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.rowText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.name {
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.amount {
+  font-size: 15px;
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.track {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--color-track);
+  overflow: hidden;
+}
+
+.track > span {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+}
+
+.spread {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* ---- everyday accounts -------------------------------------------------------------------------------- */
+
+.tiles {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid transparent;
+  background: var(--color-sunk);
+}
+
+.tileMismatch {
+  border-color: var(--tone-red-dot);
+}
+
+.tileEmoji {
+  font-size: 22px;
+  margin-bottom: 8px;
+}
+
+.tileAmount {
+  font-size: 20px;
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.match {
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.green {
+  color: var(--tone-green-text);
+}
+
+.red {
+  color: var(--tone-red-text);
+}
+
+.grey,
+.orange,
+.amber,
+.blue {
+  color: var(--color-text-muted);
+}
+
+/* ---- savings ------------------------------------------------------------------------------------------ */
+
+.savings {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.goal {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.goalHero {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 18px;
+  border-radius: var(--radius-card);
+  background: var(--color-hero);
+  color: var(--color-on-header);
+  font-size: 13px;
+}
+
+.goalTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.goalPercent {
+  font-weight: var(--font-weight-semibold);
+  color: var(--tone-green-dot);
+}
+
+.goalAmount {
+  margin-bottom: 8px;
+  font-size: 26px;
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.goalAmount span {
+  font-size: 14px;
+  font-weight: var(--font-weight-medium);
+  color: var(--color-on-header-muted);
+}
+
+.goalTrack {
+  display: block;
+  height: 8px;
+  border-radius: 4px;
+  background: var(--color-track);
+  overflow: hidden;
+}
+
+.goalHero .goalTrack {
+  background: var(--color-on-header-line);
+}
+
+.goalTrack > span {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+  background: var(--tone-green-dot);
+}
+
+.savingsGrid {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.saving {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--color-sunk);
+}
+
+/* ---- debt --------------------------------------------------------------------------------------------- */
+
+/* The card's heading row: on phones the term tabs wrap under the title and take the full width. */
+.debtCard > :first-child {
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.debtCard > :first-child > [role="group"] {
+  flex: 1 1 100%;
+}
+
+.debt {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+}
+
+.debtRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "who amount"
+    "progress progress"
+    "due due";
+  gap: 8px 12px;
+  align-items: center;
+  padding: 12px 0;
+  border-top: 1px solid var(--color-line);
+}
+
+.debtRow:first-child {
+  border-top: 0;
+}
+
+.debtRow > :nth-child(1) {
+  grid-area: who;
+}
+
+.debtProgress {
+  grid-area: progress;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.debtRow > .amount {
+  grid-area: amount;
+  text-align: right;
+}
+
+.due {
+  grid-area: due;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Phones leave out the empty due cell; the desktop table keeps a dash in its column. */
+.noDue {
+  display: none;
+}
+
+.debtHero {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 18px;
+  border-radius: var(--radius-card);
+  background: var(--color-hero);
+  color: var(--color-on-header);
+  font-size: 13px;
+}
+
+.debtHeroTotal {
+  font-size: 28px;
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.newLink {
+  display: flex;
+  height: 52px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  border: 1.5px dashed var(--color-border-strong);
+  color: var(--color-link);
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.newLink:focus-visible,
+.headerButton:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ---- desktop ------------------------------------------------------------------------------------------ */
+
+@media (min-width: 900px) {
+  .phoneOnly {
+    display: none;
+  }
+
+  .desktopOnly {
+    display: block;
+  }
+
+  .kpis {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .debtCard > :first-child > [role="group"] {
+    flex: none;
+  }
+
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    align-items: start;
+    gap: 18px;
+  }
+
+  .tiles {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+
+  .savingsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+
+  .narrow .savingsGrid {
+    display: flex;
+  }
+
+  .debtRow {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1.2fr) 110px 110px;
+    grid-template-areas: "who progress amount due";
+    gap: 16px;
+  }
+
+  .noDue {
+    display: flex;
+  }
+
+  .narrow .noDue {
+    display: none;
+  }
+
+  .narrow .debtRow {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "who amount"
+      "progress progress"
+      "due due";
+    gap: 8px 12px;
+  }
+}
