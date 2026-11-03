@@ -1,0 +1,407 @@
+/* Phone layout first (Home · mobile); desktop from 900px (Overview · desktop). The cards keep one order in the
+   markup, the phone order; the desktop grid places them by area. */
+
+.page {
+  max-width: var(--shell-max-width);
+  margin: 0 auto;
+  padding: 0 var(--shell-gutter) 24px;
+}
+
+.grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.phoneOnly {
+  display: initial;
+}
+
+.desktopOnly,
+.desktopKpis {
+  display: none;
+}
+
+.status {
+  margin: 0;
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+}
+
+.muted {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.name {
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.amount {
+  font-size: 15px;
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.viewAll {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  margin-top: 12px;
+  border-radius: var(--radius-control);
+  background: var(--color-sunk);
+  color: var(--color-link);
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+/* ---- header ------------------------------------------------------------------------------------------- */
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.reconcile {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  background: var(--tone-red-bg);
+  color: var(--tone-red-text);
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+.reconcileDot,
+.badgeDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tone-red-dot);
+}
+
+.badgeDot {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.report {
+  display: inline-flex;
+  align-items: center;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 14px;
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+}
+
+/* ---- totals ------------------------------------------------------------------------------------------- */
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 20px;
+  border-radius: var(--radius-card);
+  background: var(--color-hero);
+  color: var(--color-on-header);
+  box-shadow: var(--shadow-card);
+}
+
+.heroLabel {
+  font-size: 13px;
+  color: var(--color-on-header-muted);
+}
+
+.heroValue {
+  font-size: 32px;
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.heroSub {
+  font-size: 12px;
+  color: var(--color-on-header-muted);
+}
+
+.heroTiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.heroTile {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: var(--color-on-header-faint);
+  color: inherit;
+  font-size: 11px;
+  text-decoration: none;
+}
+
+.heroTile b {
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- accounts ----------------------------------------------------------------------------------------- */
+
+.accountList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.account {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 8px;
+  border-radius: 16px;
+  background: var(--color-sunk);
+  color: var(--color-text);
+  text-align: center;
+  text-decoration: none;
+}
+
+.accountText {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: inherit;
+  gap: 2px;
+}
+
+.match {
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.green {
+  color: var(--tone-green-text);
+}
+
+.red {
+  color: var(--tone-red-text);
+}
+
+.grey,
+.orange,
+.amber,
+.blue {
+  color: var(--color-text-muted);
+}
+
+/* ---- savings bars ------------------------------------------------------------------------------------- */
+
+.bars {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.barItem {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.barValue {
+  font-size: 12px;
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.barTrack {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  width: 100%;
+  height: 140px;
+}
+
+.barTrack > span {
+  display: block;
+  width: min(48px, 70%);
+  min-height: 3px;
+  border-radius: 8px 8px 0 0;
+}
+
+.barLabel {
+  width: 100%;
+  padding-bottom: 8px;
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ---- trend -------------------------------------------------------------------------------------------- */
+
+.figures {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin: 0 0 14px;
+}
+
+.figures dt {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.figures dd {
+  margin: 0;
+  font-size: 18px;
+  font-weight: var(--font-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.figures .income {
+  color: var(--color-income-text);
+}
+
+.figures .expense {
+  color: var(--color-expense-text);
+}
+
+/* ---- debt --------------------------------------------------------------------------------------------- */
+
+.debt [role="group"] {
+  margin-bottom: 8px;
+}
+
+.debtList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.debtRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+}
+
+.debtRow .accountText {
+  align-items: flex-start;
+}
+
+.reconcile:focus-visible,
+.report:focus-visible,
+.heroTile:focus-visible,
+.account:focus-visible,
+.viewAll:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ---- desktop ------------------------------------------------------------------------------------------ */
+
+@media (min-width: 900px) {
+  .phoneOnly {
+    display: none;
+  }
+
+  .desktopOnly {
+    display: initial;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-areas:
+      "totals totals totals"
+      "accounts savings debt"
+      "trend trend spending";
+    gap: 18px;
+    align-items: start;
+  }
+
+  .totals {
+    grid-area: totals;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .desktopKpis {
+    display: contents;
+  }
+
+  .heroValue {
+    font-size: 28px;
+  }
+
+  .accounts {
+    grid-area: accounts;
+  }
+
+  .savings {
+    grid-area: savings;
+  }
+
+  .debt {
+    grid-area: debt;
+  }
+
+  .trend {
+    grid-area: trend;
+  }
+
+  .spending {
+    grid-area: spending;
+  }
+
+  /* Desktop lists the accounts as rows, as on the board. */
+  .accountList {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .account {
+    flex-direction: row;
+    gap: 12px;
+    padding: 8px 0;
+    background: none;
+    text-align: left;
+  }
+
+  .accountText {
+    align-items: flex-start;
+  }
+}
