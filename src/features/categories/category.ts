@@ -2,8 +2,8 @@
 // Categories are only spending or income (D-009 rule 11): saving is a transfer to a savings account.
 
 import { amountCents, formatTyped } from "@/features/transactions/form";
+import { budgetStatus, type BudgetStatus } from "@/lib/budget";
 import { CATEGORY_COLOURS } from "@/lib/categoryColours";
-import { formatAmount } from "@/lib/money";
 
 export type Kind = "spending" | "income";
 
@@ -28,24 +28,8 @@ export interface Rule {
 
 // ---- budget --------------------------------------------------------------------------------------------
 
-/** At or above this share of the budget the bar turns amber. */
-export const NEAR = 0.9;
-
-export interface BudgetStatus {
-  tone: "none" | "ok" | "near" | "over";
-  /** Bar width, 0–1; capped at a full bar. */
-  fill: number;
-  /** "1,600 left", "Over by 3,700", "No budget". */
-  text: string;
-}
-
-export function budgetStatus(spent: number, budget: number | null, kind: Kind): BudgetStatus {
-  if (kind === "income" || !budget)
-    return { tone: "none", fill: 0, text: kind === "income" ? "This month" : "No budget" };
-  const ratio = spent / budget;
-  if (spent > budget) return { tone: "over", fill: 1, text: `Over by ${formatAmount(spent - budget)}` };
-  return { tone: ratio >= NEAR ? "near" : "ok", fill: ratio, text: `${formatAmount(budget - spent)} left` };
-}
+// The rule is shared with the Month view ([3.6]); kept importable from here for the Categories screen.
+export { budgetStatus, NEAR, type BudgetStatus } from "@/lib/budget";
 
 // ---- list ----------------------------------------------------------------------------------------------
 

@@ -192,6 +192,28 @@
   white-space: nowrap;
 }
 
+.categoryText {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* [3.6] Budget state under the name: muted on track, amber from 90%, red when over. */
+.budget {
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+  color: var(--color-text-muted);
+}
+
+.budget-near {
+  color: var(--tone-amber-text);
+}
+
+.budget-over {
+  color: var(--tone-red-text);
+}
+
 .bars {
   display: flex;
   flex-direction: column;

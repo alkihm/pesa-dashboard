@@ -147,6 +147,53 @@ describe("compareCategories", () => {
   });
 });
 
+describe("category budgets [3.6]", () => {
+  const budgeted = (name: string, emoji: string, budget: number | null) => ({
+    name,
+    emoji,
+    colour: "cat-1",
+    monthly_budget_cents: budget === null ? null : budget * KES,
+  });
+  const month = (id: string, spent: number, category: ReturnType<typeof budgeted>): CategoryMonthRow => ({
+    month: "2026-10-01",
+    category_id: id,
+    total_cents: spent * KES,
+    category,
+  });
+  const rows = [
+    month("eat", 8_900, budgeted("Eating out", "🍽️", 6_000)),
+    month("fuel", 21_700, budgeted("Fuel", "⛽", 18_000)),
+    month("food", 28_400, budgeted("Food", "🛒", 30_000)),
+    month("rent", 20_000, budgeted("Rent", "🏠", 45_000)),
+    month("care", 3_200, budgeted("Personal care", "💅", null)),
+  ];
+
+  it("gives each category this month's budget state", () => {
+    const list = compareCategories(rows, "2026-10-01", "2026-09-01");
+    expect(Object.fromEntries(list.map((c) => [c.key, [c.budget.tone, c.budget.text]]))).toEqual({
+      eat: ["over", "Over by 2,900"],
+      fuel: ["over", "Over by 3,700"],
+      food: ["near", "1,600 left"],
+      rent: ["ok", "25,000 left"],
+      care: ["none", "No budget"],
+    });
+  });
+
+  it("lists the categories over budget in the highlights, furthest over first", () => {
+    const now = totals({ income: 100_000 * KES, spending: 82_200 * KES });
+    const all = compareCategories(rows, "2026-10-01", "2026-09-01");
+    expect(highlights(now, EMPTY, all)).toContain(
+      "🔴 2 categories over budget: Fuel +3,700, Eating out +2,900.",
+    );
+
+    const one = compareCategories(rows.slice(1), "2026-10-01", "2026-09-01");
+    expect(highlights(now, EMPTY, one)).toContain("🔴 ⛽ Fuel is 3,700 over budget.");
+
+    const none = compareCategories(rows.slice(2), "2026-10-01", "2026-09-01");
+    expect(highlights(now, EMPTY, none).some((l) => l.includes("over budget"))).toBe(false);
+  });
+});
+
 describe("highlights", () => {
   it("handles an empty month and a first month with nothing to compare", () => {
     expect(highlights(EMPTY, EMPTY, [])).toEqual(["Nothing recorded this month yet."]);
