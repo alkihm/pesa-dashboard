@@ -61,7 +61,7 @@ function fakeDb(rows: unknown[] = billMonths) {
     account_balances: balances,
     accounts: [{ id: "acc-1", name: "Wallet A", emoji: "📱", kind: "wallet" }],
     categories: [
-      { id: "cat-1", name: "Utilities", emoji: "💡", kind: "expense", system: false },
+      { id: "cat-1", name: "Utilities", emoji: "💡", kind: "spending", system: false },
       { id: "cat-2", name: "Salary", emoji: "💼", kind: "income", system: false },
     ],
     bills: null,
@@ -139,6 +139,11 @@ describe("Bills", () => {
     expect(within(row("TV package")).getByText("Due 15 Nov")).toBeInTheDocument();
     expect(within(row("Home rent")).getByText("✓ Paid · via SMS")).toBeInTheDocument();
     expect(within(row("Water")).getByText("✓ Paid")).toBeInTheDocument();
+    expect(within(row("Home rent")).getByRole("link", { name: /open the payment/ })).toHaveAttribute(
+      "href",
+      "/activity/t-1",
+    );
+    expect(within(row("Water")).queryByRole("link")).toBeNull();
     expect(within(row("Gym")).getByText("Skipped")).toBeInTheDocument();
   });
 
@@ -195,6 +200,7 @@ describe("Add bill", () => {
     expect(screen.queryByRole("option", { name: "💼 Salary" })).toBeNull();
     fill(/Category/, "cat-1");
     fill(/Paid from/, "acc-1");
+    fill(/SMS payee/, " DEMO FIBRE ");
     fireEvent.click(screen.getByRole("button", { name: "Save bill" }));
     await screen.findByText("Car loan");
     expect(calls.find((c) => c.table === "bills" && c.op === "insert")?.args[0]).toEqual({
@@ -204,9 +210,20 @@ describe("Add bill", () => {
       due_day: 20,
       account_id: "acc-1",
       category_id: "cat-1",
+      payee_match: "DEMO FIBRE",
       starts_on: "2026-11-01",
     });
     expect(router.state.location.pathname).toBe("/bills");
+  });
+
+  it("refuses an SMS payee too short to tell payments apart", async () => {
+    renderAt("/bills/new");
+    fill("Name", "Internet");
+    fill("Amount each month", "4100");
+    fill("Due day", "20");
+    fill(/SMS payee/, "KP");
+    fireEvent.click(screen.getByRole("button", { name: "Save bill" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("at least 3 letters");
   });
 
   it("offers to start next month when the due day has passed", async () => {

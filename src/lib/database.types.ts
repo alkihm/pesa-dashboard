@@ -996,6 +996,13 @@ export type Database = {
         };
         Returns: number;
       };
+      bill_amount_fits: {
+        Args: {
+          p_expected: number;
+          p_paid: number;
+        };
+        Returns: boolean;
+      };
       ensure_bill_months: {
         Args: {
           p_month: string;
@@ -1031,6 +1038,13 @@ export type Database = {
         };
         Returns: Json;
       };
+      match_bill_payment: {
+        Args: {
+          p_transaction_id: string;
+          p_bill_id?: string;
+        };
+        Returns: string;
+      };
       pin_recent_sign_in: {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
@@ -1046,6 +1060,12 @@ export type Database = {
       set_pin: {
         Args: {
           p_pin: string;
+        };
+        Returns: undefined;
+      };
+      unmatch_bill_payment: {
+        Args: {
+          p_bill_month_id: string;
         };
         Returns: undefined;
       };

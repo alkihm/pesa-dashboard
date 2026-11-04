@@ -119,6 +119,9 @@ paid from), `category_id`, `payee_match` (marks the month paid when a matching S
 row is made), `status` (`due` · `paid` · `skipped`), `transaction_id` (what paid it), `paid_at`,
 `skip_reason`. Unique per (`bill_id`, `month`). Rows are made by the idempotent `ensure_bill_months(month)`
 function. Colours are not stored: they come from `status` and days from today to `due_on`.
+An SMS payment to a bill's `payee_match` marks its month paid through `match_bill_payment` (trigger on
+`transactions`; rules in D-015). `bill_months_guard` refuses to set an SMS-paid month back by an ordinary update;
+`unmatch_bill_payment(id)` does it on purpose, and deleting the payment does it by itself.
 
 ### `budget_items`
 

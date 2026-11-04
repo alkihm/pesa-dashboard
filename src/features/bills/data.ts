@@ -42,6 +42,8 @@ export interface BillRow {
   amount_cents: number;
   status: BillMonthStatus;
   paidAt: string | null;
+  /** The payment that paid this month, if one is linked. */
+  transactionId: string | null;
   viaSms: boolean;
 }
 
@@ -59,6 +61,7 @@ export function toBillRow(r: Raw): BillRow {
     amount_cents: r.amount_cents,
     status: (STATUSES.includes(r.status) ? r.status : "due") as BillMonthStatus,
     paidAt: r.paid_at,
+    transactionId: r.transaction_id,
     viaSms: r.paid_by?.source === "sms",
   };
 }
