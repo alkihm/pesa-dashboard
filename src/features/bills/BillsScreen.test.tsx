@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import type { Db } from "@/lib/supabase";
 import { BillsScreen } from "./BillsScreen";
+import { NewBudgetItemScreen } from "./BudgetItems";
 import { NewBillScreen } from "./NewBillScreen";
 
 const KES = 100;
@@ -43,6 +44,40 @@ const billMonths = [
   month("7", bill("Phone plan", "📱"), "2026-10-28", 500),
 ];
 
+// Invented budget items: one waiting, one approved (set aside), one spent.
+const budgetItems = [
+  {
+    id: "bi1",
+    name: "School fees",
+    amount_cents: 35_000 * KES,
+    status: "pending",
+    month: "2026-11-01",
+    account_id: "b",
+    version: 1,
+    account: { name: "Bank", emoji: "🏦" },
+  },
+  {
+    id: "bi2",
+    name: "New tyres",
+    amount_cents: 5_000 * KES,
+    status: "approved",
+    month: "2026-11-01",
+    account_id: "w",
+    version: 1,
+    account: { name: "Wallet A", emoji: "📱" },
+  },
+  {
+    id: "bi3",
+    name: "Car service",
+    amount_cents: 8_000 * KES,
+    status: "done",
+    month: "2026-11-01",
+    account_id: "w",
+    version: 1,
+    account: { name: "Wallet A", emoji: "📱" },
+  },
+];
+
 const balances = [
   { account_id: "w", kind: "wallet", balance_cents: 50_000 * KES, archived_at: null },
   { account_id: "b", kind: "bank", balance_cents: 30_000 * KES, archived_at: null },
@@ -65,6 +100,7 @@ function fakeDb(rows: unknown[] = billMonths) {
   };
   const data: Record<string, unknown> = {
     bill_months: rows,
+    budget_items: budgetItems,
     account_balances: balances,
     accounts: [{ id: "acc-1", name: "Wallet A", emoji: "📱", kind: "wallet" }],
     categories: [
@@ -95,7 +131,18 @@ function fakeDb(rows: unknown[] = billMonths) {
         calls.push({ table, op: "update", args });
         return builder;
       };
-      for (const op of ["select", "eq", "is", "or", "order", "in", "insert", "single", "maybeSingle"]) {
+      for (const op of [
+        "select",
+        "eq",
+        "neq",
+        "is",
+        "or",
+        "order",
+        "in",
+        "insert",
+        "single",
+        "maybeSingle",
+      ]) {
         builder[op] = (...args: unknown[]) => {
           calls.push({ table, op, args });
           return builder;
@@ -113,6 +160,7 @@ function renderAt(path: string, rows?: unknown[]) {
     [
       { path: "/bills", element: <BillsScreen db={() => fake.db} now={NOW} /> },
       { path: "/bills/new", element: <NewBillScreen db={() => fake.db} now={NOW} /> },
+      { path: "/bills/budget/new", element: <NewBudgetItemScreen db={() => fake.db} now={NOW} /> },
     ],
     { initialEntries: [path] },
   );
@@ -171,7 +219,9 @@ describe("Bills", () => {
     const hero = await screen.findByRole("region", { name: "Bill totals" });
     expect(within(hero).getByText("46,200")).toBeInTheDocument(); // paid: 45,000 + 1,200
     expect(within(hero).getByText("41,600")).toBeInTheDocument(); // to pay: 1,100 + 38,500 + 1,500 + 500
-    expect(await within(hero).findByText("38,400")).toBeInTheDocument(); // 80,000 available − 41,600
+    // 80,000 available − 41,600 to pay − 5,000 approved for a budget item
+    expect(await within(hero).findByText("33,400")).toBeInTheDocument();
+    expect(within(hero).getByText("after 5,000 approved for budget items")).toBeInTheDocument();
     expect(within(hero).getByRole("meter")).toHaveAttribute("aria-valuenow", "53");
     const kpis = screen.getByRole("region", { name: "Bill totals by status" });
     expect(within(kpis).getByText("2,000")).toBeInTheDocument(); // skipped
@@ -262,6 +312,78 @@ describe("Pay, skip and undo", () => {
     fireEvent.click(screen.getByRole("button", { name: /^Undo Water,/ }));
     expect(await screen.findByRole("alert")).toHaveTextContent("Could not save: network down");
     expect(within(row("Water")).getByText("✓ Paid")).toBeInTheDocument();
+  });
+});
+
+describe("Budget items", () => {
+  const line = (name: string) => screen.getByText(name).closest("li")!;
+  const hero = () => screen.getByRole("region", { name: "Bill totals" });
+
+  it("shows pending items with Approve, approved ones as set aside, spent ones as done", async () => {
+    renderAt("/bills");
+    await screen.findByText("School fees");
+    expect(
+      within(line("School fees")).getByRole("button", { name: "Approve School fees" }),
+    ).toBeInTheDocument();
+    expect(within(line("New tyres")).getByText("✓ Approved")).toBeInTheDocument();
+    expect(within(line("New tyres")).queryByRole("button", { name: /Approve/ })).toBeNull();
+    expect(within(line("Car service")).getByText("✓ Spent")).toBeInTheDocument();
+    expect(within(line("Car service")).queryByRole("button")).toBeNull();
+    expect(within(line("School fees")).getByText("35,000 · 🏦 Bank")).toBeInTheDocument();
+  });
+
+  it("approving sets the money aside at once and sends the version", async () => {
+    const { calls } = renderAt("/bills");
+    await screen.findByText("School fees");
+    await within(hero()).findByText("33,400");
+    fireEvent.click(screen.getByRole("button", { name: "Approve School fees" }));
+    expect(within(line("School fees")).getByText("✓ Approved")).toBeInTheDocument();
+    expect(within(hero()).getByText("−1,600")).toBeInTheDocument(); // 33,400 − 35,000: the plan does not fit
+    const sent = calls.filter((c) => c.table === "budget_items" && (c.op === "update" || c.op === "eq"));
+    expect(sent.map((c) => [c.op, ...c.args])).toEqual([
+      ["update", { status: "approved", approved_at: NOW.toISOString() }],
+      ["eq", "id", "bi1"],
+      ["eq", "version", 1],
+    ]);
+  });
+
+  it("cancelling an approved item gives its money back", async () => {
+    renderAt("/bills");
+    await within(await screen.findByRole("region", { name: "Bill totals" })).findByText("33,400");
+    fireEvent.click(screen.getByRole("button", { name: "Cancel New tyres" }));
+    expect(screen.queryByText("New tyres")).toBeNull();
+    expect(within(hero()).getByText("38,400")).toBeInTheDocument();
+  });
+
+  it("puts an item back when the database refuses", async () => {
+    const { update } = renderAt("/bills");
+    await screen.findByText("School fees");
+    update.answer = { data: [], error: null };
+    fireEvent.click(screen.getByRole("button", { name: "Approve School fees" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("School fees was changed elsewhere");
+  });
+
+  it("saves a new item as pending for this month from a funding account", async () => {
+    const { calls } = renderAt("/bills/budget/new");
+    const form = screen.getByRole("form", { name: "New budget item" });
+    fireEvent.click(within(form).getByRole("button", { name: "Save for approval" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Say what the money is for.");
+    fireEvent.change(within(form).getByLabelText("What for"), { target: { value: "Car service" } });
+    fireEvent.change(within(form).getByLabelText("Amount"), { target: { value: "8,000" } });
+    await within(form).findByRole("option", { name: "📱 Wallet A" });
+    fireEvent.change(within(form).getByLabelText("From"), { target: { value: "acc-1" } });
+    fireEvent.click(within(form).getByRole("button", { name: "Save for approval" }));
+    await screen.findByText("Car loan");
+    expect(calls.find((c) => c.table === "budget_items" && c.op === "insert")?.args[0]).toEqual({
+      name: "Car service",
+      amount_cents: 8_000 * KES,
+      account_id: "acc-1",
+      month: "2026-11-01",
+    });
+    expect(calls.find((c) => c.table === "accounts" && c.op === "in")?.args).toEqual([
+      "kind",
+      ["wallet", "bank", "cash", "savings"],
+    ]);
   });
 });
 
