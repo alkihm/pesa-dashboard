@@ -27,6 +27,8 @@ export interface Form {
   note: string;
   /** Set when the form was filled from an SMS. */
   sms?: FromSms;
+  /** An exact time to store while its day is still the chosen date; Review ([4.2]) passes the SMS time. */
+  at?: string;
 }
 
 export interface FromSms {
@@ -64,6 +66,25 @@ export function emptyForm(now = new Date(), direction: Direction = "out"): Form 
     date: nairobiDate(now),
     note: "",
   };
+}
+
+/**
+ * A form started from a link ([4.2]: Review's "Add missing transaction"):
+ * `?direction=out|in&account=<id>&amount=<cents>&date=YYYY-MM-DD&at=<ISO time>`. Anything missing or invalid is left
+ * as in an empty form.
+ */
+export function formFromParams(params: URLSearchParams, now = new Date()): Form {
+  const direction = params.get("direction");
+  const form = emptyForm(now, direction === "in" || direction === "transfer" ? direction : "out");
+  const account = params.get("account");
+  if (account) form.accountId = account;
+  const cents = Number(params.get("amount"));
+  if (Number.isInteger(cents) && cents > 0) form.amount = formatTyped(cents);
+  const date = params.get("date");
+  if (date && /^\d{4}-\d{2}-\d{2}$/.test(date)) form.date = date;
+  const at = params.get("at");
+  if (at && !Number.isNaN(Date.parse(at))) form.at = new Date(at).toISOString();
+  return form;
 }
 
 /** "2,500" → 250000 cents; anything that is not a positive amount → undefined. */
@@ -216,6 +237,7 @@ function smsOnly(at: Date, ref: string | null, smsId?: string): FromSms {
 /** The time to store: the SMS's own time while its day is kept, now for today, else midday on the chosen day. */
 export function occurredAt(form: Form, now = new Date()) {
   if (form.sms && nairobiDate(new Date(form.sms.occurredAt)) === form.date) return form.sms.occurredAt;
+  if (form.at && nairobiDate(new Date(form.at)) === form.date) return form.at;
   if (form.date === nairobiDate(now)) return now.toISOString();
   return new Date(`${form.date}T12:00:00+03:00`).toISOString();
 }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { PageHeader } from "@/app/shell/PageHeader";
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
@@ -9,7 +9,16 @@ import { Segmented } from "@/components/Segmented";
 import { formatKes } from "@/lib/money";
 import { supabase, type Db } from "@/lib/supabase";
 import { insertRows, useAddTransactionData, type AccountOption, type PendingSms } from "./data";
-import { amountCents, buildRows, emptyForm, fillFromSms, problem, type Direction, type Form } from "./form";
+import {
+  amountCents,
+  buildRows,
+  emptyForm,
+  fillFromSms,
+  formFromParams,
+  problem,
+  type Direction,
+  type Form,
+} from "./form";
 import styles from "./AddTransactionScreen.module.css";
 
 const DIRECTIONS: { value: Direction; label: string }[] = [
@@ -30,7 +39,11 @@ const pendingTime = new Intl.DateTimeFormat("en-GB", {
 export function AddTransactionScreen({ db = supabase }: { db?: () => Db }) {
   const navigate = useNavigate();
   const data = useAddTransactionData(db);
-  const [form, setForm] = useState<Form>(() => emptyForm());
+  // A link can start the form filled in, e.g. Review's "Add missing transaction" ([4.2]), and say where back goes.
+  const [params] = useSearchParams();
+  const backParam = params.get("back") ?? "";
+  const back = /^\/(?!\/)/.test(backParam) ? backParam : "/"; // in-app paths only, never "//other.site"
+  const [form, setForm] = useState<Form>(() => formFromParams(params));
   const [paste, setPaste] = useState("");
   const [readMessage, setReadMessage] = useState<{ text: string; ok: boolean }>();
   const [error, setError] = useState<string>();
@@ -85,7 +98,7 @@ export function AddTransactionScreen({ db = supabase }: { db?: () => Db }) {
       <PageHeader
         title="Add transaction"
         subtitle="For anything the SMS feed missed"
-        back="/"
+        back={back}
         controls={
           <Segmented
             label="Direction"
