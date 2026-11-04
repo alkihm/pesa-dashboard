@@ -115,29 +115,32 @@ export function BarChart({
         </div>
       </div>
 
-      <table className="visually-hidden">
-        <caption>{title}</caption>
-        <thead>
-          <tr>
-            <th scope="col">Period</th>
-            {series.map((s) => (
-              <th key={s.key} scope="col">
-                {s.label}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {categories.map((category, i) => (
-            <tr key={category}>
-              <th scope="row">{category}</th>
-              {series.map((s, si) => (
-                <td key={s.key}>{formatValue(values[si]?.[i] ?? 0)}</td>
+      {/* A table ignores the 1px size of .visually-hidden, so the wrapper hides it without taking room. */}
+      <div className="visually-hidden">
+        <table>
+          <caption>{title}</caption>
+          <thead>
+            <tr>
+              <th scope="col">Period</th>
+              {series.map((s) => (
+                <th key={s.key} scope="col">
+                  {s.label}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {categories.map((category, i) => (
+              <tr key={category}>
+                <th scope="row">{category}</th>
+                {series.map((s, si) => (
+                  <td key={s.key}>{formatValue(values[si]?.[i] ?? 0)}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </figure>
   );
 }

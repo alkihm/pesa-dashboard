@@ -9,6 +9,7 @@ import { RequireSession } from "@/features/auth/RequireSession";
 import { SignInScreen } from "@/features/auth/SignInScreen";
 import { CategoriesScreen, CategoryScreen } from "@/features/categories/CategoriesScreen";
 import { MonthScreen } from "@/features/month/MonthScreen";
+import { OverviewScreen } from "@/features/overview/OverviewScreen";
 import { SettingsScreen } from "@/features/settings/SettingsScreen";
 import { AddTransactionScreen } from "@/features/transactions/AddTransactionScreen";
 import { AppShell } from "./shell/AppShell";
@@ -24,7 +25,7 @@ export const routes: RouteObject[] = [
       </RequireSession>
     ),
     children: [
-      { index: true, element: <Placeholder title="Overview" phoneTitle="Budget" issue="2.2" home /> },
+      { index: true, element: <OverviewScreen /> },
       { path: "activity", element: <ActivityScreen /> },
       { path: "activity/:id", element: <TransactionScreen /> },
       { path: "transactions/new", element: <AddTransactionScreen /> },
