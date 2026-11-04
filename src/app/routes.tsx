@@ -11,6 +11,7 @@ import { SignInScreen } from "@/features/auth/SignInScreen";
 import { CategoriesScreen, CategoryScreen } from "@/features/categories/CategoriesScreen";
 import { MonthScreen } from "@/features/month/MonthScreen";
 import { OverviewScreen } from "@/features/overview/OverviewScreen";
+import { ReviewScreen } from "@/features/review/ReviewScreen";
 import { SettingsScreen } from "@/features/settings/SettingsScreen";
 import { AddTransactionScreen } from "@/features/transactions/AddTransactionScreen";
 import { AppShell } from "./shell/AppShell";
@@ -34,7 +35,7 @@ export const routes: RouteObject[] = [
       { path: "bills", element: <BillsScreen /> },
       { path: "bills/new", element: <NewBillScreen /> },
       { path: "bills/budget/new", element: <NewBudgetItemScreen /> },
-      { path: "review", element: <Placeholder title="Review & reconcile" issue="4.1" /> },
+      { path: "review", element: <ReviewScreen /> },
       { path: "accounts", element: <AccountsScreen /> },
       { path: "accounts/savings", element: <SavingsScreen /> },
       { path: "accounts/debt", element: <DebtScreen /> },
