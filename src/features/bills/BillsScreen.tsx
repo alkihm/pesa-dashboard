@@ -1,7 +1,8 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router";
 
 import { HeaderIconLink, PageHeader } from "@/app/shell/PageHeader";
+import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
 import { Icon } from "@/components/Icon";
 import { KpiCard } from "@/components/KpiCard";
@@ -12,6 +13,7 @@ import { useAccounts } from "@/lib/data/accounts";
 import { formatDay } from "@/lib/due";
 import { formatAmount } from "@/lib/money";
 import { supabase, type Db } from "@/lib/supabase";
+import { allowed, applyAction, canPayOrSkip, canUndo, sendBillAction, type BillAction } from "./actions";
 import { useBills, type BillRow } from "./data";
 import { billStatus, billTotals, filterBills, nairobiMonth, sortBills, type BillFilter } from "./status";
 import styles from "./Bills.module.css";
@@ -47,13 +49,34 @@ function useFilter() {
 }
 
 // [3.1] Bills & budget: this month's bills with a colour from days to the due date, what to pay first at the top.
-// Pay, skip and undo come with [3.3]; budget items with [3.4]. An SMS payment marks its month paid in the database
-// ([3.2], D-015); that pill opens the payment, and this screen offers no undo for it.
+// [3.3] Pay, Skip and Undo change the row and the totals at once, and put it back if the database refuses.
+// An SMS payment marks its month paid in the database ([3.2], D-015); that pill opens the payment and has no Undo.
+// Budget items come with [3.4].
 export function BillsScreen({ db = supabase, now }: ScreenProps) {
   const month = nairobiMonth(now);
-  const { rows, error } = useBills(db, month);
+  const { rows, error, reload, replace } = useBills(db, month);
   const { accounts } = useAccounts(db);
   const [filter, setFilter] = useFilter();
+  const [actionError, setActionError] = useState<string>();
+  const [busy, setBusy] = useState<ReadonlySet<string>>(new Set());
+
+  async function act(row: BillRow, action: BillAction) {
+    if (!allowed(row, action) || busy.has(row.id)) return;
+    const at = now ?? new Date();
+    setActionError(undefined);
+    setBusy((b) => new Set(b).add(row.id));
+    replace(applyAction(row, action, at));
+    const result = await sendBillAction(db(), row, action, at);
+    setBusy((b) => {
+      const next = new Set(b);
+      next.delete(row.id);
+      return next;
+    });
+    if (result.ok) return replace({ ...applyAction(row, action, at), version: result.version });
+    replace(row);
+    setActionError(result.reason === "changed" ? result.message : `Could not save: ${result.message}`);
+    if (result.reason === "changed") reload();
+  }
 
   const sorted = useMemo(() => sortBills(rows ?? []), [rows]);
   const totals = billTotals(sorted, summarise(accounts ?? []).availableCents);
@@ -99,8 +122,20 @@ export function BillsScreen({ db = supabase, now }: ScreenProps) {
           <>
             <Totals totals={totals} available={accounts !== undefined} />
             <Legend />
+            {actionError && (
+              <p role="alert" className={styles.actionError}>
+                {actionError}
+              </p>
+            )}
             <Card title="🧾 Recurring bills" className={styles.billsCard}>
-              <BillList rows={shown} filter={filter} empty={rows.length === 0} now={now} />
+              <BillList
+                rows={shown}
+                filter={filter}
+                empty={rows.length === 0}
+                now={now}
+                busy={busy}
+                onAction={(row, action) => void act(row, action)}
+              />
             </Card>
           </>
         )}
@@ -180,11 +215,15 @@ function BillList({
   filter,
   empty,
   now,
+  busy,
+  onAction,
 }: {
   rows: BillRow[];
   filter: BillFilter;
   empty: boolean;
   now?: Date;
+  busy: ReadonlySet<string>;
+  onAction: (row: BillRow, action: BillAction) => void;
 }) {
   if (empty)
     return (
@@ -212,11 +251,14 @@ function BillList({
                 Amount
               </th>
               <th scope="col">Status</th>
+              <th scope="col" className={styles.num}>
+                Action
+              </th>
             </tr>
           </thead>
           <tbody>
             {rows.map((r) => (
-              <BillLine key={r.id} row={r} now={now} />
+              <BillLine key={r.id} row={r} now={now} busy={busy.has(r.id)} onAction={onAction} />
             ))}
           </tbody>
         </table>
@@ -228,7 +270,17 @@ function BillList({
   );
 }
 
-function BillLine({ row, now }: { row: BillRow; now?: Date }) {
+function BillLine({
+  row,
+  now,
+  busy,
+  onAction,
+}: {
+  row: BillRow;
+  now?: Date;
+  busy: boolean;
+  onAction: (row: BillRow, action: BillAction) => void;
+}) {
   const s = billStatus(row, now);
   return (
     <tr className={styles.line}>
@@ -251,6 +303,40 @@ function BillLine({ row, now }: { row: BillRow; now?: Date }) {
           </Link>
         ) : (
           <StatusPill tone={s.tone}>{s.text}</StatusPill>
+        )}
+      </td>
+      <td className={styles.actions}>
+        {canPayOrSkip(row) && (
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label={`Skip ${row.name}, due ${formatDay(row.due_on)}`}
+              disabled={busy}
+              onClick={() => onAction(row, "skip")}
+            >
+              Skip
+            </Button>
+            <Button
+              size="sm"
+              aria-label={`Pay ${row.name}, due ${formatDay(row.due_on)}`}
+              disabled={busy}
+              onClick={() => onAction(row, "pay")}
+            >
+              Pay
+            </Button>
+          </>
+        )}
+        {canUndo(row) && (
+          <Button
+            variant="ghost"
+            size="sm"
+            aria-label={`Undo ${row.name}, due ${formatDay(row.due_on)}`}
+            disabled={busy}
+            onClick={() => onAction(row, "undo")}
+          >
+            Undo
+          </Button>
         )}
       </td>
     </tr>

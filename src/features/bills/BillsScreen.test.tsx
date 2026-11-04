@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { describe, expect, it } from "vitest";
 
@@ -28,6 +28,7 @@ const month = (
   status,
   paid_at: status === "paid" ? "2026-11-01T08:00:00Z" : null,
   transaction_id: source ? `t-${id}` : null,
+  version: 1,
   bill: b,
   paid_by: source ? { source } : null,
 });
@@ -54,8 +55,14 @@ interface Call {
   args: unknown[];
 }
 
+type Answer = { data: unknown; error: { message: string } | null };
+
 function fakeDb(rows: unknown[] = billMonths) {
   const calls: Call[] = [];
+  // What an update of bill_months answers; tests change it to see a refusal.
+  const update: { answer: Answer | (() => Promise<Answer>) } = {
+    answer: { data: [{ version: 2 }], error: null },
+  };
   const data: Record<string, unknown> = {
     bill_months: rows,
     account_balances: balances,
@@ -72,9 +79,21 @@ function fakeDb(rows: unknown[] = billMonths) {
       return Promise.resolve({ data: [], error: null });
     },
     from(table: string) {
+      let updating = false;
       const builder: Record<string, unknown> = {
-        then: (ok: (v: unknown) => unknown, bad: (e: unknown) => unknown) =>
-          Promise.resolve({ data: data[table] ?? [], error: null }).then(ok, bad),
+        then: (ok: (v: unknown) => unknown, bad: (e: unknown) => unknown) => {
+          const answer = !updating
+            ? Promise.resolve({ data: data[table] ?? [], error: null })
+            : typeof update.answer === "function"
+              ? update.answer()
+              : Promise.resolve(update.answer);
+          return answer.then(ok, bad);
+        },
+      };
+      builder.update = (...args: unknown[]) => {
+        updating = true;
+        calls.push({ table, op: "update", args });
+        return builder;
       };
       for (const op of ["select", "eq", "is", "or", "order", "in", "insert", "single", "maybeSingle"]) {
         builder[op] = (...args: unknown[]) => {
@@ -85,7 +104,7 @@ function fakeDb(rows: unknown[] = billMonths) {
       return builder;
     },
   };
-  return { db: db as unknown as Db, calls };
+  return { db: db as unknown as Db, calls, update };
 }
 
 function renderAt(path: string, rows?: unknown[]) {
@@ -172,6 +191,77 @@ describe("Bills", () => {
     renderAt("/bills", []);
     expect(await screen.findByText(/No bills yet/)).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /Add bill/ })[0]).toHaveAttribute("href", "/bills/new");
+  });
+});
+
+describe("Pay, skip and undo", () => {
+  const row = (name: string) => screen.getByText(name).closest("tr")!;
+  const hero = () => screen.getByRole("region", { name: "Bill totals" });
+
+  it("offers Skip and Pay on owed months, Undo on months paid by hand or skipped, nothing on SMS-paid ones", async () => {
+    renderAt("/bills");
+    await screen.findByText("Car loan");
+    expect(within(row("Car loan")).getByRole("button", { name: /^Pay Car loan,/ })).toBeInTheDocument();
+    expect(within(row("Car loan")).getByRole("button", { name: /^Skip Car loan,/ })).toBeInTheDocument();
+    expect(within(row("Water")).getByRole("button", { name: /^Undo Water,/ })).toBeInTheDocument();
+    expect(within(row("Gym")).getByRole("button", { name: /^Undo Gym,/ })).toBeInTheDocument();
+    expect(within(row("Home rent")).queryByRole("button")).toBeNull();
+  });
+
+  it("pays a month by hand: the row and the totals change at once, the update carries the version", async () => {
+    const { calls, update } = renderAt("/bills");
+    await screen.findByText("Car loan");
+    let answer!: (a: Answer) => void;
+    update.answer = () => new Promise<Answer>((r) => (answer = r));
+    fireEvent.click(screen.getByRole("button", { name: /^Pay Car loan,/ }));
+
+    // Before the database answers.
+    expect(within(row("Car loan")).getByText("✓ Paid")).toBeInTheDocument();
+    expect(within(hero()).getByText("84,700")).toBeInTheDocument(); // paid: 46,200 + 38,500
+    expect(within(hero()).getByText("3,100")).toBeInTheDocument(); // to pay: 41,600 − 38,500
+    expect(within(row("Car loan")).getByRole("button", { name: /^Undo Car loan,/ })).toBeDisabled();
+
+    await waitFor(() => expect(answer).toBeTypeOf("function"));
+    answer({ data: [{ version: 2 }], error: null });
+    await waitFor(() =>
+      expect(within(row("Car loan")).getByRole("button", { name: /^Undo Car loan,/ })).toBeEnabled(),
+    );
+    const sent = calls.filter((c) => c.table === "bill_months" && (c.op === "update" || c.op === "eq"));
+    expect(sent.map((c) => [c.op, ...c.args])).toEqual([
+      ["update", { status: "paid", paid_at: NOW.toISOString(), skip_reason: null }],
+      ["eq", "id", "3"],
+      ["eq", "version", 1],
+    ]);
+  });
+
+  it("skips a month out of what is left to pay, and undoes a skip", async () => {
+    renderAt("/bills");
+    await screen.findByText("Car loan");
+    fireEvent.click(screen.getByRole("button", { name: /^Skip TV package,/ }));
+    expect(within(row("TV package")).getByText("Skipped")).toBeInTheDocument();
+    expect(within(hero()).getByText("40,100")).toBeInTheDocument(); // to pay: 41,600 − 1,500
+    await waitFor(() => expect(screen.getByRole("button", { name: /^Undo TV package,/ })).toBeEnabled());
+    fireEvent.click(screen.getByRole("button", { name: /^Undo TV package,/ }));
+    expect(within(row("TV package")).getByText("Due 15 Nov")).toBeInTheDocument();
+    expect(within(hero()).getByText("41,600")).toBeInTheDocument();
+  });
+
+  it("puts the row back and says so when the month was changed elsewhere", async () => {
+    const { update } = renderAt("/bills");
+    await screen.findByText("Car loan");
+    update.answer = { data: [], error: null };
+    fireEvent.click(screen.getByRole("button", { name: /^Pay Streaming,/ }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Streaming was changed elsewhere");
+    expect(within(row("Streaming")).getByText("Overdue · 2 days")).toBeInTheDocument();
+  });
+
+  it("puts the row back when the database refuses", async () => {
+    const { update } = renderAt("/bills");
+    await screen.findByText("Car loan");
+    update.answer = { data: null, error: { message: "network down" } };
+    fireEvent.click(screen.getByRole("button", { name: /^Undo Water,/ }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("Could not save: network down");
+    expect(within(row("Water")).getByText("✓ Paid")).toBeInTheDocument();
   });
 });
 
