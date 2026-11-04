@@ -7,7 +7,7 @@ import { Card } from "@/components/Card";
 import { NumberField, SelectField, TextField } from "@/components/Field";
 import { useCategories } from "@/lib/data/categories";
 import { supabase, type Db } from "@/lib/supabase";
-import { payingAccountsQuery } from "./data";
+import { loanAccountsQuery, payingAccountsQuery } from "./data";
 import { BILL_ICONS, billProblem, buildBill, dueDayPassed, emptyBillForm, type BillForm } from "./form";
 import styles from "./NewBill.module.css";
 
@@ -19,6 +19,7 @@ export function NewBillScreen({ db = supabase, now }: { db?: () => Db; now?: Dat
   const navigate = useNavigate();
   const { categories } = useCategories(db);
   const [accounts, setAccounts] = useState<PayingAccount[]>([]);
+  const [loans, setLoans] = useState<PayingAccount[]>([]);
   const [form, setForm] = useState<BillForm>(emptyBillForm);
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);
@@ -27,6 +28,7 @@ export function NewBillScreen({ db = supabase, now }: { db?: () => Db; now?: Dat
   useEffect(() => {
     let live = true;
     void payingAccountsQuery(db()).then(({ data }) => live && setAccounts(data ?? []));
+    void loanAccountsQuery(db()).then(({ data }) => live && setLoans(data ?? []));
     return () => {
       live = false;
     };
@@ -144,6 +146,23 @@ export function NewBillScreen({ db = supabase, now }: { db?: () => Db; now?: Dat
                 ))}
               </SelectField>
             </div>
+
+            {loans.length > 0 && (
+              <SelectField
+                label="💸 Pays off a loan · optional"
+                hint="For an instalment such as a car loan: the loan slider on Home pays it first."
+                value={form.loanAccountId}
+                onChange={(e) => set({ loanAccountId: e.target.value })}
+              >
+                <option value="">No</option>
+                {loans.map((a) => (
+                  <option key={a.id} value={a.id}>
+                    {a.emoji ? `${a.emoji} ` : ""}
+                    {a.name}
+                  </option>
+                ))}
+              </SelectField>
+            )}
 
             <TextField
               label="📩 SMS payee · optional"

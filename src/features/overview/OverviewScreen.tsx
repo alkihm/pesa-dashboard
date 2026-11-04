@@ -20,6 +20,8 @@ import {
   isSavings,
   matchStatus,
 } from "@/features/accounts/accounts";
+import { BillsSummaryCard } from "@/features/bills/BillsSummaryCard";
+import { LoanRepaymentCard } from "@/features/loans/LoanRepaymentCard";
 import { currentMonth, leftOver, monthName, totalsFor, trend } from "@/features/month/month";
 import { summarise } from "@/lib/balances";
 import { CATEGORY_COLOURS, categoryColourVar } from "@/lib/categoryColours";
@@ -42,8 +44,8 @@ const DEBT_ROWS = 4;
 
 // [2.2] Overview (desktop) and Home (phone): the headline totals ([3.7]), accounts with their SMS match, savings,
 // debt, the twelve-month trend and where the money went in the chosen period. The cards follow the phone order;
-// on desktop a grid places them as on the Overview board. Bills ([3.1]) and the loan slider ([3.5]) add their own
-// cards to the grid when they are built.
+// on desktop a grid places them as on the Overview board. The Bills card and the loan slider come from the bills
+// epic (src/features/bills, src/features/loans, [3.1]/[3.5]).
 export function OverviewScreen({ db = supabase, now }: { db?: () => Db; now?: Date }) {
   const [period, setPeriod] = useState<Period>("month");
   const { accounts, error: accountsError } = useAccounts(db);
@@ -157,7 +159,20 @@ export function OverviewScreen({ db = supabase, now }: { db?: () => Db; now?: Da
             <SavingsCard savings={all.filter(isSavings)} total={sum.savingsCents} />
             <SpendingCard period={period} data={data} now={now} />
             <TrendCard data={data} now={now} />
+            <BillsSummaryCard
+              availableCents={sum.availableCents}
+              db={db}
+              now={now}
+              className={styles.bills}
+            />
             <DebtCard accounts={all} now={now} />
+            <LoanRepaymentCard
+              accounts={all}
+              totals={data?.totals ?? []}
+              db={db}
+              now={now}
+              className={styles.loan}
+            />
           </div>
         )}
       </div>

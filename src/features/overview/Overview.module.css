@@ -346,7 +346,8 @@
     grid-template-areas:
       "totals totals totals"
       "accounts savings debt"
-      "trend trend spending";
+      "trend trend loan"
+      "spending bills bills";
     gap: 18px;
     align-items: start;
   }
@@ -380,6 +381,14 @@
 
   .trend {
     grid-area: trend;
+  }
+
+  .loan {
+    grid-area: loan;
+  }
+
+  .bills {
+    grid-area: bills;
   }
 
   .spending {

@@ -423,6 +423,7 @@ describe("Add bill", () => {
       account_id: "acc-1",
       category_id: "cat-1",
       payee_match: "DEMO FIBRE",
+      loan_account_id: null,
       starts_on: "2026-11-01",
     });
     expect(router.state.location.pathname).toBe("/bills");
