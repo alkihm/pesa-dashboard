@@ -32,6 +32,8 @@ export interface BillForm {
   categoryId: string;
   /** Text in the payee of the SMS that pays this bill; marks the month paid when it arrives ([3.2], D-015). */
   payeeMatch: string;
+  /** The loan this bill pays off, e.g. the car instalment ([3.5]); the loan slider pays it first. */
+  loanAccountId: string;
   /** When the due day has passed this month: true starts the bill next month (this month is already paid). */
   startNextMonth: boolean;
 }
@@ -45,6 +47,7 @@ export function emptyBillForm(): BillForm {
     accountId: "",
     categoryId: "",
     payeeMatch: "",
+    loanAccountId: "",
     startNextMonth: true,
   };
 }
@@ -83,6 +86,7 @@ export function buildBill(form: BillForm, now = new Date()): BillInsert {
     account_id: form.accountId || null,
     category_id: form.categoryId || null,
     payee_match: form.payeeMatch.trim() || null,
+    loan_account_id: form.loanAccountId || null,
     starts_on: monthStart(now, dueDayPassed(form, now) && form.startNextMonth ? 1 : 0),
   };
 }

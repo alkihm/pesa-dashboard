@@ -104,6 +104,17 @@ export function useBills(db: () => Db = supabase, month: string) {
   return { rows, error, reload, replace };
 }
 
+/** Loans and cards a bill can pay off (the car instalment), for the Add bill form ([3.5]). */
+export function loanAccountsQuery(db: Db) {
+  return db
+    .from("accounts")
+    .select("id, name, emoji, kind")
+    .is("archived_at", null)
+    .in("kind", ["loan", "card"])
+    .order("sort_order")
+    .order("name");
+}
+
 /** Accounts a bill can be paid from, for the Add bill form. */
 export function payingAccountsQuery(db: Db) {
   return db

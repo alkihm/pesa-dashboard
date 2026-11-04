@@ -119,6 +119,7 @@ const categoryTotals = [
 function fakeDb() {
   const calls: { table: string; filters: string[] }[] = [];
   const db = {
+    rpc: () => Promise.resolve({ data: [], error: null }),
     from(table: string) {
       const call = { table, filters: [] as string[] };
       calls.push(call);
@@ -126,6 +127,9 @@ function fakeDb() {
         if (table === "account_balances") return balances;
         if (table === "accounts") return terms;
         if (table === "month_totals") return monthTotals;
+        // The Bills card and the loan slider (bills epic) find no bills and no saved share here.
+        if (table === "bills" || table === "bill_months") return [];
+        if (table === "settings") return null;
         // Only the rows from the period's start, as the query asks.
         const from = call.filters.find((f) => f.startsWith("gte:month|"))?.split("|")[1];
         return categoryTotals.filter((r) => !from || r.month >= from);
@@ -134,7 +138,7 @@ function fakeDb() {
         then: (ok: (v: unknown) => unknown, bad: (e: unknown) => unknown) =>
           Promise.resolve({ data: answer(), error: null }).then(ok, bad),
       };
-      for (const name of ["select", "eq", "is", "order", "in", "gte", "lte"]) {
+      for (const name of ["select", "eq", "is", "order", "in", "gte", "lte", "not", "or", "maybeSingle"]) {
         builder[name] = (...args: unknown[]) => {
           call.filters.push(`${name}:${args.map(String).join("|")}`);
           return builder;

@@ -270,6 +270,7 @@ export type Database = {
           due_day: number;
           emoji: string | null;
           id: string;
+          loan_account_id: string | null;
           name: string;
           payee_match: string | null;
           starts_on: string;
@@ -286,6 +287,7 @@ export type Database = {
           due_day: number;
           emoji?: string | null;
           id?: string;
+          loan_account_id?: string | null;
           name: string;
           payee_match?: string | null;
           starts_on?: string;
@@ -302,6 +304,7 @@ export type Database = {
           due_day?: number;
           emoji?: string | null;
           id?: string;
+          loan_account_id?: string | null;
           name?: string;
           payee_match?: string | null;
           starts_on?: string;
@@ -329,6 +332,20 @@ export type Database = {
             columns: ["category_id"];
             isOneToOne: false;
             referencedRelation: "categories";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "bills_loan_account_id_fkey";
+            columns: ["loan_account_id"];
+            isOneToOne: false;
+            referencedRelation: "account_balances";
+            referencedColumns: ["account_id"];
+          },
+          {
+            foreignKeyName: "bills_loan_account_id_fkey";
+            columns: ["loan_account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
             referencedColumns: ["id"];
           },
         ];
