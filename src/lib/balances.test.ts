@@ -85,6 +85,7 @@ describe("summarise", () => {
       longDebtCents: 57500000,
       // D-010: wallets + bank + cash + savings − short-term debt; the car loan stays out.
       netPositionCents: 93600 + 11150000 + 180000 + 5100000,
+      afterAllDebtCents: 93600 + 11150000 + 180000 + 5100000 - 57500000,
       mismatched: ["cash"],
     });
   });
@@ -108,6 +109,16 @@ describe("summarise", () => {
     expect(summarise(noSacco).savingsCents).toBe(5100000);
   });
 
+  it("takes every debt off the after-all-debt figure exactly once", () => {
+    // A long-term loan switched into net is already in net position; after-all-debt still counts it once.
+    const carInNet = october.map((a) => (a.account_id === "car" ? { ...a, counts_in_net: true } : a));
+    expect(summarise(carInNet).netPositionCents).toBe(summarise(october).netPositionCents - 57500000);
+    expect(summarise(carInNet).afterAllDebtCents).toBe(summarise(october).afterAllDebtCents);
+    // Savings switched out of net are still the owner's money.
+    const noSacco = october.map((a) => (a.account_id === "sacco" ? { ...a, counts_in_net: false } : a));
+    expect(summarise(noSacco).afterAllDebtCents).toBe(summarise(october).afterAllDebtCents);
+  });
+
   it("leaves archived accounts out of every total", () => {
     const archived = october.map((a) =>
       a.account_id === "cash" ? { ...a, archived_at: "2026-10-30T00:00:00Z" } : a,
@@ -124,6 +135,7 @@ describe("summarise", () => {
       shortDebtCents: 0,
       longDebtCents: 0,
       netPositionCents: 0,
+      afterAllDebtCents: 0,
       mismatched: [],
     });
   });
