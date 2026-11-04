@@ -14,6 +14,16 @@ import { formatDay } from "@/lib/due";
 import { formatAmount } from "@/lib/money";
 import { supabase, type Db } from "@/lib/supabase";
 import { allowed, applyAction, canPayOrSkip, canUndo, sendBillAction, type BillAction } from "./actions";
+import {
+  canBudget,
+  sendBudgetAction,
+  setAsideCents,
+  sortBudgetItems,
+  useBudgetItems,
+  type BudgetAction,
+  type BudgetItem,
+} from "./budget";
+import { BudgetItemsCard, NewBudgetItemCard } from "./BudgetItems";
 import { useBills, type BillRow } from "./data";
 import { billStatus, billTotals, filterBills, nairobiMonth, sortBills, type BillFilter } from "./status";
 import styles from "./Bills.module.css";
@@ -51,7 +61,7 @@ function useFilter() {
 // [3.1] Bills & budget: this month's bills with a colour from days to the due date, what to pay first at the top.
 // [3.3] Pay, Skip and Undo change the row and the totals at once, and put it back if the database refuses.
 // An SMS payment marks its month paid in the database ([3.2], D-015); that pill opens the payment and has no Undo.
-// Budget items come with [3.4].
+// [3.4] Budget items: Approve sets an item's money aside (it leaves "Left after paying"); nothing moves.
 export function BillsScreen({ db = supabase, now }: ScreenProps) {
   const month = nairobiMonth(now);
   const { rows, error, reload, replace } = useBills(db, month);
@@ -78,8 +88,34 @@ export function BillsScreen({ db = supabase, now }: ScreenProps) {
     if (result.reason === "changed") reload();
   }
 
+  const budget = useBudgetItems(db, month);
+  const [budgetBusy, setBudgetBusy] = useState<ReadonlySet<string>>(new Set());
+
+  async function budgetAct(item: BudgetItem, action: BudgetAction) {
+    if (!canBudget(item, action) || budgetBusy.has(item.id)) return;
+    setActionError(undefined);
+    setBudgetBusy((b) => new Set(b).add(item.id));
+    budget.replace({ ...item, status: action === "approve" ? "approved" : "cancelled" });
+    const result = await sendBudgetAction(db(), item, action, now ?? new Date());
+    setBudgetBusy((b) => {
+      const next = new Set(b);
+      next.delete(item.id);
+      return next;
+    });
+    if (!result.ok) {
+      budget.replace(item);
+      setActionError(result.message);
+    }
+    budget.reload();
+  }
+
   const sorted = useMemo(() => sortBills(rows ?? []), [rows]);
-  const totals = billTotals(sorted, summarise(accounts ?? []).availableCents);
+  const items = useMemo(
+    () => sortBudgetItems((budget.items ?? []).filter((i) => i.status !== "cancelled")),
+    [budget.items],
+  );
+  const setAside = setAsideCents(items);
+  const totals = billTotals(sorted, summarise(accounts ?? []).availableCents - setAside);
   const shown = filterBills(sorted, filter);
   const title = monthName.format(new Date(`${month}T00:00:00Z`));
 
@@ -120,23 +156,42 @@ export function BillsScreen({ db = supabase, now }: ScreenProps) {
 
         {rows && (
           <>
-            <Totals totals={totals} available={accounts !== undefined} />
+            <Totals totals={totals} available={accounts !== undefined} setAside={setAside} />
             <Legend />
             {actionError && (
               <p role="alert" className={styles.actionError}>
                 {actionError}
               </p>
             )}
-            <Card title="🧾 Recurring bills" className={styles.billsCard}>
-              <BillList
-                rows={shown}
-                filter={filter}
-                empty={rows.length === 0}
-                now={now}
-                busy={busy}
-                onAction={(row, action) => void act(row, action)}
-              />
-            </Card>
+            <div className={styles.layout}>
+              <Card title="🧾 Recurring bills" className={styles.billsCard}>
+                <BillList
+                  rows={shown}
+                  filter={filter}
+                  empty={rows.length === 0}
+                  now={now}
+                  busy={busy}
+                  onAction={(row, action) => void act(row, action)}
+                />
+              </Card>
+              <aside className={styles.side} aria-label="Budget">
+                {budget.error && (
+                  <p role="alert" className={styles.status}>
+                    Could not load budget items: {budget.error}
+                  </p>
+                )}
+                {budget.items && (
+                  <BudgetItemsCard
+                    items={items}
+                    busy={budgetBusy}
+                    onAction={(item, action) => void budgetAct(item, action)}
+                  />
+                )}
+                <div className={styles.desktopOnly}>
+                  <NewBudgetItemCard db={db} now={now} onSaved={budget.reload} />
+                </div>
+              </aside>
+            </div>
           </>
         )}
       </div>
@@ -144,8 +199,17 @@ export function BillsScreen({ db = supabase, now }: ScreenProps) {
   );
 }
 
-function Totals({ totals: t, available }: { totals: ReturnType<typeof billTotals>; available: boolean }) {
+function Totals({
+  totals: t,
+  available,
+  setAside,
+}: {
+  totals: ReturnType<typeof billTotals>;
+  available: boolean;
+  setAside: number;
+}) {
   const left = available ? formatAmount(t.leftAfterPayingCents) : "…";
+  const leftNote = setAside > 0 ? `after ${formatAmount(setAside)} approved for budget items` : undefined;
   return (
     <>
       {/* Phones: one hero card with the paid bar, as on the mobile board. */}
@@ -174,6 +238,7 @@ function Totals({ totals: t, available }: { totals: ReturnType<typeof billTotals
           <span>Left after paying</span>
           <span className={styles.heroLeft}>{left}</span>
         </div>
+        {leftNote && <p className={styles.heroNote}>{leftNote}</p>}
       </section>
 
       {/* Desktop: four totals in a row. */}
@@ -181,7 +246,7 @@ function Totals({ totals: t, available }: { totals: ReturnType<typeof billTotals
         <KpiCard label="To pay" value={formatAmount(t.toPayCents)} icon="bill" tone="hero" />
         <KpiCard label="Paid" value={formatAmount(t.paidCents)} icon="shield" />
         <KpiCard label="Skipped" value={formatAmount(t.skippedCents)} icon="list" />
-        <KpiCard label="Left after paying" value={left} icon="wallet" />
+        <KpiCard label="Left after paying" value={left} sub={leftNote} icon="wallet" />
       </section>
     </>
   );

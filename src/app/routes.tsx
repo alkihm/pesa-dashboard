@@ -4,6 +4,7 @@ import { NewAccountScreen } from "@/features/accounts/new/NewAccountScreen";
 import { ActivityScreen } from "@/features/activity/ActivityScreen";
 import { TransactionScreen } from "@/features/activity/TransactionScreen";
 import { BillsScreen } from "@/features/bills/BillsScreen";
+import { NewBudgetItemScreen } from "@/features/bills/BudgetItems";
 import { NewBillScreen } from "@/features/bills/NewBillScreen";
 import { RequireSession } from "@/features/auth/RequireSession";
 import { SignInScreen } from "@/features/auth/SignInScreen";
@@ -32,6 +33,7 @@ export const routes: RouteObject[] = [
       { path: "month", element: <MonthScreen /> },
       { path: "bills", element: <BillsScreen /> },
       { path: "bills/new", element: <NewBillScreen /> },
+      { path: "bills/budget/new", element: <NewBudgetItemScreen /> },
       { path: "review", element: <Placeholder title="Review & reconcile" issue="4.1" /> },
       { path: "accounts", element: <AccountsScreen /> },
       { path: "accounts/savings", element: <SavingsScreen /> },
