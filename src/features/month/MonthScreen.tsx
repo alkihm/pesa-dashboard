@@ -292,8 +292,15 @@ function CategoryBars({
       <ul className={styles.categoryList} aria-label={`Spending by category, ${current} and ${previous}`}>
         {shown.map((c) => (
           <li key={c.key} className={styles.categoryRow}>
-            <span className={styles.categoryName}>
-              <span aria-hidden="true">{c.emoji}</span> {c.label}
+            <span className={styles.categoryText}>
+              <span className={styles.categoryName}>
+                <span aria-hidden="true">{c.emoji}</span> {c.label}
+              </span>
+              {c.budget.tone !== "none" && (
+                <span className={`${styles.budget} ${styles[`budget-${c.budget.tone}`]}`}>
+                  {c.budget.text}
+                </span>
+              )}
             </span>
             <span className={styles.bars} aria-hidden="true">
               <span className={`${styles.bar} ${styles.now}`} style={{ width: width(c.current) }} />

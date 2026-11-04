@@ -19,7 +19,7 @@ export function monthTotalsQuery(db: Db, from: Month, to: Month) {
 export function categoryTotalsQuery(db: Db, months: Month[]) {
   return db
     .from("category_month_totals")
-    .select("month, category_id, total_cents, category:categories(name, emoji, colour)")
+    .select("month, category_id, total_cents, category:categories(name, emoji, colour, monthly_budget_cents)")
     .in("month", months)
     .eq("kind", "spending");
 }

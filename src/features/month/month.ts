@@ -2,6 +2,7 @@
 // last, and the "This month" lines. The database adds up the rows (month_totals, category_month_totals); everything
 // here works on those totals and is tested on its own.
 
+import { budgetStatus, type BudgetStatus } from "@/lib/budget";
 import { formatAmount } from "@/lib/money";
 
 /** A month as the totals views key it: its first day, "2026-10-01". */
@@ -158,7 +159,13 @@ export interface CategoryMonthRow {
   month: string | null;
   category_id: string | null;
   total_cents: number | null;
-  category: { name: string; emoji: string | null; colour: string } | null;
+  category: {
+    name: string;
+    emoji: string | null;
+    colour: string;
+    /** The category's monthly budget today; left out where a screen does not need it. */
+    monthly_budget_cents?: number | null;
+  } | null;
 }
 
 export interface CategoryChange {
@@ -169,6 +176,9 @@ export interface CategoryChange {
   previous: number;
   /** current − previous: more spent is positive. */
   diff: number;
+  /** The monthly budget, if one is set, and this month's spending against it ([3.6]). */
+  budgetCents: number | null;
+  budget: BudgetStatus;
 }
 
 /** Spending by category in both months, largest this month first. Rows without a category are "To review". */
@@ -184,6 +194,8 @@ export function compareCategories(rows: CategoryMonthRow[], month: Month, previo
       current: 0,
       previous: 0,
       diff: 0,
+      budget: budgetStatus(0, null, "spending"),
+      budgetCents: row.category?.monthly_budget_cents ?? null,
     };
     if (row.month === month) entry.current += row.total_cents ?? 0;
     else entry.previous += row.total_cents ?? 0;
@@ -192,10 +204,11 @@ export function compareCategories(rows: CategoryMonthRow[], month: Month, previo
   }
   return [...byKey.values()]
     .filter((c) => c.current > 0 || c.previous > 0)
+    .map((c) => ({ ...c, budget: budgetStatus(c.current, c.budgetCents, "spending") }))
     .sort((a, b) => b.current - a.current || b.previous - a.previous || a.label.localeCompare(b.label));
 }
 
-/** The short lines under "This month". Budget and review lines come with those screens ([3.x]). */
+/** The short lines under "This month". Review lines come with the review screens ([4.x]). */
 export function highlights(
   current: MonthTotals,
   previous: MonthTotals,
@@ -222,6 +235,19 @@ export function highlights(
     lines.push(
       `${rise.emoji} ${rise.label} up ${percent(rise.diff / rise.previous)}, +${formatAmount(rise.diff)}.`,
     );
+  }
+
+  // [3.6]: every category over its budget, the furthest over first.
+  const over = categories
+    .filter((c) => c.budget.tone === "over" && c.budgetCents)
+    .map((c) => ({ ...c, by: c.current - c.budgetCents! }))
+    .sort((a, b) => b.by - a.by);
+  if (over.length === 1) {
+    const [c] = over as [(typeof over)[number]];
+    lines.push(`🔴 ${c.emoji} ${c.label} is ${formatAmount(c.by)} over budget.`);
+  } else if (over.length > 1) {
+    const list = over.map((c) => `${c.label} +${formatAmount(c.by)}`).join(", ");
+    lines.push(`🔴 ${over.length} categories over budget: ${list}.`);
   }
 
   if (current.repaid > 0) lines.push(`💸 ${formatAmount(current.repaid)} went to loans this month.`);
