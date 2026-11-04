@@ -11,7 +11,7 @@ export function billMonthsQuery(db: Db, month: string) {
   return db
     .from("bill_months")
     .select(
-      "id, bill_id, month, due_on, amount_cents, status, paid_at, transaction_id, " +
+      "id, bill_id, month, due_on, amount_cents, status, paid_at, transaction_id, version, " +
         "bill:bills!inner(name, emoji, account_id, archived_at), paid_by:transactions(source)",
     )
     .is("bill.archived_at", null)
@@ -27,6 +27,7 @@ type Raw = {
   status: string;
   paid_at: string | null;
   transaction_id: string | null;
+  version: number;
   bill: { name: string; emoji: string | null; account_id: string | null } | null;
   paid_by: { source: string } | null;
 };
@@ -45,6 +46,8 @@ export interface BillRow {
   /** The payment that paid this month, if one is linked. */
   transactionId: string | null;
   viaSms: boolean;
+  /** Row version; actions send it so a row changed elsewhere is not overwritten. */
+  version: number;
 }
 
 const STATUSES: readonly string[] = ["due", "paid", "skipped"];
@@ -63,6 +66,7 @@ export function toBillRow(r: Raw): BillRow {
     paidAt: r.paid_at,
     transactionId: r.transaction_id,
     viaSms: r.paid_by?.source === "sms",
+    version: r.version,
   };
 }
 
@@ -92,7 +96,12 @@ export function useBills(db: () => Db = supabase, month: string) {
   }, [db, month, version]);
 
   const reload = useCallback(() => setVersion((v) => v + 1), []);
-  return { rows, error, reload };
+  /** Replaces one row on screen (an action applied before the database answers, or put back after). */
+  const replace = useCallback(
+    (row: BillRow) => setRows((list) => list?.map((r) => (r.id === row.id ? row : r))),
+    [],
+  );
+  return { rows, error, reload, replace };
 }
 
 /** Accounts a bill can be paid from, for the Add bill form. */
