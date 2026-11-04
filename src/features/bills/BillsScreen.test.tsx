@@ -1,0 +1,225 @@
+import { fireEvent, render, screen, within } from "@testing-library/react";
+import { createMemoryRouter, RouterProvider } from "react-router";
+import { describe, expect, it } from "vitest";
+
+import type { Db } from "@/lib/supabase";
+import { BillsScreen } from "./BillsScreen";
+import { NewBillScreen } from "./NewBillScreen";
+
+const KES = 100;
+// 3 Nov 2026, 12:00 in Nairobi.
+const NOW = new Date("2026-11-03T09:00:00Z");
+
+// Invented bills and amounts.
+const bill = (name: string, emoji: string) => ({ name, emoji, account_id: null, archived_at: null });
+const month = (
+  id: string,
+  b: ReturnType<typeof bill>,
+  due_on: string,
+  amount: number,
+  status = "due",
+  source: string | null = null,
+) => ({
+  id,
+  bill_id: `b-${id}`,
+  month: `${due_on.slice(0, 7)}-01`,
+  due_on,
+  amount_cents: amount * KES,
+  status,
+  paid_at: status === "paid" ? "2026-11-01T08:00:00Z" : null,
+  transaction_id: source ? `t-${id}` : null,
+  bill: b,
+  paid_by: source ? { source } : null,
+});
+
+const billMonths = [
+  month("1", bill("Home rent", "🏠"), "2026-11-01", 45_000, "paid", "sms"),
+  month("2", bill("Streaming", "🎬"), "2026-11-01", 1_100),
+  month("3", bill("Car loan", "🚗"), "2026-11-05", 38_500),
+  month("4", bill("TV package", "📺"), "2026-11-15", 1_500),
+  month("5", bill("Water", "💧"), "2026-11-02", 1_200, "paid", "manual"),
+  month("6", bill("Gym", "🏋️"), "2026-11-20", 2_000, "skipped"),
+  month("7", bill("Phone plan", "📱"), "2026-10-28", 500),
+];
+
+const balances = [
+  { account_id: "w", kind: "wallet", balance_cents: 50_000 * KES, archived_at: null },
+  { account_id: "b", kind: "bank", balance_cents: 30_000 * KES, archived_at: null },
+  { account_id: "s", kind: "savings", balance_cents: 99_000 * KES, archived_at: null },
+];
+
+interface Call {
+  table: string;
+  op: string;
+  args: unknown[];
+}
+
+function fakeDb(rows: unknown[] = billMonths) {
+  const calls: Call[] = [];
+  const data: Record<string, unknown> = {
+    bill_months: rows,
+    account_balances: balances,
+    accounts: [{ id: "acc-1", name: "Wallet A", emoji: "📱", kind: "wallet" }],
+    categories: [
+      { id: "cat-1", name: "Utilities", emoji: "💡", kind: "expense", system: false },
+      { id: "cat-2", name: "Salary", emoji: "💼", kind: "income", system: false },
+    ],
+    bills: null,
+  };
+  const db = {
+    rpc(name: string, args: unknown) {
+      calls.push({ table: name, op: "rpc", args: [args] });
+      return Promise.resolve({ data: [], error: null });
+    },
+    from(table: string) {
+      const builder: Record<string, unknown> = {
+        then: (ok: (v: unknown) => unknown, bad: (e: unknown) => unknown) =>
+          Promise.resolve({ data: data[table] ?? [], error: null }).then(ok, bad),
+      };
+      for (const op of ["select", "eq", "is", "or", "order", "in", "insert", "single", "maybeSingle"]) {
+        builder[op] = (...args: unknown[]) => {
+          calls.push({ table, op, args });
+          return builder;
+        };
+      }
+      return builder;
+    },
+  };
+  return { db: db as unknown as Db, calls };
+}
+
+function renderAt(path: string, rows?: unknown[]) {
+  const fake = fakeDb(rows);
+  const router = createMemoryRouter(
+    [
+      { path: "/bills", element: <BillsScreen db={() => fake.db} now={NOW} /> },
+      { path: "/bills/new", element: <NewBillScreen db={() => fake.db} now={NOW} /> },
+    ],
+    { initialEntries: [path] },
+  );
+  render(<RouterProvider router={router} />);
+  return { router, ...fake };
+}
+
+const names = (list: HTMLElement) =>
+  within(list)
+    .getAllByRole("rowheader")
+    .map((h) => h.querySelector("span:last-child")?.textContent);
+
+describe("Bills", () => {
+  it("makes this month's rows, then reads this month plus earlier unpaid months", async () => {
+    const { calls } = renderAt("/bills");
+    await screen.findByText("Car loan");
+    expect(calls.find((c) => c.op === "rpc")).toEqual({
+      table: "ensure_bill_months",
+      op: "rpc",
+      args: [{ p_month: "2026-11-01" }],
+    });
+    expect(calls.find((c) => c.table === "bill_months" && c.op === "or")?.args[0]).toBe(
+      "month.eq.2026-11-01,and(status.eq.due,month.lt.2026-11-01)",
+    );
+  });
+
+  it("lists what to pay first, then paid, then skipped, each with its status", async () => {
+    renderAt("/bills");
+    const table = await screen.findByRole("table");
+    expect(names(table)).toEqual([
+      "Phone plan",
+      "Streaming",
+      "Car loan",
+      "TV package",
+      "Home rent",
+      "Water",
+      "Gym",
+    ]);
+    const row = (name: string) => screen.getByText(name).closest("tr")!;
+    expect(within(row("Phone plan")).getByText("Overdue · 6 days")).toBeInTheDocument();
+    expect(within(row("Streaming")).getByText("Overdue · 2 days")).toBeInTheDocument();
+    expect(within(row("Car loan")).getByText("Due in 2 days")).toBeInTheDocument();
+    expect(within(row("TV package")).getByText("Due 15 Nov")).toBeInTheDocument();
+    expect(within(row("Home rent")).getByText("✓ Paid · via SMS")).toBeInTheDocument();
+    expect(within(row("Water")).getByText("✓ Paid")).toBeInTheDocument();
+    expect(within(row("Gym")).getByText("Skipped")).toBeInTheDocument();
+  });
+
+  it("shows paid, to pay and what is left of the wallets, bank and cash after paying", async () => {
+    renderAt("/bills");
+    const hero = await screen.findByRole("region", { name: "Bill totals" });
+    expect(within(hero).getByText("46,200")).toBeInTheDocument(); // paid: 45,000 + 1,200
+    expect(within(hero).getByText("41,600")).toBeInTheDocument(); // to pay: 1,100 + 38,500 + 1,500 + 500
+    expect(await within(hero).findByText("38,400")).toBeInTheDocument(); // 80,000 available − 41,600
+    expect(within(hero).getByRole("meter")).toHaveAttribute("aria-valuenow", "53");
+    const kpis = screen.getByRole("region", { name: "Bill totals by status" });
+    expect(within(kpis).getByText("2,000")).toBeInTheDocument(); // skipped
+  });
+
+  it("filters to what is left to pay, and to what is paid", async () => {
+    const { router } = renderAt("/bills");
+    await screen.findByText("Car loan");
+    fireEvent.click(screen.getByRole("button", { name: "To pay" }));
+    expect(names(screen.getByRole("table"))).toEqual(["Phone plan", "Streaming", "Car loan", "TV package"]);
+    expect(router.state.location.search).toBe("?show=to-pay");
+    fireEvent.click(screen.getByRole("button", { name: "Paid" }));
+    expect(names(screen.getByRole("table"))).toEqual(["Home rent", "Water"]);
+  });
+
+  it("invites the first bill when there are none", async () => {
+    renderAt("/bills", []);
+    expect(await screen.findByText(/No bills yet/)).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: /Add bill/ })[0]).toHaveAttribute("href", "/bills/new");
+  });
+});
+
+describe("Add bill", () => {
+  const fill = (label: string | RegExp, value: string) =>
+    fireEvent.change(screen.getByLabelText(label), { target: { value } });
+
+  it("refuses a bill without an amount or a real due day", async () => {
+    renderAt("/bills/new");
+    fill("Name", "Internet");
+    fireEvent.click(screen.getByRole("button", { name: "Save bill" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("The amount must be above zero.");
+    fill("Amount each month", "4,100");
+    fill("Due day", "32");
+    fireEvent.click(screen.getByRole("button", { name: "Save bill" }));
+    expect(await screen.findByRole("alert")).toHaveTextContent("The due day is a day of the month");
+  });
+
+  it("saves the bill and goes back to the list", async () => {
+    const { calls, router } = renderAt("/bills/new");
+    fill("Name", " Internet ");
+    fireEvent.click(screen.getByRole("button", { name: "Internet" }));
+    fill("Amount each month", "4,100");
+    fill("Due day", "20");
+    await screen.findByRole("option", { name: "💡 Utilities" });
+    expect(screen.queryByRole("option", { name: "💼 Salary" })).toBeNull();
+    fill(/Category/, "cat-1");
+    fill(/Paid from/, "acc-1");
+    fireEvent.click(screen.getByRole("button", { name: "Save bill" }));
+    await screen.findByText("Car loan");
+    expect(calls.find((c) => c.table === "bills" && c.op === "insert")?.args[0]).toEqual({
+      name: "Internet",
+      emoji: "🌐",
+      amount_cents: 4_100 * KES,
+      due_day: 20,
+      account_id: "acc-1",
+      category_id: "cat-1",
+      starts_on: "2026-11-01",
+    });
+    expect(router.state.location.pathname).toBe("/bills");
+  });
+
+  it("offers to start next month when the due day has passed", async () => {
+    const { calls } = renderAt("/bills/new");
+    fill("Name", "Rent");
+    fill("Amount each month", "45000");
+    fill("Due day", "5");
+    expect(screen.queryByLabelText(/start from next month/)).toBeNull();
+    fill("Due day", "1");
+    const box = screen.getByLabelText(/start from next month/);
+    expect(box).toBeChecked();
+    fireEvent.click(screen.getByRole("button", { name: "Save bill" }));
+    await screen.findByText("Car loan");
+    expect(calls.find((c) => c.op === "insert")?.args[0]).toMatchObject({ starts_on: "2026-12-01" });
+  });
+});
