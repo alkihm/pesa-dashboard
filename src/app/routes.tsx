@@ -3,6 +3,8 @@ import { AccountsScreen, DebtScreen, SavingsScreen } from "@/features/accounts/A
 import { NewAccountScreen } from "@/features/accounts/new/NewAccountScreen";
 import { ActivityScreen } from "@/features/activity/ActivityScreen";
 import { TransactionScreen } from "@/features/activity/TransactionScreen";
+import { BillsScreen } from "@/features/bills/BillsScreen";
+import { NewBillScreen } from "@/features/bills/NewBillScreen";
 import { RequireSession } from "@/features/auth/RequireSession";
 import { SignInScreen } from "@/features/auth/SignInScreen";
 import { CategoriesScreen, CategoryScreen } from "@/features/categories/CategoriesScreen";
@@ -27,7 +29,8 @@ export const routes: RouteObject[] = [
       { path: "activity/:id", element: <TransactionScreen /> },
       { path: "transactions/new", element: <AddTransactionScreen /> },
       { path: "month", element: <MonthScreen /> },
-      { path: "bills", element: <Placeholder title="Bills & budget" issue="3.1" /> },
+      { path: "bills", element: <BillsScreen /> },
+      { path: "bills/new", element: <NewBillScreen /> },
       { path: "review", element: <Placeholder title="Review & reconcile" issue="4.1" /> },
       { path: "accounts", element: <AccountsScreen /> },
       { path: "accounts/savings", element: <SavingsScreen /> },
