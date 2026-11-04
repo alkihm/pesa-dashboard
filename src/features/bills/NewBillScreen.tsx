@@ -14,7 +14,7 @@ import styles from "./NewBill.module.css";
 type PayingAccount = { id: string; name: string; emoji: string | null };
 
 // [3.1] Add bill: name, icon, amount and due day; optionally the account it is paid from and its category.
-// Matching an SMS to the bill (payee_match) comes with [3.2].
+// With an SMS payee, an SMS payment to it marks the month paid ([3.2], D-015).
 export function NewBillScreen({ db = supabase, now }: { db?: () => Db; now?: Date }) {
   const navigate = useNavigate();
   const { categories } = useCategories(db);
@@ -47,7 +47,7 @@ export function NewBillScreen({ db = supabase, now }: { db?: () => Db; now?: Dat
     void navigate("/bills");
   }
 
-  const expense = (categories ?? []).filter((c) => c.kind === "expense" && !c.system);
+  const spending = (categories ?? []).filter((c) => c.kind === "spending" && !c.system);
 
   return (
     <>
@@ -136,7 +136,7 @@ export function NewBillScreen({ db = supabase, now }: { db?: () => Db; now?: Dat
                 onChange={(e) => set({ categoryId: e.target.value })}
               >
                 <option value="">Not set</option>
-                {expense.map((c) => (
+                {spending.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.emoji ? `${c.emoji} ` : ""}
                     {c.name}
@@ -144,6 +144,14 @@ export function NewBillScreen({ db = supabase, now }: { db?: () => Db; now?: Dat
                 ))}
               </SelectField>
             </div>
+
+            <TextField
+              label="📩 SMS payee · optional"
+              placeholder="e.g. KPLC"
+              hint="Part of the payee name in the M-PESA or bank SMS. When a payment to it arrives near the due date, the bill is marked paid."
+              value={form.payeeMatch}
+              onChange={(e) => set({ payeeMatch: e.target.value })}
+            />
 
             {error && (
               <p role="alert" className={styles.error}>

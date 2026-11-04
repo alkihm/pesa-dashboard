@@ -30,6 +30,8 @@ export interface BillForm {
   dueDay: string;
   accountId: string;
   categoryId: string;
+  /** Text in the payee of the SMS that pays this bill; marks the month paid when it arrives ([3.2], D-015). */
+  payeeMatch: string;
   /** When the due day has passed this month: true starts the bill next month (this month is already paid). */
   startNextMonth: boolean;
 }
@@ -42,6 +44,7 @@ export function emptyBillForm(): BillForm {
     dueDay: "",
     accountId: "",
     categoryId: "",
+    payeeMatch: "",
     startNextMonth: true,
   };
 }
@@ -61,6 +64,8 @@ export function billProblem(form: BillForm): string | undefined {
   if (!form.name.trim()) return "Give the bill a name.";
   if (!amountCents(form.amount)) return "The amount must be above zero.";
   if (dueDayOf(form.dueDay) === undefined) return "The due day is a day of the month, 1 to 31.";
+  if (form.payeeMatch.trim() && form.payeeMatch.trim().length < 3)
+    return "The SMS payee needs at least 3 letters, or it would match other payments.";
   return undefined;
 }
 
@@ -77,6 +82,7 @@ export function buildBill(form: BillForm, now = new Date()): BillInsert {
     due_day: dueDayOf(form.dueDay)!,
     account_id: form.accountId || null,
     category_id: form.categoryId || null,
+    payee_match: form.payeeMatch.trim() || null,
     starts_on: monthStart(now, dueDayPassed(form, now) && form.startNextMonth ? 1 : 0),
   };
 }

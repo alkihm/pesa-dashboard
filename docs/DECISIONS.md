@@ -193,3 +193,21 @@ elsewhere, hence the warning.
 **Rules out:** Keeping the PIN hash in the database only (the D-009 rule 10 position before this decision); a
 device-only PIN with no database check. A PIN changed on another device takes effect here once this device is
 back online.
+
+## D-015 · 2026-11-04 · How an SMS payment marks a bill paid
+
+**Decided:** A bill has an optional SMS payee (`bills.payee_match`). A live spending row from an SMS (not a fee
+row) pays a bill when its payee contains that text, ignoring case (as payee rules match), its amount is within
+20% of the month's bill amount and never closer than KES 50 either way, and its Nairobi date is within 15 days of
+a due date the bill still owes (not paid, not skipped). The nearest due date wins, then the nearest amount; one
+payment pays one bill month. The month's row is made if it does not exist yet. The database does this on insert
+(`match_bill_payment`), so the intake needs no change; adding a bill or changing its payee, amount or due day
+also matches the last 45 days of payments. A month paid by a live SMS payment cannot be set back to due or
+skipped by an ordinary update: `unmatch_bill_payment()` does it on purpose, and deleting the payment does it by
+itself. A month marked paid by hand can still be undone.
+**Why:** Bills like power or water change a little each month and are paid a few days early or late, so exact
+amounts or dates would miss most of them; 20% and 15 days keep two months of the same bill apart. Doing it in the
+database covers every way a payment arrives (intake, add transaction with a pasted SMS, history import later).
+The guard is what the issue asks for: an auto-paid bill cannot be undone by mistake.
+**Rules out:** Matching on amount alone; matching manual or imported rows (they carry no SMS to show); a
+tolerance per bill (can be added if a bill varies more than 20%).

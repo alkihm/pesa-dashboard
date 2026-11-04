@@ -216,6 +216,17 @@
   padding-left: 40px;
 }
 
+.pillLink {
+  display: inline-flex;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+}
+
+.pillLink:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
 .empty {
   display: flex;
   flex-direction: column;

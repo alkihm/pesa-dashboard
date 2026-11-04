@@ -47,7 +47,8 @@ function useFilter() {
 }
 
 // [3.1] Bills & budget: this month's bills with a colour from days to the due date, what to pay first at the top.
-// Pay, skip and undo come with [3.3]; budget items with [3.4]; the "via SMS" mark is set by [3.2].
+// Pay, skip and undo come with [3.3]; budget items with [3.4]. An SMS payment marks its month paid in the database
+// ([3.2], D-015); that pill opens the payment, and this screen offers no undo for it.
 export function BillsScreen({ db = supabase, now }: ScreenProps) {
   const month = nairobiMonth(now);
   const { rows, error } = useBills(db, month);
@@ -240,7 +241,17 @@ function BillLine({ row, now }: { row: BillRow; now?: Date }) {
       <td className={styles.due}>{formatDay(row.due_on)}</td>
       <td className={`${styles.amount} ${styles.num}`}>{formatAmount(row.amount_cents)}</td>
       <td className={styles.pill}>
-        <StatusPill tone={s.tone}>{s.text}</StatusPill>
+        {row.viaSms && row.transactionId ? (
+          <Link
+            to={`/activity/${row.transactionId}`}
+            className={styles.pillLink}
+            aria-label={`${s.text}: open the payment`}
+          >
+            <StatusPill tone={s.tone}>{s.text}</StatusPill>
+          </Link>
+        ) : (
+          <StatusPill tone={s.tone}>{s.text}</StatusPill>
+        )}
       </td>
     </tr>
   );
