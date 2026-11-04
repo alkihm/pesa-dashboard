@@ -49,8 +49,10 @@ Each workspace commits as `Alkihm (Hydracore)` or `Alkihm (Alfie)`, so history s
    - not labelled for the other laptop;
    - everything under **Depends on** is closed;
    - prefer a different `epic:*` from what the other laptop is doing.
-7. Label it `laptop:A` or `laptop:B`, comment `Started on <laptop>`, then
-   `git switch -c feat/<issue-number>-<slug>`.
+7. Label it `laptop:A` or `laptop:B`, comment `Started on <laptop>`, move its card to **In progress** on the
+   [project board](https://github.com/users/alkihm/projects/2), then `git switch -c feat/<issue-number>-<slug>`.
+   Label an issue only when you start it, not when it is assigned in a split: the board reads the label plus the
+   "Started on" comment as "In progress".
 8. Update your live board (`progress/<laptop>.md`, "Now" table): issue, branch, state, files you will touch.
 
 ## Keeping each other informed
@@ -62,6 +64,7 @@ Two places, used together:
 | `progress/hydracore.md`, `progress/alfie.md` on the server | each laptop only its own file | "Now" table (issue, branch, state, files being touched, blockers, time) and a dated log, newest on top |
 | `progress/NOTES.md` on the server | both, add-only | Messages that affect the other laptop: schema changed, shared file edited, decision taken, please avoid X, questions. Reply with a new line once acted on. |
 | GitHub | both | Labels, draft PRs and issue comments — the permanent record |
+| [Project board](https://github.com/users/alkihm/projects/2) | both, your own cards | Where each issue stands at a glance, for the owner too. Move your card to **In progress** when you start and **In review** when its PR is open. New issues are added automatically, and a card moves to **Done** when its issue closes. New work that fits an epic becomes a sub-issue of that `[EPIC n]` issue. |
 
 Update your board at the start, when you open or finish a pull request, when you get blocked, and at the end.
 Write a note **before** you change something the other laptop depends on (tokens, app shell, router, schema,
@@ -94,7 +97,9 @@ If both Claude sessions run on the server at the same time, they may also messag
 1. Everything in the issue's **Done when** list is ticked.
 2. `pnpm lint && pnpm typecheck && pnpm test && pnpm build` pass.
 3. Pull request into `dev` with `Closes #<n>`, ready for review; CI green; squash-merge.
-4. The other laptop pulls `dev` before its next commit.
+4. After the merge, check the issue closed and its card is in **Done**. The `Closes` line did not fire for #20 and #33;
+   if it does not, close the issue by hand with a comment naming the PR.
+5. The other laptop pulls `dev` before its next commit.
 
 ## End of a session
 

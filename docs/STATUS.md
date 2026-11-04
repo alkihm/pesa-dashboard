@@ -2,12 +2,16 @@
 
 The handover note. Read it at the start of every session; update it when something important changes.
 
-_Last updated: 2026-11-04 by Alfie_
+_Last updated: 2026-11-05 by Hydracore_
 
 ## Where things stand
 
 - **Design:** complete — every phone and desktop screen, both themes, app icon. Screen list in [DESIGN.md](DESIGN.md).
-- **Repo:** public, `dev`/`main` protected (required check `checks`), 50 issues across M0–M5.
+- **Repo:** public, `dev`/`main` protected (required check `checks`), 50 issues across M0–M5, plus 13 `[EPIC n]`
+  parent issues (#105–#117, one per `epic:*` label) with those issues as sub-issues.
+- **Project board:** [pesa-dash workspace](https://github.com/users/alkihm/projects/2), copied from the broll board
+  (Backlog / Ready / In progress / In review / Done, Priority, Estimate, the same tabs). Every issue and PR is on it;
+  epics show progress bars. Keep your cards moving as in WORKFLOW.md.
 - **Releases:** **M0 released to `main`** on 2026-11-01 (#75) — production is live with the app shell and
   placeholder screens. Release PRs `dev` → `main` merge with **Create a merge commit**; feature PRs into `dev` squash.
 - **Build:**
@@ -48,12 +52,14 @@ _Last updated: 2026-11-04 by Alfie_
 
 | What | Where | Notes |
 |---|---|---|
-| Latest `dev` (both laptops' merged work) | https://pesa-dev.autotechfy.com | Server preview, rebuilds itself within ~5 min of a merge (SERVER.md). Public until Cloudflare Access is added. |
+| Latest `dev` on the phone (owner) | https://pesa-dashboard-git-dev-autotechfy.vercel.app | Vercel's `dev` branch build, private (Vercel sign-in). Uses the dev Supabase project. **Use this one**: production is still M0, so it shows placeholder screens. |
+| Latest `dev` (server) | https://pesa-dev.autotechfy.com | Server preview, rebuilds itself within ~5 min of a merge (SERVER.md). Blank since [2.1]: `integration/` has no `.env.local`, and the owner chose to leave it. |
+| Project board | https://github.com/users/alkihm/projects/2 | Where every issue and PR stands. |
 | A pull request | Vercel preview link posted on the PR | Private (Vercel sign-in). Uses the dev Supabase project. |
 | Production (`main`) | Vercel production domain (`pesa-dashboard-livid.vercel.app`) | Public. Uses the prod Supabase project. |
 | Every shared component | `/dev/components` on a workspace dev server | Dev server only; not in builds. |
 
-Install on the iPhone from pesa-dev in Safari (Share → Add to Home Screen). Theme: Settings → Appearance
+Install on the iPhone from the dev preview above in Safari (Share → Add to Home Screen). Theme: Settings → Appearance
 (Light / Dark / System). After an update, close and reopen the installed app (twice if needed).
 
 ## First time on Alfie
@@ -77,6 +83,17 @@ Install on the iPhone from pesa-dev in Safari (Share → Add to Home Screen). Th
 The **M4 split is confirmed by the owner (2026-11-04)**. [4.3] reads `settings.review_interval_days`; Alfie's [4.9]
 edits it in the same `settings` table (no new table). [4.3] will add a status dot to the shell; Hydracore notes it in
 progress/NOTES.md before touching `src/app/shell`.
+
+Shared pieces from M4 so far (Hydracore):
+- **Reconcile ([4.1]):** `reconcileRow(account)` in `src/features/review/reconcile.ts` gives each account's state
+  (`match` / `mismatch` / `manual` / `no_sms`), its pill, detail line and explanation; `banner(rows)` gives the
+  "Needs reconciling" text. [4.4] notifications can reuse the same wording. `difference_cents` = reading − ledger
+  **at the reading's time**, so any fix must be dated at or before the SMS or count.
+- **Fix a mismatch ([4.2], PR #102):** `missingTransactionLink(account)` and `saveAdjustment()` in
+  `src/features/review/fix.ts`. An `adjustment` needs a reason (the schema refuses one without) and is dated at the
+  reading's time. Add transaction can start filled in from a link: `formFromParams()` in
+  `src/features/transactions/form.ts` reads `?direction&account&amount&date&at`, and `?back=` sets the header's back
+  link (in-app paths only).
 
 Shared pieces from M3 to build on:
 - **Bills:** status rules in `src/features/bills/status.ts` on top of `src/lib/due.ts`; `useBills(db, month)` runs
