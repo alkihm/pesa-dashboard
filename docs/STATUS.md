@@ -2,7 +2,7 @@
 
 The handover note. Read it at the start of every session; update it when something important changes.
 
-_Last updated: 2026-11-02 by Alfie_
+_Last updated: 2026-11-04 by Alfie_
 
 ## Where things stand
 
@@ -16,14 +16,18 @@ _Last updated: 2026-11-02 by Alfie_
     screen), data model.
   - **M1 Data & intake — done (9/9).** Schema, row-level security, SMS parser, intake function, Shortcut, balance
     snapshots, payee rules, history import (D-012) and nightly Sheet backup (D-013).
-  - **M2 Core screens — 6/9.** Done: [2.1] sign-in with Google and PIN, offline PIN (D-014); [2.4] Month;
-    [2.5] Activity; [2.6] transaction detail (SMS, category, note, "always for this payee", `/activity/:id`);
-    [2.7] add transaction (form, paste an SMS, unread SMS list); [2.9] new account (SMS matching, opening balance,
-    savings goal and lock date). Open, all Hydracore: [2.2] Overview (#20), [2.3] Accounts (#21), [2.8] Categories
-    (#26, PR #91).
-- **Latest migration:** `20261102010000_savings_goal` (`accounts.goal_cents`, `locked_until`, also in
-  `account_balances`). Applied to the shared local database and pushed to the dev cloud project. The db-migration
-  slot is free.
+  - **M2 Core screens — done (9/9).** Sign-in with Google and PIN, offline PIN (D-014); Overview and Home;
+    Accounts, savings and debt; Month; Activity; transaction detail (`/activity/:id`); add transaction; categories;
+    new account.
+  - **M3 Money logic — done (7/7).** Bills with due-date colours ([3.1], `/bills`, Add bill `/bills/new`); bills
+    marked paid from SMS ([3.2], D-015); Pay / Skip / Undo ([3.3]); budget items with approval ([3.4],
+    `/bills/budget/new`); loan repayment slider and the Bills card on Overview ([3.5]); category budgets in Month
+    ([3.6]); net position plus the after-all-debt figure ([3.7]).
+  - **M4 Review & polish — started.** [4.1] Reconcile merged (#101); [4.2] Fix a mismatch in review (PR #102).
+- **Latest migrations:** `20261104000000_bills_paid_from_sms` (matching triggers, guard, `unmatch_bill_payment`;
+  on local and the dev cloud project) and `20261105000000_bill_loan_link` (`bills.loan_account_id`). The second is on
+  the shared local database; **pushing it to the dev cloud project waits for the owner's OK** (dry run: only that
+  file). Until it is pushed, saving a bill on dev fails, because the app sends the new column. The db-migration slot is free.
 - **Intake live on the dev cloud project:** the iPhone Shortcut posts to it alongside the Sheet ([1.6], steps in
   [SHORTCUT.md](SHORTCUT.md)).
 - **Dev cloud data:** the old ledgers (2020–2026) are imported — about 20,600 transactions, 3,823 flagged for review.
@@ -67,12 +71,23 @@ Install on the iPhone from pesa-dev in Safari (Share → Add to Home Screen). Th
 
 | Laptop | Next issues |
 |---|---|
-| Hydracore | M2: [2.8] Categories (#26, PR #91) → [2.3] Accounts (#21) → [2.2] Overview and Home (#20). Then M3: [3.6] Category budgets (#33), [3.7] Net position and net worth (#34) |
-| Alfie | M3 bills: [3.1] Recurring bills (#28) → [3.2] Mark bills paid from SMS (#29) → [3.3] Pay, skip and undo (#30) → [3.4] Budget items with approval (#31) → [3.5] Loan repayment from income (#32) |
+| Hydracore | M4 review: [4.2] Fix a mismatch (#36, PR #102) → [4.3] Review status (#37) → [4.8] Month report PDF (#42) |
+| Alfie | M4: [4.5] Offline queue (#39) → [4.6] Instant refresh (#40) → [4.9] Settings (#43) → [4.7] Bulk import (#41) → [4.4] Notifications (#38) → [4.10] CSV export (#44) |
 
-The **M3 split is proposed by Alfie (2026-11-02), not yet confirmed by the owner.** Bills build on the SMS intake
-(Alfie's M1 work); budgets and net position build on Hydracore's Categories and Overview. Nobody starts an M3 issue
-until the owner confirms in progress/NOTES.md.
+The **M4 split is confirmed by the owner (2026-11-04)**. [4.3] reads `settings.review_interval_days`; Alfie's [4.9]
+edits it in the same `settings` table (no new table). [4.3] will add a status dot to the shell; Hydracore notes it in
+progress/NOTES.md before touching `src/app/shell`.
+
+Shared pieces from M3 to build on:
+- **Bills:** status rules in `src/features/bills/status.ts` on top of `src/lib/due.ts`; `useBills(db, month)` runs
+  `ensure_bill_months` and also returns earlier unpaid months. SMS matching rules are D-015.
+- **Actions ready for the offline queue ([4.5]):** Pay / Skip / Undo (`sendBillAction`, `src/features/bills/actions.ts`)
+  and Approve / Cancel (`sendBudgetAction`, `src/features/bills/budget.ts`) are single updates sent with the row
+  `version`; a row changed elsewhere is refused and reloaded. The queue only has to route these calls.
+- **Budget items:** `setAsideCents(items)` is the approved-but-unspent amount (only on the Bills screen today).
+- **Loans:** `allocate()` and `incomeBase()` in `src/features/loans/allocation.ts`; the share is
+  `settings.loan_allocation_pct`; instalments are bills with `loan_account_id`.
+- **Category budgets:** 90% amber / over red in `src/lib/budget.ts` (Hydracore).
 
 Shared pieces from M2 to build on:
 - **Supabase:** one client, `src/lib/supabase.ts`. Every screen sits behind the session and PIN gate ([2.1]).
