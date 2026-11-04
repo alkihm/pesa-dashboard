@@ -1,5 +1,14 @@
 import { fixtures, RECEIVED_AT } from "../../lib/sms/fixtures";
-import { amountCents, buildRows, emptyForm, fillFromSms, occurredAt, problem, type Form } from "./form";
+import {
+  amountCents,
+  buildRows,
+  emptyForm,
+  fillFromSms,
+  formFromParams,
+  occurredAt,
+  problem,
+  type Form,
+} from "./form";
 
 const body = (name: string) => fixtures.find((f) => f.name.startsWith(name))!.body;
 
@@ -147,5 +156,38 @@ describe("buildRows", () => {
     expect(rows[2]).toMatchObject({ parent_id: rows[0]!.id, category_id: "fees", channel: "fee" });
     expect(rows.every((r) => r.source === "manual" && r.dedupe_key)).toBe(true);
     expect(new Set(rows.map((r) => r.dedupe_key)).size).toBe(3);
+  });
+});
+
+// [4.2] Review opens this form filled in for a missing transaction.
+describe("formFromParams", () => {
+  const now = new Date("2026-11-04T09:00:00Z");
+
+  it("fills direction, account, amount, date and the exact time from a link", () => {
+    const params = new URLSearchParams({
+      direction: "in",
+      account: "mpesa",
+      amount: "250050",
+      date: "2026-10-31",
+      at: "2026-10-31T04:12:00Z",
+    });
+    expect(formFromParams(params, now)).toEqual({
+      ...emptyForm(now, "in"),
+      accountId: "mpesa",
+      amount: "2500.50",
+      date: "2026-10-31",
+      at: "2026-10-31T04:12:00.000Z",
+    });
+  });
+
+  it("ignores what is missing or not valid", () => {
+    const params = new URLSearchParams({ direction: "sideways", amount: "-5", date: "31/10", at: "soon" });
+    expect(formFromParams(params, now)).toEqual(emptyForm(now, "out"));
+  });
+
+  it("stores the exact time while its day is kept, midday once the date is changed", () => {
+    const form = formFromParams(new URLSearchParams({ date: "2026-10-31", at: "2026-10-31T04:12:00Z" }), now);
+    expect(occurredAt(form, now)).toBe("2026-10-31T04:12:00.000Z");
+    expect(occurredAt({ ...form, date: "2026-10-30" }, now)).toBe("2026-10-30T09:00:00.000Z");
   });
 });
