@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { supabase, type Db } from "../../lib/supabase";
 import { monthStart } from "./format";
+import { useLive } from "@/lib/live";
 
 export function monthByCategoryQuery(db: Db, month: string) {
   return db
@@ -57,6 +58,7 @@ export function useActivitySummary(db: () => Db = supabase, now = new Date()) {
   const [byCategory, setByCategory] = useState<CategoryTotal[]>();
   const [reviewCount, setReviewCount] = useState<number>();
   const [version, setVersion] = useState(0);
+  const fresh = useLive(["transactions"]);
 
   useEffect(() => {
     let live = true;
@@ -67,7 +69,7 @@ export function useActivitySummary(db: () => Db = supabase, now = new Date()) {
     return () => {
       live = false;
     };
-  }, [db, month, version]);
+  }, [db, month, version, fresh]);
 
   /** Fetches the totals again after an edit, so a new category shows in the month at once. */
   const reload = useCallback(() => setVersion((v) => v + 1), []);

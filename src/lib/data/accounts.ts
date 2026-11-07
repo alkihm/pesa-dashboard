@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import type { AccountBalance } from "../balances";
 import { supabase, type Db } from "../supabase";
+import { useLive } from "@/lib/live";
 
 export function accountBalancesQuery(db: Db) {
   return db.from("account_balances").select("*").is("archived_at", null).order("sort_order").order("name");
@@ -27,6 +28,7 @@ const NO_TERMS = { due_day: null, original_cents: null, limit_cents: null, sms_a
 export function useAccounts(db: () => Db = supabase) {
   const [result, setResult] = useState<{ accounts?: Account[]; error?: string }>();
   const [version, setVersion] = useState(0);
+  const fresh = useLive(["accounts", "transactions", "sms_messages"]);
 
   useEffect(() => {
     let live = true;
@@ -46,7 +48,7 @@ export function useAccounts(db: () => Db = supabase) {
     return () => {
       live = false;
     };
-  }, [db, version]);
+  }, [db, version, fresh]);
 
   const reload = useCallback(() => setVersion((v) => v + 1), []);
   return { accounts: result?.accounts, error: result?.error, reload };

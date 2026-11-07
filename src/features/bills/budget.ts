@@ -8,6 +8,7 @@ import type { Database } from "@/lib/database.types";
 import { offlineQueue } from "@/lib/offline/queue";
 import { supabase, type Db } from "@/lib/supabase";
 import { amountCents } from "../transactions/form";
+import { useLive } from "@/lib/live";
 
 export type BudgetStatus = "pending" | "approved" | "done" | "cancelled";
 type BudgetInsert = Database["public"]["Tables"]["budget_items"]["Insert"];
@@ -144,6 +145,7 @@ export function useBudgetItems(db: () => Db = supabase, month: string) {
   const [items, setItems] = useState<BudgetItem[]>();
   const [error, setError] = useState<string>();
   const [version, setVersion] = useState(0);
+  const fresh = useLive(["budget_items", "transactions"]);
 
   useEffect(() => {
     let live = true;
@@ -155,7 +157,7 @@ export function useBudgetItems(db: () => Db = supabase, month: string) {
     return () => {
       live = false;
     };
-  }, [db, month, version]);
+  }, [db, month, version, fresh]);
 
   const reload = useCallback(() => setVersion((v) => v + 1), []);
   const replace = useCallback(

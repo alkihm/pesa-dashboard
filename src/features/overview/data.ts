@@ -7,6 +7,7 @@ import { monthTotalsQuery } from "@/features/month/data";
 import type { CategoryMonthRow, MonthTotalsRow } from "@/features/month/month";
 import { supabase, type Db } from "@/lib/supabase";
 import { periodStart, trendFrom, type Period } from "./overview";
+import { useLive } from "@/lib/live";
 
 export function periodCategoriesQuery(db: Db, from: string | null) {
   const query = db
@@ -25,6 +26,7 @@ export function useOverviewData(period: Period, db: () => Db = supabase, now?: D
   const [result, setResult] = useState<{ period: Period; data?: OverviewData; error?: string }>();
   const from = periodStart(period, now);
   const trend = trendFrom(now);
+  const fresh = useLive(["transactions", "categories"]);
 
   useEffect(() => {
     let live = true;
@@ -43,7 +45,7 @@ export function useOverviewData(period: Period, db: () => Db = supabase, now?: D
     return () => {
       live = false;
     };
-  }, [db, period, from, trend.from, trend.to]);
+  }, [db, period, from, trend.from, trend.to, fresh]);
 
   const current = result?.period === period ? result : undefined;
   return { data: current?.data, error: current?.error };

@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { activityQuery, nextCursor, type ActivityRow, type Cursor } from "@/features/activity/query";
 import { supabase, type Db } from "@/lib/supabase";
 import { addMonths, monthRange, type CategoryMonthRow, type Month, type MonthTotalsRow } from "./month";
+import { useLive } from "@/lib/live";
 
 export function monthTotalsQuery(db: Db, from: Month, to: Month) {
   return db
@@ -31,6 +32,7 @@ export interface MonthData {
 
 export function useMonthData(month: Month, db: () => Db = supabase) {
   const [result, setResult] = useState<{ month: Month; data?: MonthData; error?: string }>();
+  const fresh = useLive(["transactions", "categories"]);
 
   useEffect(() => {
     let live = true;
@@ -53,7 +55,7 @@ export function useMonthData(month: Month, db: () => Db = supabase) {
     return () => {
       live = false;
     };
-  }, [db, month]);
+  }, [db, month, fresh]);
 
   const current = result?.month === month ? result : undefined;
   return { data: current?.data, error: current?.error, loading: !current };
@@ -70,6 +72,7 @@ interface Page {
 /** The month's transactions, newest first, 50 at a time. */
 export function useMonthTransactions(month: Month, db: () => Db = supabase) {
   const [page, setPage] = useState<Page>();
+  const fresh = useLive(["transactions"]);
 
   const fetchPage = useCallback(
     (from?: Cursor) =>
@@ -84,9 +87,10 @@ export function useMonthTransactions(month: Month, db: () => Db = supabase) {
     [db, month],
   );
 
+  // Again when the data changed elsewhere ([4.6]); the rows on screen stay until the new page arrives.
   useEffect(() => {
     void fetchPage();
-  }, [fetchPage]);
+  }, [fetchPage, fresh]);
 
   const current = page?.month === month ? page : undefined;
   const loadMore = useCallback(() => {

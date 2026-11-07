@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { supabase, type Db } from "../../lib/supabase";
 import { activityQuery, nextCursor, type ActivityFilter, type ActivityRow, type Cursor } from "./query";
+import { useLive } from "@/lib/live";
 
 const SEARCH_DELAY_MS = 250;
 
@@ -27,6 +28,7 @@ export function useActivity(db: () => Db = supabase) {
   const [search, setSearch] = useState("");
   const [query, setQuery] = useState<Query>({ filter, search });
   const [result, setResult] = useState<Result>();
+  const fresh = useLive(["transactions", "categories"]);
 
   // Typing waits for a pause; a filter tap applies at once.
   useEffect(() => {
@@ -46,9 +48,10 @@ export function useActivity(db: () => Db = supabase) {
     [db, query],
   );
 
+  // Again when the data changed elsewhere ([4.6]); the rows on screen stay until the new page arrives.
   useEffect(() => {
     void fetchPage();
-  }, [fetchPage]);
+  }, [fetchPage, fresh]);
 
   const current = result?.query === query ? result : undefined;
 
