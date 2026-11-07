@@ -10,6 +10,7 @@ import { RequireSession } from "@/features/auth/RequireSession";
 import { SignInScreen } from "@/features/auth/SignInScreen";
 import { CategoriesScreen, CategoryScreen } from "@/features/categories/CategoriesScreen";
 import { ExportScreen } from "@/features/export/ExportScreen";
+import { ImportScreen } from "@/features/import/ImportScreen";
 import { MonthScreen } from "@/features/month/MonthScreen";
 import { OverviewScreen } from "@/features/overview/OverviewScreen";
 import { ReportScreen } from "@/features/report/ReportScreen";
@@ -59,6 +60,7 @@ export const routes: RouteObject[] = [
       { path: "categories/:id", element: <CategoryScreen /> },
       { path: "settings", element: <SettingsScreen /> },
       { path: "export", element: <ExportScreen /> },
+      { path: "import", element: <ImportScreen /> },
       ...(import.meta.env.DEV
         ? [
             {

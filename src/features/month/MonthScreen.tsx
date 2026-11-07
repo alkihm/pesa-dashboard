@@ -113,6 +113,13 @@ export function MonthScreen({ db = supabase, now }: { db?: () => Db; now?: Date 
             <Link to={`/report?m=${monthParam(month)}`} className={styles.headerLink}>
               📄 Report
             </Link>
+            {/* [4.7] Bulk import: the template and the upload both live on /import. */}
+            <Link to="/import" className={styles.headerLink}>
+              ⬇️ Template
+            </Link>
+            <Link to="/import" className={styles.headerLink}>
+              ⬆️ Upload
+            </Link>
           </div>
         }
       />

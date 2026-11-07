@@ -102,6 +102,53 @@ export function zip(entries: readonly ZipEntry[], at = new Date()): Uint8Array {
 
 /** The files in a stored ZIP, by name. Throws on compressed entries or a bad checksum. */
 export function unzip(bytes: Uint8Array): Map<string, Uint8Array> {
+  const files = new Map<string, Uint8Array>();
+  for (const e of entriesOf(bytes)) {
+    if (e.method !== 0) throw new Error(`ZIP: ${e.name} is compressed`);
+    files.set(e.name, checked(e, e.raw));
+  }
+  return files;
+}
+
+/**
+ * The files in any ordinary ZIP — stored or deflated, as Excel writes .xlsx — by name. Deflate uses the browser's
+ * own DecompressionStream, so there is still no dependency.
+ */
+export async function unzipAsync(bytes: Uint8Array): Promise<Map<string, Uint8Array>> {
+  const files = new Map<string, Uint8Array>();
+  for (const e of entriesOf(bytes)) {
+    if (e.method === 0) files.set(e.name, checked(e, e.raw));
+    else if (e.method === 8) files.set(e.name, checked(e, await inflate(e.raw)));
+    else throw new Error(`ZIP: ${e.name} uses an unsupported compression`);
+  }
+  return files;
+}
+
+async function inflate(raw: Uint8Array): Promise<Uint8Array> {
+  const source = new ReadableStream<BufferSource>({
+    start(controller) {
+      controller.enqueue(raw as Uint8Array<ArrayBuffer>);
+      controller.close();
+    },
+  });
+  const stream = source.pipeThrough(new DecompressionStream("deflate-raw"));
+  return new Uint8Array(await new Response(stream).arrayBuffer());
+}
+
+interface RawEntry {
+  name: string;
+  method: number;
+  crc: number;
+  size: number;
+  raw: Uint8Array;
+}
+
+function checked(e: RawEntry, data: Uint8Array): Uint8Array {
+  if (data.length !== e.size || crc32(data) !== e.crc) throw new Error(`ZIP: ${e.name} is damaged`);
+  return data;
+}
+
+function entriesOf(bytes: Uint8Array): RawEntry[] {
   const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
   let eocd = bytes.length - 22;
   while (eocd >= 0 && view.getUint32(eocd, true) !== 0x06054b50) eocd--;
@@ -109,23 +156,23 @@ export function unzip(bytes: Uint8Array): Map<string, Uint8Array> {
   const count = view.getUint16(eocd + 10, true);
   let p = view.getUint32(eocd + 16, true);
   const dec = new TextDecoder();
-  const files = new Map<string, Uint8Array>();
+  const entries: RawEntry[] = [];
   for (let i = 0; i < count; i++) {
     if (view.getUint32(p, true) !== 0x02014b50) throw new Error("ZIP: bad central directory");
     const method = view.getUint16(p + 10, true);
     const crc = view.getUint32(p + 16, true);
-    const size = view.getUint32(p + 20, true);
+    const compressed = view.getUint32(p + 20, true);
+    const size = view.getUint32(p + 24, true);
     const nameLength = view.getUint16(p + 28, true);
     const extra = view.getUint16(p + 30, true);
     const comment = view.getUint16(p + 32, true);
     const local = view.getUint32(p + 42, true);
     const name = dec.decode(bytes.subarray(p + 46, p + 46 + nameLength));
-    if (method !== 0) throw new Error(`ZIP: ${name} is compressed`);
+    // Sizes come from the central directory: writers that stream (Excel among them) may leave the local header's
+    // sizes at zero and put them in a data descriptor after the data.
     const start = local + 30 + view.getUint16(local + 26, true) + view.getUint16(local + 28, true);
-    const data = bytes.subarray(start, start + size);
-    if (crc32(data) !== crc) throw new Error(`ZIP: ${name} is damaged`);
-    files.set(name, data);
+    entries.push({ name, method, crc, size, raw: bytes.subarray(start, start + compressed) });
     p += 46 + nameLength + extra + comment;
   }
-  return files;
+  return entries;
 }
