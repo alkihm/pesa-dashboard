@@ -33,6 +33,7 @@ describe("app shell", () => {
     ["/categories", "Categories"],
     ["/categories/new", "New category"],
     ["/settings", "Settings"],
+    ["/export", "Export everything"],
   ])("renders %s inside the shell", async (path, title) => {
     renderAt(path);
     expect(await screen.findByRole("heading", { level: 1 })).toHaveTextContent(title);
