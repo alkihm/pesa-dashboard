@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import type { Database } from "@/lib/database.types";
+import { offlineQueue } from "@/lib/offline/queue";
 import { supabase, type Db } from "@/lib/supabase";
 import { amountCents } from "../transactions/form";
 
@@ -119,16 +120,22 @@ export function canBudget(item: Pick<BudgetItem, "status">, action: BudgetAction
 }
 
 export async function sendBudgetAction(db: Db, item: BudgetItem, action: BudgetAction, now = new Date()) {
-  const { data, error } = await db
-    .from("budget_items")
-    .update(budgetChanges(action, now))
-    .eq("id", item.id)
-    .eq("version", item.version)
-    .select("version");
-  if (error) return { ok: false as const, message: error.message };
-  if (!data || data.length === 0)
-    return { ok: false as const, message: `${item.name} was changed elsewhere; showing the latest.` };
-  return { ok: true as const };
+  const result = await offlineQueue().submit(
+    db,
+    {
+      kind: "update",
+      table: "budget_items",
+      id: item.id,
+      version: item.version,
+      changes: budgetChanges(action, now),
+    },
+    `${action === "approve" ? "Approved" : "Cancelled"} · ${item.name}`,
+    "version",
+  );
+  if (result.status === "sent" || result.status === "queued")
+    return { ok: true as const, queued: result.status === "queued" };
+  if (result.status === "error") return { ok: false as const, message: result.message };
+  return { ok: false as const, message: `${item.name} was changed elsewhere; showing the latest.` };
 }
 
 // ---- reads ---------------------------------------------------------------------------------------------

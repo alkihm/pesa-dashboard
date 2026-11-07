@@ -48,7 +48,7 @@ export function AddTransactionScreen({ db = supabase }: { db?: () => Db }) {
   const [readMessage, setReadMessage] = useState<{ text: string; ok: boolean }>();
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState<string>();
+  const [saved, setSaved] = useState<{ text: string; queued: boolean }>();
 
   const set = (patch: Partial<Form>) => {
     setForm((f) => ({ ...f, ...patch }));
@@ -75,10 +75,11 @@ export function AddTransactionScreen({ db = supabase }: { db?: () => Db }) {
     if (why) return setError(why);
     setSaving(true);
     try {
-      await insertRows(db(), buildRows(form));
       const cents = amountCents(form.amount)!;
       const who = form.payee.trim();
-      setSaved(`${formatKes(cents)}${who ? ` · ${who}` : ""}`);
+      const text = `${formatKes(cents)}${who ? ` · ${who}` : ""}`;
+      const { queued } = await insertRows(db(), buildRows(form), `Added · ${text}`);
+      setSaved({ text, queued });
       if (form.sms?.smsId) data.reloadPending();
       // Keep the direction and account for the next entry; clear the rest.
       setForm({ ...emptyForm(new Date(), form.direction), accountId: form.accountId });
@@ -120,7 +121,13 @@ export function AddTransactionScreen({ db = supabase }: { db?: () => Db }) {
         >
           {saved && (
             <p role="status" className={styles.saved}>
-              ✓ Saved {saved}. <Link to="/activity">See it in Activity</Link>
+              {saved.queued ? (
+                <>✓ Saved {saved.text} on this device. It is sent when you are back online.</>
+              ) : (
+                <>
+                  ✓ Saved {saved.text}. <Link to="/activity">See it in Activity</Link>
+                </>
+              )}
             </p>
           )}
 

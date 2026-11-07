@@ -106,7 +106,8 @@ export function BillsScreen({ db = supabase, now }: ScreenProps) {
       budget.replace(item);
       setActionError(result.message);
     }
-    budget.reload();
+    // Queued offline: keep what the screen shows; a reload would need the connection.
+    if (!result.ok || !result.queued) budget.reload();
   }
 
   const sorted = useMemo(() => sortBills(rows ?? []), [rows]);

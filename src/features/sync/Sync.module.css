@@ -1,0 +1,125 @@
+/* Offline bar: above the shell, on every screen (Reconcile board, top strip). */
+.banner {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px var(--shell-gutter);
+  padding-top: calc(8px + env(safe-area-inset-top));
+  background: var(--tone-amber-bg);
+  color: var(--tone-amber-text);
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.bannerBad {
+  background: var(--tone-red-bg);
+  color: var(--tone-red-text);
+}
+
+.bannerLink {
+  margin-left: auto;
+  color: inherit;
+  text-decoration: underline;
+}
+
+/* Settings · Data & sync */
+.queue {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 52px;
+  margin-bottom: 12px;
+  padding: 8px 10px 8px 14px;
+  border-radius: var(--radius-control);
+  background: var(--tone-amber-bg);
+  color: var(--tone-amber-text);
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.queueBad {
+  background: var(--tone-red-bg);
+  color: var(--tone-red-text);
+}
+
+.queueClear {
+  background: var(--tone-green-bg);
+  color: var(--tone-green-text);
+}
+
+.note {
+  margin: 0 0 12px;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.items {
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+}
+
+.item {
+  display: grid;
+  gap: 4px;
+  padding: 10px 0;
+  border-top: 1px solid var(--color-line);
+}
+
+.item:last-child {
+  border-bottom: 1px solid var(--color-line);
+}
+
+.itemHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.itemLabel {
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+  overflow-wrap: anywhere;
+}
+
+.itemMeta,
+.itemNote {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+.diff {
+  width: 100%;
+  margin: 4px 0;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.diff th,
+.diff td {
+  padding: 4px 6px 4px 0;
+  text-align: left;
+  vertical-align: top;
+}
+
+.diff thead th {
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-medium);
+}
+
+.diff tbody th {
+  font-weight: var(--font-weight-semibold);
+}
+
+.choice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
