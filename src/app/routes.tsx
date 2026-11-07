@@ -17,7 +17,7 @@ import { SettingsScreen } from "@/features/settings/SettingsScreen";
 import { SyncProvider } from "@/features/sync/SyncProvider";
 import { AddTransactionScreen } from "@/features/transactions/AddTransactionScreen";
 import { AppShell } from "./shell/AppShell";
-import { NotFound } from "./Placeholder";
+import { NotFound, Placeholder } from "./Placeholder";
 
 // Every screen in docs/DESIGN.md. Placeholders name the issue that builds the real screen.
 export const routes: RouteObject[] = [
@@ -57,6 +57,8 @@ export const routes: RouteObject[] = [
       { path: "categories/new", element: <CategoryScreen /> },
       { path: "categories/:id", element: <CategoryScreen /> },
       { path: "settings", element: <SettingsScreen /> },
+      { path: "import", element: <Placeholder title="Bulk import" issue="4.7" back="/settings" /> },
+      { path: "export", element: <Placeholder title="Export everything" issue="4.10" back="/settings" /> },
       ...(import.meta.env.DEV
         ? [
             {

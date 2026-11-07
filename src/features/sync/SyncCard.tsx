@@ -1,5 +1,7 @@
 // Settings · Data & sync, the queue part ([4.5]): what waits on this device, Send, and a choice for each change
-// that met a newer version on the server. The Shortcut and Sheet rows of the board come with [4.9].
+// that met a newer version on the server. Settings ([4.9]) passes the Shortcut and Sheet rows as `sources`.
+
+import type { ReactNode } from "react";
 
 import { Button } from "@/components/Button";
 import { Card } from "@/components/Card";
@@ -84,7 +86,7 @@ function Item({ item }: { item: QueueItem }) {
   );
 }
 
-export function SyncCard() {
+export function SyncCard({ sources }: { sources?: ReactNode }) {
   const { items, online, syncing, syncNow } = useSync();
   const summary = summarise(items);
   const clear = items.length === 0;
@@ -92,6 +94,7 @@ export function SyncCard() {
 
   return (
     <Card title="🔄 Data & sync">
+      {sources}
       <div id="sync" className={`${styles.queue} ${tone}`}>
         <span>
           <span aria-hidden="true">{clear ? "✓ " : summary.waiting === 0 ? "⚠️ " : "📴 "}</span>
