@@ -9,6 +9,7 @@ import { NewBillScreen } from "@/features/bills/NewBillScreen";
 import { RequireSession } from "@/features/auth/RequireSession";
 import { SignInScreen } from "@/features/auth/SignInScreen";
 import { CategoriesScreen, CategoryScreen } from "@/features/categories/CategoriesScreen";
+import { ExportScreen } from "@/features/export/ExportScreen";
 import { MonthScreen } from "@/features/month/MonthScreen";
 import { OverviewScreen } from "@/features/overview/OverviewScreen";
 import { ReportScreen } from "@/features/report/ReportScreen";
@@ -58,7 +59,7 @@ export const routes: RouteObject[] = [
       { path: "categories/:id", element: <CategoryScreen /> },
       { path: "settings", element: <SettingsScreen /> },
       { path: "import", element: <Placeholder title="Bulk import" issue="4.7" back="/settings" /> },
-      { path: "export", element: <Placeholder title="Export everything" issue="4.10" back="/settings" /> },
+      { path: "export", element: <ExportScreen /> },
       ...(import.meta.env.DEV
         ? [
             {
