@@ -192,6 +192,9 @@ spending, fees, borrowed, repaid, saved per Nairobi month) and `category_month_t
   transaction queue offline; two edits of one row merge into one item. Settings · Data & sync lists the queue and
   asks Keep mine / Keep theirs on a conflict. Other writes (accounts, categories, payee rules, bills, PIN) still
   need a connection.
+- **Live refresh** ([4.6], `src/lib/live.ts`): `transactions`, `sms_messages`, `bill_months` and `accounts` are in the
+  `supabase_realtime` publication; the app follows them (row-level security applies) and screens re-read what they
+  show. Also on pull-to-refresh, on return to the app, when back online, and after the offline queue sent edits.
 
 ## Environments
 
