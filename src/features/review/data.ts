@@ -13,6 +13,7 @@ import { accountBalancesQuery } from "@/lib/data/accounts";
 import { reviewStatus, type ReviewRecord, type ReviewResult, type ReviewStatus } from "@/lib/review";
 import { supabase, type Db } from "@/lib/supabase";
 import type { ReconcileRow } from "./reconcile";
+import { useLive } from "@/lib/live";
 
 export function reviewIntervalQuery(db: Db) {
   return db.from("settings").select("review_interval_days").maybeSingle();
@@ -90,6 +91,7 @@ export async function loadReviewData(db: Db, now = new Date()): Promise<ReviewDa
 export function useReviewData(db: () => Db = supabase) {
   const [result, setResult] = useState<{ data?: ReviewData; error?: string }>();
   const [version, setVersion] = useState(0);
+  const fresh = useLive(["accounts", "transactions", "sms_messages", "bill_months", "reviews"]);
 
   useEffect(() => {
     let live = true;
@@ -100,7 +102,7 @@ export function useReviewData(db: () => Db = supabase) {
     return () => {
       live = false;
     };
-  }, [db, version]);
+  }, [db, version, fresh]);
 
   const reload = useCallback(() => setVersion((v) => v + 1), []);
   return { data: result?.data, error: result?.error, reload };

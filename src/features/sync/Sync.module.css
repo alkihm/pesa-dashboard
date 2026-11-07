@@ -123,3 +123,39 @@
   gap: 8px;
   margin-top: 4px;
 }
+
+/* Pull-to-refresh indicator: a pill that follows the finger down from the top. */
+.pull {
+  position: fixed;
+  top: env(safe-area-inset-top);
+  left: 50%;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-card);
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+  pointer-events: none;
+}
+
+.spin {
+  display: inline-block;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spin {
+    animation: none;
+  }
+}

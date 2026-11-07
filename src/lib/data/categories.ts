@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 
 import { supabase, type Db } from "../supabase";
+import { useLive } from "@/lib/live";
 
 export function categoriesQuery(db: Db) {
   return db
@@ -19,6 +20,7 @@ export type Category = NonNullable<Awaited<ReturnType<typeof categoriesQuery>>["
 export function useCategories(db: () => Db = supabase) {
   const [categories, setCategories] = useState<Category[]>();
   const [error, setError] = useState<string>();
+  const fresh = useLive(["categories"]);
 
   useEffect(() => {
     let live = true;
@@ -30,7 +32,7 @@ export function useCategories(db: () => Db = supabase) {
     return () => {
       live = false;
     };
-  }, [db]);
+  }, [db, fresh]);
 
   return { categories, error };
 }

@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { currentMonth } from "@/features/month/month";
 import { supabase, type Db } from "@/lib/supabase";
 import { ruleChanges, values, type CategoryRecord, type Form, type Rule } from "./category";
+import { useLive } from "@/lib/live";
 
 export function allCategoriesQuery(db: Db) {
   return db
@@ -38,6 +39,7 @@ export function useCategoryData(db: () => Db = supabase, now?: Date) {
   const month = currentMonth(now);
   const [result, setResult] = useState<{ data?: CategoryData; error?: string }>();
   const [version, setVersion] = useState(0);
+  const fresh = useLive(["categories", "transactions"]);
 
   useEffect(() => {
     let live = true;
@@ -60,7 +62,7 @@ export function useCategoryData(db: () => Db = supabase, now?: Date) {
     return () => {
       live = false;
     };
-  }, [db, month, version]);
+  }, [db, month, version, fresh]);
 
   const reload = useCallback(() => setVersion((v) => v + 1), []);
   return { month, data: result?.data, error: result?.error, reload };

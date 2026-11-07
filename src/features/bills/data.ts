@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { supabase, type Db } from "@/lib/supabase";
 import type { BillMonthStatus } from "./status";
+import { useLive } from "@/lib/live";
 
 export function billMonthsQuery(db: Db, month: string) {
   return db
@@ -82,6 +83,7 @@ export function useBills(db: () => Db = supabase, month: string) {
   const [rows, setRows] = useState<BillRow[]>();
   const [error, setError] = useState<string>();
   const [version, setVersion] = useState(0);
+  const fresh = useLive(["bill_months", "transactions"]);
 
   useEffect(() => {
     let live = true;
@@ -93,7 +95,7 @@ export function useBills(db: () => Db = supabase, month: string) {
     return () => {
       live = false;
     };
-  }, [db, month, version]);
+  }, [db, month, version, fresh]);
 
   const reload = useCallback(() => setVersion((v) => v + 1), []);
   /** Replaces one row on screen (an action applied before the database answers, or put back after). */

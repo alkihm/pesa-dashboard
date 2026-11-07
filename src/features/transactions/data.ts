@@ -7,6 +7,7 @@ import { useCategories } from "../../lib/data/categories";
 import { offlineQueue } from "../../lib/offline/queue";
 import { supabase, type Db } from "../../lib/supabase";
 import type { TxInsert } from "./form";
+import { useLive } from "@/lib/live";
 
 export function accountsQuery(db: Db) {
   return db
@@ -65,6 +66,7 @@ export function useAddTransactionData(db: () => Db = supabase) {
   const [rules, setRules] = useState<Rule[]>([]);
   const [pending, setPending] = useState<PendingSms[]>();
   const [version, setVersion] = useState(0);
+  const fresh = useLive(["sms_messages", "transactions"]);
 
   useEffect(() => {
     let live = true;
@@ -81,7 +83,7 @@ export function useAddTransactionData(db: () => Db = supabase) {
     return () => {
       live = false;
     };
-  }, [db, version]);
+  }, [db, version, fresh]);
 
   /** Fetches the unledgered SMS again, after one of them was saved. */
   const reloadPending = useCallback(() => setVersion((v) => v + 1), []);
