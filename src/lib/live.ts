@@ -42,9 +42,13 @@ function subscribe(listener: () => void) {
   return () => void listeners.delete(listener);
 }
 
-/** A number that changes whenever one of `tables` is announced; 0 until the first change. */
+/**
+ * A number that changes whenever one of `tables` is announced; 0 until the first change. Settings always count: the
+ * currency and the month start day change what every screen shows ([4.9]).
+ */
 export function liveTick(tables: readonly LiveTable[]) {
-  return tables.reduce((sum, t) => sum + (ticks.get(t) ?? 0), 0);
+  const all = tables.includes("settings") ? tables : [...tables, "settings" as const];
+  return all.reduce((sum, t) => sum + (ticks.get(t) ?? 0), 0);
 }
 
 export function useLive(tables: readonly LiveTable[]): number {

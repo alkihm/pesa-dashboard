@@ -4,8 +4,31 @@ const whole = new Intl.NumberFormat("en-KE", { maximumFractionDigits: 0 });
 const withCents = new Intl.NumberFormat("en-KE", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const MINUS = "−";
 
+/** The ledger's currency (settings.currency, [4.9]); every prefixed amount shows it. Never converts amounts. */
+export const CURRENCIES = [
+  { code: "KES", name: "Kenyan shilling" },
+  { code: "UGX", name: "Ugandan shilling" },
+  { code: "TZS", name: "Tanzanian shilling" },
+  { code: "RWF", name: "Rwandan franc" },
+  { code: "USD", name: "US dollar" },
+  { code: "EUR", name: "Euro" },
+  { code: "GBP", name: "Pound sterling" },
+] as const;
+
+let currencyCode = "KES";
+
+export const getCurrency = () => currencyCode;
+
+/** Returns whether it changed. Unknown codes fall back to KES. */
+export function setCurrency(code: string | null | undefined): boolean {
+  const next = CURRENCIES.some((c) => c.code === code) ? code! : "KES";
+  const changed = next !== currencyCode;
+  currencyCode = next;
+  return changed;
+}
+
 interface FormatOptions {
-  /** Prefix "KES ". */
+  /** Prefix the ledger currency, "KES " by default. */
   currency?: boolean;
   /** Always show the sign: "+2,500" or "−2,500". */
   signed?: boolean;
@@ -16,10 +39,10 @@ export function formatAmount(cents: number, { currency = false, signed = false }
   const abs = Math.abs(cents);
   const number = abs % 100 === 0 ? whole.format(abs / 100) : withCents.format(abs / 100);
   const sign = cents < 0 ? MINUS : signed && cents > 0 ? "+" : "";
-  return `${sign}${currency ? "KES " : ""}${number}`;
+  return `${sign}${currency ? `${currencyCode} ` : ""}${number}`;
 }
 
-/** formatAmount with the "KES " prefix. */
+/** formatAmount with the currency prefix ("KES " unless Settings chose another). */
 export function formatKes(cents: number, options: Omit<FormatOptions, "currency"> = {}) {
   return formatAmount(cents, { ...options, currency: true });
 }

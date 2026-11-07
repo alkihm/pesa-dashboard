@@ -5,13 +5,17 @@ import { useCallback, useEffect, useState } from "react";
 
 import { alertsFrom, type Alerts } from "@/lib/alerts";
 import type { Json } from "@/lib/database.types";
+import { setMonthStartDay } from "@/lib/budgetMonth";
 import { announce, useLive } from "@/lib/live";
+import { setCurrency } from "@/lib/money";
 import { DEFAULT_REVIEW_INTERVAL } from "@/lib/review";
 import { supabase, type Db } from "@/lib/supabase";
 
 export interface Prefs {
   reviewIntervalDays: number;
   alerts: Alerts;
+  currency: string;
+  monthStartDay: number;
 }
 
 export interface Backup {
@@ -34,7 +38,7 @@ const count = (r: { count: number | null }) => r.count ?? 0;
 
 export async function loadSettings(db: Db): Promise<SettingsData> {
   const [settings, sms, backup, accounts, matched, categories, rules, bills] = await Promise.all([
-    db.from("settings").select("review_interval_days, alerts").maybeSingle(),
+    db.from("settings").select("review_interval_days, alerts, currency, month_start_day").maybeSingle(),
     db
       .from("sms_messages")
       .select("received_at")
@@ -65,6 +69,8 @@ export async function loadSettings(db: Db): Promise<SettingsData> {
     prefs: {
       reviewIntervalDays: settings.data?.review_interval_days ?? DEFAULT_REVIEW_INTERVAL,
       alerts: alertsFrom(settings.data?.alerts),
+      currency: settings.data?.currency ?? "KES",
+      monthStartDay: settings.data?.month_start_day ?? 1,
     },
     lastSmsAt: sms.data?.received_at ?? null,
     backup: b
@@ -113,14 +119,20 @@ export function useSettingsData(db: () => Db = supabase) {
 
 /** Saves the preferences (one row per user, made on first save) and tells every screen they changed. */
 export async function savePrefs(db: Db, prefs: Prefs) {
-  const { error } = await db
-    .from("settings")
-    .upsert(
-      { review_interval_days: prefs.reviewIntervalDays, alerts: prefs.alerts as unknown as Json },
-      { onConflict: "user_id" },
-    );
+  const { error } = await db.from("settings").upsert(
+    {
+      review_interval_days: prefs.reviewIntervalDays,
+      alerts: prefs.alerts as unknown as Json,
+      currency: prefs.currency,
+      month_start_day: prefs.monthStartDay,
+    },
+    { onConflict: "user_id" },
+  );
   if (error) throw new Error(error.message);
-  announce(["settings"]);
+  // Every screen formats with the currency and groups by the month start: apply both, then everyone re-reads.
+  setCurrency(prefs.currency);
+  setMonthStartDay(prefs.monthStartDay);
+  announce();
 }
 
 /** "4 min ago", "3 h ago", "2 days ago". */

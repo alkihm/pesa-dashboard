@@ -42,5 +42,5 @@ export const EXPORT_TABLES: readonly ExportTable[] = [
   { name: "bill_months", columns: columns<"bill_months">()(["id", "bill_id", "month", "due_on", "amount_cents", "status", "paid_at", "transaction_id", "skip_reason", "created_at", "updated_at", "version"]) },
   { name: "reviews", columns: columns<"reviews">()(["id", "started_at", "completed_at", "result", "note", "created_at", "updated_at", "version"]) },
   { name: "review_checks", columns: columns<"review_checks">()(["id", "review_id", "account_id", "ledger_cents", "stated_cents", "resolution", "transaction_id", "created_at", "updated_at", "version"]) },
-  { name: "settings", columns: columns<"settings">()(["id", "review_interval_days", "loan_allocation_pct", "theme", "alerts", "created_at", "updated_at", "version"]), json: ["alerts"] },
+  { name: "settings", columns: columns<"settings">()(["id", "review_interval_days", "loan_allocation_pct", "theme", "alerts", "currency", "month_start_day", "created_at", "updated_at", "version"]), json: ["alerts"] },
 ];

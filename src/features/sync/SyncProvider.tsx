@@ -7,7 +7,9 @@
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 
 import { useSession } from "@/features/auth/session";
-import { announce, followDatabase } from "@/lib/live";
+import { setMonthStartDay } from "@/lib/budgetMonth";
+import { announce, followDatabase, useLive } from "@/lib/live";
+import { setCurrency } from "@/lib/money";
 import { offlineQueue, type OfflineQueue } from "@/lib/offline/queue";
 import { supabase, type Db } from "@/lib/supabase";
 import { OfflineBanner } from "./OfflineBanner";
@@ -75,6 +77,27 @@ export function SyncProvider({ children, db = supabase, queue = offlineQueue() }
       window.clearInterval(timer);
     };
   }, [ready, waiting, syncNow]);
+
+  // [4.9] The ledger currency and the budget month start day, read at sign-in and whenever settings may have
+  // changed (Settings, another device on return). Screens re-read only when a value really changed.
+  const settingsTick = useLive(["settings"]);
+  useEffect(() => {
+    if (!userId) return;
+    let live = true;
+    void db()
+      .from("settings")
+      .select("currency, month_start_day")
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (!live || error) return;
+        const currency = setCurrency(data?.currency);
+        const month = setMonthStartDay(data?.month_start_day);
+        if (currency || month) announce();
+      });
+    return () => {
+      live = false;
+    };
+  }, [db, userId, settingsTick]);
 
   // Changes made elsewhere: a new SMS, a bill an SMS paid, an edit on another device.
   useEffect(() => {

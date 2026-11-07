@@ -18,6 +18,7 @@ import { supabase, type Db } from "@/lib/supabase";
 import { useReport } from "./data";
 import type { Report } from "./report";
 import styles from "./Report.module.css";
+import { budgetMonthSpan } from "@/lib/budgetMonth";
 
 // [4.8] Month report: a one-page overview of any month (?m=2026-10) that prints on A4. "Download PDF" opens the
 // browser's print dialog, where "Save as PDF" makes the file; the toolbar is left out of the print. It sits outside
@@ -41,7 +42,7 @@ export function ReportScreen({ db = supabase, now = new Date() }: { db?: () => D
       <div className={styles.noPrint}>
         <PageHeader
           title="Month report"
-          subtitle={monthTitle(month)}
+          subtitle={[monthTitle(month), budgetMonthSpan(month)].filter(Boolean).join(" · ")}
           back={`/month?m=${monthParam(month)}`}
           trailing={
             <button type="button" className={styles.iconButton} onClick={print} aria-label="Download PDF">
@@ -89,6 +90,7 @@ function ReportSheet({ report, generated }: { report: Report; generated: Date })
         <div className={styles.sheetTitle}>
           <span className={styles.kicker}>Monthly report</span>
           <h2>{monthTitle(report.month)}</h2>
+          {budgetMonthSpan(report.month) && <p>{budgetMonthSpan(report.month)}</p>}
         </div>
         <div className={styles.generated}>
           Generated {formatDay(nairobiToday(generated))} {nairobiToday(generated).slice(0, 4)}

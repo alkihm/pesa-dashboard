@@ -16,8 +16,9 @@ describe("announce and useLive", () => {
     expect(accounts.result.current).toBe(before.accounts + 1);
 
     act(() => announce());
-    expect(bills.result.current).toBe(before.bills + 1);
-    expect(accounts.result.current).toBe(before.accounts + 3);
+    // Everything: each listed table plus settings, which every screen follows (currency, month start).
+    expect(bills.result.current).toBe(before.bills + 2);
+    expect(accounts.result.current).toBe(before.accounts + 4);
   });
 });
 

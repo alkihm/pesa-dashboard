@@ -10,6 +10,7 @@ import { supabase, type Db } from "@/lib/supabase";
 import { getThemePreference, setThemePreference, type ThemePreference } from "@/lib/theme";
 import { backupState, savePrefs, smsState, useSettingsData, type Prefs, type SettingsData } from "./data";
 import { ImportExportCard, ManageCard } from "./Links";
+import { MoneyPrefs } from "./MoneyPrefs";
 import { PinCard } from "./PinCard";
 import { RemindersCard } from "./Reminders";
 import styles from "./SettingsScreen.module.css";
@@ -109,12 +110,13 @@ export function SettingsScreen({ db = supabase, now }: ScreenProps) {
           </Card>
         )}
         <PinCard />
-        <div className={styles.desktopOnly}>
-          <Card title="🎨 Appearance">
+        <Card title="🎨 Appearance">
+          <div className={styles.desktopOnly}>
             <ThemeSwitch variant="surface" />
             <p className={styles.note}>System follows the light or dark setting on this device.</p>
-          </Card>
-        </div>
+          </div>
+          {data && <MoneyPrefs prefs={data.prefs} onChange={(p) => void change(p)} />}
+        </Card>
         <ImportExportCard now={now} />
         <ManageCard counts={data?.counts} />
       </div>

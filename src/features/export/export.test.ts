@@ -139,6 +139,8 @@ const data: Record<string, Row[]> = {
       loan_allocation_pct: 30,
       theme: "system",
       alerts: { review: true, weekly: false },
+      currency: "KES",
+      month_start_day: 25,
       created_at: "2026-01-01T00:00:00+00:00",
       updated_at: "2026-01-01T00:00:00+00:00",
       version: 1,

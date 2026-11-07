@@ -141,8 +141,9 @@ account's available amount until transactions with its `budget_item_id` spend it
 
 ### `settings`, `pin_credentials`, `push_subscriptions`
 
-`settings` (one row): `review_interval_days` (default 3), `alerts` (jsonb switches), `theme`
-(`system` · `light` · `dark`), `loan_allocation_pct`.
+`settings` (one row): `review_interval_days` (default 3), `alerts` (jsonb switches, keys in `src/lib/alerts.ts`),
+`theme` (`system` · `light` · `dark`), `loan_allocation_pct`, `currency` (default KES) and `month_start_day`
+(1–28, default 1; the budget month, D-016).
 `pin_credentials`: `pin_hash` (bcrypt), `failed_attempts`, `locked_until`. No client policy at all — read
 and written only through `pin_status`, `verify_pin` and `set_pin`. 5 wrong tries lock it for 15 minutes.
 Changing a PIN needs a sign-in in the last 10 minutes (the newest `amr` timestamp in the token), which is how
@@ -154,7 +155,7 @@ Offline, the device checks it against its own PBKDF2 hash of the last accepted P
 ### Views
 
 `account_balances` (balance, latest snapshot and its source, difference at the snapshot's time, last activity, emoji, sort order, archived; maths for the screens in `src/lib/balances.ts`), `month_totals` (income,
-spending, fees, borrowed, repaid, saved per Nairobi month) and `category_month_totals`. All views use
+spending, fees, borrowed, repaid, saved per budget month, D-016) and `category_month_totals`. All views use
 `security_invoker`, so row-level security applies. Months are grouped in `Africa/Nairobi` time.
 
 ### Where each screen's data comes from

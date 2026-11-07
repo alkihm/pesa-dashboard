@@ -4,7 +4,9 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import { SessionContext } from "@/features/auth/session";
 import { alertsFrom } from "@/lib/alerts";
+import { getMonthStartDay, setMonthStartDay } from "@/lib/budgetMonth";
 import { liveTick } from "@/lib/live";
+import { getCurrency, setCurrency } from "@/lib/money";
 import type { Db } from "@/lib/supabase";
 import { THEME_STORAGE_KEY } from "@/lib/theme";
 import { fakeAuth, fakeSession } from "@/test/fakeAuth";
@@ -49,6 +51,9 @@ function fakeDb({
         maybeSingle: () => q,
         upsert: (values: unknown, options: unknown) => {
           writes.push({ table, values, options });
+          // Like the database: a saved row is what the next read returns.
+          if (!upsertError && table === "settings")
+            answers.settings = { data: { ...(settings ?? {}), ...(values as object) }, error: null };
           return Promise.resolve({ data: null, error: upsertError });
         },
         then: (ok: (v: unknown) => unknown) =>
@@ -155,7 +160,7 @@ describe("Settings · reminders and alerts", () => {
     await waitFor(() => expect(writes).toHaveLength(1));
     expect(writes[0]).toMatchObject({
       table: "settings",
-      values: { review_interval_days: 5, alerts: alertsFrom({}) },
+      values: { review_interval_days: 5, alerts: alertsFrom({}), currency: "KES", month_start_day: 1 },
       options: { onConflict: "user_id" },
     });
     await waitFor(() => expect(liveTick(["settings"])).toBe(before + 1));
@@ -248,6 +253,34 @@ describe("Settings · PIN", () => {
     await waitFor(() => expect(auth.mock.signInWithOAuth).toHaveBeenCalled());
     expect(sessionStorage.getItem("pesa:pin-reset")).toBe("1");
     sessionStorage.clear();
+  });
+});
+
+describe("Settings · currency and month start", () => {
+  afterEach(() => {
+    setCurrency("KES");
+    setMonthStartDay(1);
+  });
+
+  it("saves a currency and a start day, applies both and tells every screen", async () => {
+    const { writes } = renderSettings();
+    const appearance = within(card("🎨 Appearance"));
+    const currency = await appearance.findByLabelText("Currency");
+    expect(currency).toHaveValue("KES");
+    expect(appearance.getByText(/Months follow the calendar/)).toBeInTheDocument();
+    const before = liveTick(["transactions"]);
+
+    fireEvent.change(appearance.getByLabelText("Budget month starts"), { target: { value: "25" } });
+    await waitFor(() => expect(writes).toHaveLength(1));
+    expect(writes[0]!.values).toMatchObject({ month_start_day: 25, currency: "KES" });
+    expect(getMonthStartDay()).toBe(25);
+    expect(liveTick(["transactions"])).toBeGreaterThan(before);
+    expect(appearance.getByText(/This month runs \d+ \w+ – \d+ \w+/)).toBeInTheDocument();
+
+    fireEvent.change(currency, { target: { value: "UGX" } });
+    await waitFor(() => expect(writes).toHaveLength(2));
+    expect(writes[1]!.values).toMatchObject({ currency: "UGX", month_start_day: 25 });
+    expect(getCurrency()).toBe("UGX");
   });
 });
 
