@@ -28,8 +28,18 @@
   min-width: 0;
 }
 
+/* The title and the review dot ([4.3]) beside it. */
+.titleLine {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+}
+
 .title {
   margin: 0;
+  min-width: 0;
   font-size: 20px;
   font-weight: var(--font-weight-bold);
   overflow-wrap: anywhere;
@@ -174,6 +184,10 @@
 
   .titles {
     text-align: left;
+  }
+
+  .titleLine {
+    justify-content: flex-start;
   }
 
   .title {

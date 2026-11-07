@@ -1,0 +1,41 @@
+/* [4.3] The review dot beside each page title. A 44px touch target around a 12px dot, pulled in so it does not make the
+   title row taller. */
+
+.dotLink {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  margin: -12px -12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.dotLink:hover {
+  background: var(--color-on-header-faint);
+}
+
+.dotLink:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -4px;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--color-on-header-line);
+}
+
+.green {
+  background: var(--tone-green-dot);
+}
+
+.amber {
+  background: var(--tone-amber-dot);
+}
+
+.red {
+  background: var(--tone-red-dot);
+}
