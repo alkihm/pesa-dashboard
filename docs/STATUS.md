@@ -2,7 +2,7 @@
 
 The handover note. Read it at the start of every session; update it when something important changes.
 
-_Last updated: 2026-11-05 by Hydracore_
+_Last updated: 2026-11-08 by Hydracore_
 
 ## Where things stand
 
@@ -27,11 +27,16 @@ _Last updated: 2026-11-05 by Hydracore_
     marked paid from SMS ([3.2], D-015); Pay / Skip / Undo ([3.3]); budget items with approval ([3.4],
     `/bills/budget/new`); loan repayment slider and the Bills card on Overview ([3.5]); category budgets in Month
     ([3.6]); net position plus the after-all-debt figure ([3.7]).
-  - **M4 Review & polish — started.** [4.1] Reconcile merged (#101); [4.2] Fix a mismatch in review (PR #102).
-- **Latest migrations:** `20261104000000_bills_paid_from_sms` (matching triggers, guard, `unmatch_bill_payment`;
-  on local and the dev cloud project) and `20261105000000_bill_loan_link` (`bills.loan_account_id`). The second is on
-  the shared local database; **pushing it to the dev cloud project waits for the owner's OK** (dry run: only that
-  file). Until it is pushed, saving a bill on dev fails, because the app sends the new column. The db-migration slot is free.
+  - **M4 Review & reliability — 8/10.** Hydracore's six are done: Reconcile ([4.1], `/review`); Fix a mismatch
+    ([4.2]); Review status green/amber/red with Mark reviewed, history and a dot in every header ([4.3]); Month report
+    that prints on one A4 page ([4.8], `/report?m=2026-10`); Export everything as CSV ([4.10], `/export`); Bulk import
+    from an Excel or CSV template ([4.7], `/import`). Alfie's done: Offline queue ([4.5]), Instant refresh and
+    realtime ([4.6]), Settings part A ([4.9]). Left (Alfie): [4.9] part B (currency, budget month start — a
+    migration that also touches the report and `export/tables.ts`), then [4.4] Notifications.
+  - **M5 Launch — not split yet.** The owner waits until Alfie finishes M4, then decides the split (2026-11-08).
+- **Latest migrations:** `20261105000000_bill_loan_link`, `20261108000000_account_balances_at` (read-only function
+  for month-end balances, [4.8]) and `20261108010000_realtime_publication` ([4.6]) — all on the shared local database
+  **and** the dev cloud project. Not on prod (see Supabase below).
 - **Intake live on the dev cloud project:** the iPhone Shortcut posts to it alongside the Sheet ([1.6], steps in
   [SHORTCUT.md](SHORTCUT.md)).
 - **Dev cloud data:** the old ledgers (2020–2026) are imported — about 20,600 transactions, 3,823 flagged for review.
@@ -77,14 +82,18 @@ Install on the iPhone from the dev preview above in Safari (Share → Add to Hom
 
 | Laptop | Next issues |
 |---|---|
-| Hydracore | M4 review: [4.2] Fix a mismatch (#36, PR #102) → [4.3] Review status (#37) → [4.8] Month report PDF (#42) |
-| Alfie | M4: [4.5] Offline queue (#39) → [4.6] Instant refresh (#40) → [4.9] Settings (#43) → [4.7] Bulk import (#41) → [4.4] Notifications (#38) → [4.10] CSV export (#44) |
+| Hydracore | M4 done. Waiting for the M5 split (owner decides after Alfie's M4). |
+| Alfie | M4: [4.9] part B (#43, db-migration) → [4.4] Notifications (#38) |
 
-The **M4 split is confirmed by the owner (2026-11-04)**. [4.3] reads `settings.review_interval_days`; Alfie's [4.9]
-edits it in the same `settings` table (no new table). [4.3] will add a status dot to the shell; Hydracore notes it in
-progress/NOTES.md before touching `src/app/shell`.
+The M4 split was confirmed by the owner on 2026-11-04 and re-split on 2026-11-08 (Hydracore took [4.7] and [4.10]).
+M5 candidates: [5.1] Device testing, [5.2] Accessibility pass, [5.3] Cut-over, [5.4] Backups and restore drill,
+[5.5] Monitoring (needs [4.4] push), [5.6] Retire Apps Script.
 
-Shared pieces from M4 so far (Hydracore):
+**Server note:** Node on nascore segfaults now and then (exit 139) in `tsc`, Prettier and Vitest, even when the
+server is idle; a rerun passes and CI is unaffected. Run `pnpm test --maxWorkers=1` and rerun once before suspecting
+code. Owner to check the server's memory or the Node build.
+
+Shared pieces from M4 (Hydracore):
 - **Reconcile ([4.1]):** `reconcileRow(account)` in `src/features/review/reconcile.ts` gives each account's state
   (`match` / `mismatch` / `manual` / `no_sms`), its pill, detail line and explanation; `banner(rows)` gives the
   "Needs reconciling" text. [4.4] notifications can reuse the same wording. `difference_cents` = reading − ledger
@@ -94,6 +103,23 @@ Shared pieces from M4 so far (Hydracore):
   reading's time. Add transaction can start filled in from a link: `formFromParams()` in
   `src/features/transactions/form.ts` reads `?direction&account&amount&date&at`, and `?back=` sets the header's back
   link (in-app paths only).
+- **Review status ([4.3]):** rules in `src/lib/review.ts` (`reviewStatus()`, `reviewHistory()`, `reviewBands()`):
+  green inside `settings.review_interval_days`, amber after, red after twice the interval plus one day or on any
+  mismatch. `ReviewStatusProvider` (AppShell) feeds the dot in `PageHeader`; call `useReviewStatus()?.refresh()`
+  after anything that changes it. Mark reviewed writes `reviews` + `review_checks`. [4.4] can reuse the wording.
+- **Month report ([4.8]):** `buildReport()` in `src/features/report/report.ts` reuses the Month sums;
+  `account_balances_at(p_at)` gives each account's ledger at a moment (month end = `monthEnd(month)`). `/report` is
+  outside AppShell (own `RequireSession`) so print has no tab bar; Download PDF is the browser's print dialog.
+- **Export everything ([4.10]):** `src/features/export/tables.ts` lists every exported table and column, **type-checked
+  against `database.types.ts`** — a new column fails `pnpm typecheck` until it is listed there. `readExport()` reads a
+  zip back. CSV rule: empty unquoted = null, `""` = empty text (as Postgres `COPY … CSV`). `zip.ts` writes stored
+  ZIPs and reads stored or deflated ones (no dependency).
+- **Bulk import ([4.7]):** `parseSheet()` (`src/features/import/rows.ts`) maps sheet rows with per-row errors;
+  `classify()` (`dedupe.ts`) applies the duplicate rules (ref in file, ref in ledger, imported before, same amount
+  same day); `saveImport()` writes one `import_batches` row and `source = 'import'` transactions with dedupe keys,
+  then `announce(["transactions"])`. `xlsx.ts` reads and writes the workbook.
+- **Routes:** App.test fails if two routes share a path (#128) — two PRs adding the same route merge without a git
+  conflict, and the router silently uses the first.
 
 Shared pieces from M3 to build on:
 - **Bills:** status rules in `src/features/bills/status.ts` on top of `src/lib/due.ts`; `useBills(db, month)` runs
