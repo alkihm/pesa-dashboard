@@ -33,12 +33,23 @@ describe("app shell", () => {
     ["/categories", "Categories"],
     ["/categories/new", "New category"],
     ["/settings", "Settings"],
-    ["/report", "Month report"],
   ])("renders %s inside the shell", async (path, title) => {
     renderAt(path);
     expect(await screen.findByRole("heading", { level: 1 })).toHaveTextContent(title);
     expect(screen.getByRole("navigation", { name: "Main" })).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Tabs" })).toBeInTheDocument();
+  });
+
+  it("renders the month report signed in but without the tab bar, so it prints alone", async () => {
+    renderAt("/report?m=2026-10");
+    expect(await screen.findByRole("heading", { level: 1 })).toHaveTextContent("Month report");
+    expect(screen.queryByRole("navigation", { name: "Tabs" })).not.toBeInTheDocument();
+  });
+
+  it("sends a signed-out visitor to sign-in from the report", async () => {
+    const router = renderAt("/report?m=2026-10", null);
+    expect(await screen.findByRole("heading", { name: "Sign in" })).toBeInTheDocument();
+    expect(router.state.location.search).toBe(`?next=${encodeURIComponent("/report?m=2026-10")}`);
   });
 
   it("renders sign-in without the shell", async () => {

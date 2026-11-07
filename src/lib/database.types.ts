@@ -1005,6 +1005,20 @@ export type Database = {
       };
     };
     Functions: {
+      account_balances_at: {
+        Args: {
+          p_at: string;
+        };
+        Returns: {
+          account_id: string;
+          name: string;
+          kind: string;
+          debt_term: string;
+          counts_in_net: boolean;
+          archived_at: string;
+          balance_cents: number;
+        }[];
+      };
       apply_payee_rule: {
         Args: {
           p_rule_id: string;
