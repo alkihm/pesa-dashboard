@@ -1,0 +1,405 @@
+/* Board: Month report · PDF. The sheet is always the light theme (it is paper): `color-scheme: light` makes every
+   light-dark() token inside it resolve to its light value. On screen it reflows down to 360px; in print it is a
+   fixed A4 page with the desktop layout. */
+
+@page {
+  size: A4;
+  margin: 0;
+}
+
+.screen {
+  min-height: 100vh;
+  padding-bottom: 32px;
+}
+
+.status {
+  margin: 0 var(--shell-gutter);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+}
+
+.hint {
+  max-width: var(--shell-max-width);
+  margin: 0 auto 14px;
+  padding: 0 var(--shell-gutter);
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+/* ---- toolbar (screen only) ---------------------------------------------------------------------------- */
+
+.iconButton,
+.headerButton,
+.step {
+  height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  border: 1px solid var(--color-on-header-line);
+  background: transparent;
+  color: var(--color-on-header);
+  font: inherit;
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.iconButton {
+  width: 44px;
+  font-size: 18px;
+}
+
+.headerButton,
+.step {
+  padding: 0 16px;
+}
+
+.iconButton:hover,
+.headerButton:hover,
+.step:hover {
+  background: var(--color-on-header-faint);
+}
+
+.iconButton:focus-visible,
+.headerButton:focus-visible,
+.step:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.stepper {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}
+
+/* ---- the sheet ---------------------------------------------------------------------------------------- */
+
+.sheet {
+  color-scheme: light;
+  max-width: 210mm;
+  margin: 0 auto;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-variant-numeric: tabular-nums;
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.sheetHeader {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 26px 40px 24px;
+  background: var(--color-header);
+  color: var(--color-on-header);
+  border-bottom-right-radius: 40px;
+}
+
+.sheetTitle {
+  flex: 1;
+  min-width: 0;
+}
+
+.sheetTitle h2 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: var(--font-weight-bold);
+}
+
+.kicker {
+  font-size: 12px;
+  color: var(--color-on-header-muted);
+}
+
+.generated {
+  text-align: right;
+  font-size: 11px;
+  color: var(--color-on-header-muted);
+}
+
+.body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 22px 40px 18px;
+}
+
+.body h3 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--color-sunk);
+}
+
+.kpiHero {
+  background: var(--color-hero);
+  color: var(--color-on-header);
+}
+
+.kpiLabel {
+  font-size: 11px;
+}
+
+.kpiValue {
+  font-size: 19px;
+  font-weight: var(--font-weight-bold);
+}
+
+.kpiNote {
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+}
+
+.kpiHero .kpiNote {
+  color: var(--color-on-header-muted);
+}
+
+.highlights {
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: var(--color-sunk);
+}
+
+.highlights h3 {
+  margin-bottom: 4px;
+}
+
+.highlights ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.position {
+  margin: 0;
+  font-size: 12px;
+}
+
+.position > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.position dd {
+  margin: 0;
+  font-weight: var(--font-weight-semibold);
+}
+
+.position .total dd,
+.position .total dt {
+  font-weight: var(--font-weight-bold);
+}
+
+.categories {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.categories th {
+  padding: 4px 0;
+  text-align: left;
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+}
+
+.categories td {
+  padding: 5px 0;
+  border-top: 1px solid var(--color-line);
+}
+
+.categories .num {
+  text-align: right;
+  font-weight: var(--font-weight-semibold);
+  white-space: nowrap;
+  padding-left: 10px;
+}
+
+.shareCol {
+  width: 38%;
+  padding-right: 8px;
+}
+
+.categories td.shareCol {
+  padding-left: 10px;
+}
+
+.track {
+  display: block;
+  height: 7px;
+  border-radius: 4px;
+  background: var(--color-track);
+}
+
+.track > span {
+  display: block;
+  height: 100%;
+  border-radius: 4px;
+}
+
+.more {
+  color: var(--tone-amber-text);
+}
+
+.less {
+  color: var(--tone-green-text);
+}
+
+.same {
+  color: var(--color-text-muted);
+}
+
+.bills {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.bills h3 {
+  grid-column: 1 / -1;
+  margin: 0;
+}
+
+.bills > div {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+}
+
+.bills b {
+  font-size: 16px;
+}
+
+.billPaid {
+  background: var(--tone-green-bg);
+  color: var(--tone-green-text);
+}
+
+.billDue {
+  background: var(--tone-amber-bg);
+  color: var(--tone-amber-text);
+}
+
+.billSkipped {
+  background: var(--color-sunk);
+  color: var(--color-text-muted);
+}
+
+.footer {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-line);
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+/* ---- narrow screens: the sheet reflows (never in print) ----------------------------------------------- */
+
+@media screen and (max-width: 720px) {
+  .sheet {
+    margin: 0 var(--shell-gutter);
+  }
+
+  .sheetHeader {
+    padding: 20px 18px;
+  }
+
+  .sheetTitle h2 {
+    font-size: 22px;
+  }
+
+  .body {
+    padding: 18px;
+  }
+
+  .kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .pair {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .shareCol {
+    display: none;
+  }
+
+  .footer {
+    flex-direction: column;
+  }
+}
+
+@media screen and (min-width: 900px) {
+  .sheet {
+    min-height: 297mm;
+  }
+}
+
+/* ---- print: one A4 page, no toolbar ------------------------------------------------------------------- */
+
+@media print {
+  :global(html),
+  :global(body) {
+    color-scheme: light;
+    background: var(--color-surface);
+  }
+
+  .noPrint {
+    display: none;
+  }
+
+  .screen {
+    min-height: 0;
+    padding: 0;
+  }
+
+  .sheet {
+    width: 210mm;
+    max-width: none;
+    height: 297mm;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

@@ -11,15 +11,25 @@ import { SignInScreen } from "@/features/auth/SignInScreen";
 import { CategoriesScreen, CategoryScreen } from "@/features/categories/CategoriesScreen";
 import { MonthScreen } from "@/features/month/MonthScreen";
 import { OverviewScreen } from "@/features/overview/OverviewScreen";
+import { ReportScreen } from "@/features/report/ReportScreen";
 import { ReviewScreen } from "@/features/review/ReviewScreen";
 import { SettingsScreen } from "@/features/settings/SettingsScreen";
 import { AddTransactionScreen } from "@/features/transactions/AddTransactionScreen";
 import { AppShell } from "./shell/AppShell";
-import { NotFound, Placeholder } from "./Placeholder";
+import { NotFound } from "./Placeholder";
 
 // Every screen in docs/DESIGN.md. Placeholders name the issue that builds the real screen.
 export const routes: RouteObject[] = [
   { path: "/sign-in", element: <SignInScreen /> },
+  // [4.8] Outside the app shell, so the phone tab bar never prints.
+  {
+    path: "/report",
+    element: (
+      <RequireSession>
+        <ReportScreen />
+      </RequireSession>
+    ),
+  },
   {
     element: (
       <RequireSession>
@@ -44,7 +54,6 @@ export const routes: RouteObject[] = [
       { path: "categories/new", element: <CategoryScreen /> },
       { path: "categories/:id", element: <CategoryScreen /> },
       { path: "settings", element: <SettingsScreen /> },
-      { path: "report", element: <Placeholder title="Month report" issue="4.8" back="/month" /> },
       ...(import.meta.env.DEV
         ? [
             {
