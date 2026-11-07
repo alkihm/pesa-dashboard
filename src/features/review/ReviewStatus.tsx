@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { Link } from "react-router";
 
+import { useLive } from "@/lib/live";
 import type { ReviewStatus } from "@/lib/review";
 import { supabase, type Db } from "@/lib/supabase";
 import { loadReviewStatus } from "./data";
@@ -13,6 +14,8 @@ export function ReviewStatusProvider({ db = supabase, children }: { db?: () => D
   const [status, setStatus] = useState<ReviewStatus>();
   const [version, setVersion] = useState(0);
   const refresh = useCallback(() => setVersion((v) => v + 1), []);
+  // [4.6] Also after a new SMS, an edit, a review or a new interval in Settings.
+  const fresh = useLive(["settings", "reviews", "accounts", "transactions", "sms_messages"]);
 
   useEffect(() => {
     let live = true;
@@ -24,7 +27,7 @@ export function ReviewStatusProvider({ db = supabase, children }: { db?: () => D
     return () => {
       live = false;
     };
-  }, [db, version]);
+  }, [db, version, fresh]);
 
   useEffect(() => {
     const back = () => {

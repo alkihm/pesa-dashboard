@@ -91,7 +91,7 @@ export async function loadReviewData(db: Db, now = new Date()): Promise<ReviewDa
 export function useReviewData(db: () => Db = supabase) {
   const [result, setResult] = useState<{ data?: ReviewData; error?: string }>();
   const [version, setVersion] = useState(0);
-  const fresh = useLive(["accounts", "transactions", "sms_messages", "bill_months", "reviews"]);
+  const fresh = useLive(["accounts", "transactions", "sms_messages", "bill_months", "reviews", "settings"]);
 
   useEffect(() => {
     let live = true;
