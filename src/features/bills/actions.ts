@@ -1,9 +1,10 @@
 // [3.3] Pay, skip and undo for one bill month. Each action is one update of the bill_months row, sent with the
 // version the screen showed, so a row changed elsewhere in the meantime is refused, not overwritten (ARCHITECTURE
-// "Offline"). The screen applies the change at once and puts it back if the database refuses. The offline queue
-// ([4.5]) will send these same updates.
+// "Offline"). The screen applies the change at once and puts it back if the database refuses. With no connection
+// the update waits in the offline queue ([4.5]) and is sent later with that same version.
 
 import type { Database } from "@/lib/database.types";
+import { offlineQueue } from "@/lib/offline/queue";
 import type { Db } from "@/lib/supabase";
 import type { BillRow } from "./data";
 
@@ -47,27 +48,37 @@ export function allowed(row: BillRow, action: BillAction): boolean {
 }
 
 export type ActionResult =
-  { ok: true; version: number } | { ok: false; reason: "changed" | "error"; message: string };
+  | { ok: true; version: number; queued?: boolean }
+  | { ok: false; reason: "changed" | "error"; message: string };
 
-/** Sends one action. Refused when the row is no longer at the version the screen showed. */
+const VERB: Record<BillAction, string> = { pay: "Paid", skip: "Skipped", undo: "Undo" };
+
+/** Sends one action, or queues it offline. Refused when the row is no longer at the version the screen showed. */
 export async function sendBillAction(
   db: Db,
   row: BillRow,
   action: BillAction,
   now = new Date(),
 ): Promise<ActionResult> {
-  const { data, error } = await db
-    .from("bill_months")
-    .update(actionChanges(action, now))
-    .eq("id", row.id)
-    .eq("version", row.version)
-    .select("version");
-  if (error) return { ok: false, reason: "error", message: error.message };
-  if (!data || data.length === 0)
+  const result = await offlineQueue().submit(
+    db,
+    {
+      kind: "update",
+      table: "bill_months",
+      id: row.id,
+      version: row.version,
+      changes: actionChanges(action, now),
+    },
+    `${VERB[action]} · ${row.name}`,
+    "version",
+  );
+  if (result.status === "queued") return { ok: true, version: row.version + 1, queued: true };
+  if (result.status === "error") return { ok: false, reason: "error", message: result.message };
+  if (result.status === "changed" || !result.row)
     return {
       ok: false,
       reason: "changed",
       message: `${row.name} was changed elsewhere; showing the latest.`,
     };
-  return { ok: true, version: data[0]!.version };
+  return { ok: true, version: Number(result.row.version) };
 }

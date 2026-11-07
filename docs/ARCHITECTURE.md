@@ -188,6 +188,10 @@ spending, fees, borrowed, repaid, saved per Nairobi month) and `category_month_t
   missing transaction or by an `adjustment` transaction with a reason — history is never edited.
 - **Offline**: queued edits replay in order; a change to a row that was changed on the server since the
   queue item was made is shown for the user to choose, never silently overwritten.
+  `src/lib/offline/` (IndexedDB, [4.5]): bill Pay/Skip/Undo, budget Approve/Cancel, transaction edits and Add
+  transaction queue offline; two edits of one row merge into one item. Settings · Data & sync lists the queue and
+  asks Keep mine / Keep theirs on a conflict. Other writes (accounts, categories, payee rules, bills, PIN) still
+  need a connection.
 
 ## Environments
 

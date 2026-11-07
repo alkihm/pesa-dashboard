@@ -2,6 +2,7 @@ import { useState } from "react";
 import { PageHeader } from "@/app/shell/PageHeader";
 import { Card } from "@/components/Card";
 import { Segmented } from "@/components/Segmented";
+import { SyncCard } from "@/features/sync/SyncCard";
 import { getThemePreference, setThemePreference, type ThemePreference } from "@/lib/theme";
 import styles from "./SettingsScreen.module.css";
 
@@ -11,7 +12,7 @@ const THEMES: { value: ThemePreference; label: string }[] = [
   { value: "system", label: "📱 System" },
 ];
 
-// Appearance is the first part of Settings; the rest (sync, reminders, PIN, import/export) comes with [4.9].
+// Appearance, and the offline queue under Data & sync ([4.5]); reminders, PIN and import/export come with [4.9].
 export function SettingsScreen() {
   const [theme, setTheme] = useState(getThemePreference);
 
@@ -32,8 +33,9 @@ export function SettingsScreen() {
           />
           <p className={styles.note}>System follows the light or dark setting on this device.</p>
         </Card>
+        <SyncCard />
         <Card title="More settings">
-          <p className={styles.note}>Sync, reminders, PIN and import or export are built in [4.9].</p>
+          <p className={styles.note}>Reminders, PIN and import or export are built in [4.9].</p>
         </Card>
       </div>
     </>

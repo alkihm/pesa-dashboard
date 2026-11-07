@@ -1,6 +1,7 @@
 // Saving an edited transaction ([2.6]): its category and note, and optionally a payee rule so the same payee is
 // categorised from now on and in past rows (apply_payee_rule, [1.9]).
 
+import { offlineQueue } from "../../lib/offline/queue";
 import type { Db } from "../../lib/supabase";
 import { COLUMNS, type ActivityRow } from "./query";
 
@@ -15,12 +16,18 @@ export interface Saved {
   row: ActivityRow;
   /** Other past rows the payee rule categorised; undefined when no rule was made. */
   applied?: number;
+  /** Kept on this device until the connection returns ([4.5]). */
+  queued?: boolean;
+  /** A payee rule was asked for but needs a connection. */
+  ruleSkipped?: boolean;
 }
 
 const count = new Intl.NumberFormat("en-KE");
 
 /** The confirmation shown after a save. */
-export function savedMessage({ applied }: Saved) {
+export function savedMessage({ applied, queued, ruleSkipped }: Saved) {
+  if (queued)
+    return `Saved on this device · it syncs when you are back online${ruleSkipped ? " · make the payee rule then" : ""}`;
   if (applied === undefined) return "Saved";
   if (applied === 0) return "Saved · the rule applies to new messages from now on";
   return `Saved · the rule also categorised ${count.format(applied)} past transaction${applied === 1 ? "" : "s"}`;
@@ -42,20 +49,27 @@ export function patchFor(row: ActivityRow, { categoryId, note }: Changes) {
 }
 
 export async function saveTransaction(db: Db, row: ActivityRow, changes: Changes): Promise<Saved> {
-  // Sends the version the edit started from; a row changed since then matches nothing.
-  const { data, error } = await db
-    .from("transactions")
-    .update(patchFor(row, changes))
-    .eq("id", row.id)
-    .eq("version", row.version)
-    .select(COLUMNS)
-    .maybeSingle();
-  if (error) throw new Error(error.message);
-  if (!data) throw new StaleRowError();
+  // Sends the version the edit started from; a row changed since then matches nothing. Offline it waits in the
+  // queue with that version, and a change made elsewhere meanwhile becomes a choice in Settings.
+  const patch = patchFor(row, changes);
+  const label = `Edited · ${row.payee?.trim() || "transaction"}`;
+  const result = await offlineQueue().submit(
+    db,
+    { kind: "update", table: "transactions", id: row.id, version: row.version, changes: patch },
+    label,
+    COLUMNS,
+  );
+  if (result.status === "error") throw new Error(result.message);
+  if (result.status === "changed") throw new StaleRowError();
+  const wantsRule = changes.always && !!changes.categoryId && !!row.payee?.trim();
+  if (result.status === "queued")
+    return { row: { ...row, ...patch, version: row.version + 1 }, queued: true, ruleSkipped: wantsRule };
+  if (!result.row) throw new StaleRowError();
+  const saved = result.row as unknown as ActivityRow;
 
-  if (!changes.always || !changes.categoryId || !row.payee?.trim()) return { row: data };
-  const applied = await ruleForPayee(db, row.payee.trim(), changes.categoryId);
-  return { row: data, applied };
+  if (!wantsRule) return { row: saved };
+  const applied = await ruleForPayee(db, row.payee!.trim(), changes.categoryId!);
+  return { row: saved, applied };
 }
 
 /** Points the payee's existing rule at the category, or makes one, then applies it to uncategorised past rows. */

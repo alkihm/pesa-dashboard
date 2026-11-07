@@ -339,12 +339,15 @@ describe("Budget items", () => {
     fireEvent.click(screen.getByRole("button", { name: "Approve School fees" }));
     expect(within(line("School fees")).getByText("✓ Approved")).toBeInTheDocument();
     expect(within(hero()).getByText("−1,600")).toBeInTheDocument(); // 33,400 − 35,000: the plan does not fit
-    const sent = calls.filter((c) => c.table === "budget_items" && (c.op === "update" || c.op === "eq"));
-    expect(sent.map((c) => [c.op, ...c.args])).toEqual([
-      ["update", { status: "approved", approved_at: NOW.toISOString() }],
-      ["eq", "id", "bi1"],
-      ["eq", "version", 1],
-    ]);
+    // The update goes out once the offline queue is checked for older edits of this item ([4.5]).
+    await waitFor(() => {
+      const sent = calls.filter((c) => c.table === "budget_items" && (c.op === "update" || c.op === "eq"));
+      expect(sent.map((c) => [c.op, ...c.args])).toEqual([
+        ["update", { status: "approved", approved_at: NOW.toISOString() }],
+        ["eq", "id", "bi1"],
+        ["eq", "version", 1],
+      ]);
+    });
   });
 
   it("cancelling an approved item gives its money back", async () => {

@@ -13,6 +13,7 @@ import { MonthScreen } from "@/features/month/MonthScreen";
 import { OverviewScreen } from "@/features/overview/OverviewScreen";
 import { ReviewScreen } from "@/features/review/ReviewScreen";
 import { SettingsScreen } from "@/features/settings/SettingsScreen";
+import { SyncProvider } from "@/features/sync/SyncProvider";
 import { AddTransactionScreen } from "@/features/transactions/AddTransactionScreen";
 import { AppShell } from "./shell/AppShell";
 import { NotFound, Placeholder } from "./Placeholder";
@@ -23,7 +24,9 @@ export const routes: RouteObject[] = [
   {
     element: (
       <RequireSession>
-        <AppShell />
+        <SyncProvider>
+          <AppShell />
+        </SyncProvider>
       </RequireSession>
     ),
     children: [

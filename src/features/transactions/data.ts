@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { useCategories } from "../../lib/data/categories";
+import { offlineQueue } from "../../lib/offline/queue";
 import { supabase, type Db } from "../../lib/supabase";
 import type { TxInsert } from "./form";
 
@@ -44,12 +45,18 @@ export class DuplicateError extends Error {
 /**
  * Inserts the rows of one save in a single request, so a transfer's legs and a fee land together or not at all
  * (the database refuses a lone transfer leg). Rows differ in their fields, so a field one row leaves out must take
- * its column default, not null (needs_review is not null).
+ * its column default, not null (needs_review is not null). Offline, the rows wait in the queue ([4.5]); their ids
+ * are made here, so a resend never doubles them. Resolves to whether they were queued.
  */
-export async function insertRows(db: Db, rows: TxInsert[]) {
-  const { error } = await db.from("transactions").insert(rows, { defaultToNull: false });
-  if (error?.code === "23505") throw new DuplicateError();
-  if (error) throw new Error(error.message);
+export async function insertRows(
+  db: Db,
+  rows: TxInsert[],
+  label = "Added transaction",
+): Promise<{ queued: boolean }> {
+  const result = await offlineQueue().submit(db, { kind: "insert", table: "transactions", rows }, label);
+  if (result.status === "error" && result.code === "23505") throw new DuplicateError();
+  if (result.status === "error") throw new Error(result.message);
+  return { queued: result.status === "queued" };
 }
 
 export function useAddTransactionData(db: () => Db = supabase) {
