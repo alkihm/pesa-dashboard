@@ -64,31 +64,75 @@ const terms = [
   { id: "csh", due_day: null, original_cents: null, limit_cents: null, sms_account_hint: null },
 ];
 
-/** Answers reads and records inserts. Once an adjustment is saved, the bank reads as matching, as the view would. */
-function fakeDb(rows = balances) {
+const DAY = 86_400_000;
+/** A completed review `n` days ago. */
+const pastReview = (id: string, n: number, result = "all_match", checks: { resolution: string }[] = []) => ({
+  id,
+  completed_at: new Date(Date.now() - n * DAY).toISOString(),
+  result,
+  review_checks: checks,
+});
+
+interface Options {
+  rows?: typeof balances;
+  history?: ReturnType<typeof pastReview>[];
+  toReview?: number;
+}
+
+/**
+ * Answers reads and records writes. Once an adjustment is saved, the bank reads as matching, as the view would.
+ * `inserts` are the transactions saved; `writes` every insert and update with its table.
+ */
+function fakeDb({ rows = balances, history = [], toReview = 0 }: Options = {}) {
   let reads = 0;
   const inserts: unknown[] = [];
+  const writes: { table: string; op: "insert" | "update"; values: unknown }[] = [];
   const adjusted = () =>
     rows.map((a) =>
       a.account_id === "bnk" ? { ...a, balance_cents: 61_700 * KES, difference_cents: 0 } : a,
     );
+  const answer = (table: string, op: string | undefined) => {
+    switch (table) {
+      case "account_balances":
+        return { data: inserts.length ? adjusted() : rows };
+      case "accounts":
+        return { data: terms };
+      case "settings":
+        return { data: { review_interval_days: 3 } };
+      case "reviews":
+        return { data: op === "insert" ? { id: "rev-new" } : op === "update" ? null : history };
+      case "transactions":
+        return op === "insert" ? { data: null } : { data: null, count: toReview };
+      default:
+        return { data: [] };
+    }
+  };
   const db = {
+    rpc: () => Promise.resolve({ data: null, error: null }),
     from(table: string) {
       if (table === "account_balances") reads++;
-      const data = table === "account_balances" ? (inserts.length ? adjusted() : rows) : terms;
+      let op: "insert" | "update" | undefined;
       const builder: Record<string, unknown> = {
         then: (ok: (v: unknown) => unknown, bad: (e: unknown) => unknown) =>
-          Promise.resolve({ data, error: null }).then(ok, bad),
+          Promise.resolve({ error: null, ...answer(table, op) }).then(ok, bad),
         insert: (values: unknown) => {
-          inserts.push(values);
+          op = "insert";
+          writes.push({ table, op, values });
+          if (table === "transactions") inserts.push(values);
+          return builder;
+        },
+        update: (values: unknown) => {
+          op = "update";
+          writes.push({ table, op, values });
           return builder;
         },
       };
-      for (const name of ["select", "eq", "is", "order"]) builder[name] = () => builder;
+      for (const name of ["select", "eq", "is", "not", "or", "order", "limit", "single", "maybeSingle"])
+        builder[name] = () => builder;
       return builder;
     },
   };
-  return { db: db as unknown as Db, reads: () => reads, inserts };
+  return { db: db as unknown as Db, reads: () => reads, inserts, writes };
 }
 
 function renderReview(fake = fakeDb()) {
@@ -100,7 +144,7 @@ function renderReview(fake = fakeDb()) {
 describe("Review & reconcile", () => {
   it("flags the account that disagrees with its SMS", async () => {
     renderReview();
-    const status = within(await screen.findByRole("region", { name: "Status" }));
+    const status = within(await screen.findByRole("region", { name: "Review status" }));
     expect(status.getByText("Needs reconciling")).toBeInTheDocument();
     expect(status.getByText("Bank current is off by 2,500 against its SMS balance.")).toBeInTheDocument();
   });
@@ -119,7 +163,11 @@ describe("Review & reconcile", () => {
   });
 
   it("is green when everything matches", async () => {
-    renderReview(fakeDb(balances.filter((a) => a.account_id === "wal")));
+    renderReview(
+      fakeDb({ rows: balances.filter((a) => a.account_id === "wal"), history: [pastReview("r1", 1)] }),
+    );
+    const status = within(await screen.findByRole("region", { name: "Review status" }));
+    expect(status.getByText("All good")).toBeInTheDocument();
     expect(await screen.findByText("All balances match")).toBeInTheDocument();
   });
 
@@ -174,5 +222,94 @@ describe("Review & reconcile", () => {
     fireEvent.click(screen.getByRole("button", { name: "🔄 Refresh" }));
     await screen.findByText("Needs reconciling");
     expect(fake.reads()).toBe(2);
+  });
+});
+
+describe("Review status [4.3]", () => {
+  const matching = balances.filter((a) => a.account_id !== "bnk");
+
+  it("is amber once the interval has passed, with the last review in the header and history", async () => {
+    renderReview(fakeDb({ rows: matching, history: [pastReview("r1", 4), pastReview("r2", 9, "fixed")] }));
+    const status = within(await screen.findByRole("region", { name: "Review status" }));
+    expect(status.getByText("Review due")).toBeInTheDocument();
+    expect(status.getByText("Last review was 4 days ago; the reminder is every 3 days.")).toBeInTheDocument();
+    expect(status.getByRole("list", { name: "Status colours" })).toHaveTextContent(
+      "0–3 days3–7 days7+ days or a mismatch",
+    );
+    expect(await screen.findByText(/^Last done \d+ \w{3} · reminder every 3 days$/)).toBeInTheDocument();
+
+    const history = within(screen.getByRole("region", { name: "History" }));
+    expect(history.getAllByRole("listitem").map((li) => li.textContent)).toEqual([
+      expect.stringContaining("Late by 2 days · all match"),
+      expect.stringContaining("Reviewed · gaps fixed"),
+    ]);
+  });
+
+  it("is red when the last review is a week old", async () => {
+    renderReview(fakeDb({ rows: matching, history: [pastReview("r1", 8)] }));
+    expect(await screen.findByText("Review overdue")).toBeInTheDocument();
+  });
+
+  it("asks for the first review when there is none", async () => {
+    renderReview(fakeDb({ rows: matching }));
+    expect(await screen.findByText("Review due")).toBeInTheDocument();
+    expect(await screen.findByText("No reviews yet. Mark the first one above.")).toBeInTheDocument();
+  });
+
+  it("lists the checklist, with a fix link for transactions to categorise", async () => {
+    renderReview(fakeDb({ toReview: 2 }));
+    const list = within(await screen.findByRole("region", { name: "Checklist" }));
+    expect(await list.findByText("1 balance is off")).toBeInTheDocument();
+    expect(list.getByText("2 transactions to categorise")).toBeInTheDocument();
+    expect(list.getByText("No bills overdue")).toBeInTheDocument();
+    expect(list.getByRole("link", { name: "Fix: 2 transactions to categorise" })).toHaveAttribute(
+      "href",
+      "/activity",
+    );
+  });
+
+  it("marks a review with the mismatch left open", async () => {
+    const fake = renderReview();
+    fireEvent.click(await screen.findByRole("button", { name: "Mark reviewed · 1 left open" }));
+    expect(await screen.findByRole("status")).toHaveTextContent(
+      "Review saved with 1 account left open. Fix it to turn the status green.",
+    );
+    expect(fake.writes.map((w) => [w.table, w.op])).toEqual([
+      ["reviews", "insert"],
+      ["review_checks", "insert"],
+      ["reviews", "update"],
+    ]);
+    // Cash has no reading, so it gets no check.
+    expect(fake.writes[1]!.values).toEqual([
+      {
+        review_id: "rev-new",
+        account_id: "wal",
+        ledger_cents: 18_450 * KES,
+        stated_cents: 18_450 * KES,
+        resolution: "matched",
+      },
+      {
+        review_id: "rev-new",
+        account_id: "bnk",
+        ledger_cents: 64_200 * KES,
+        stated_cents: 61_700 * KES,
+        resolution: "left_open",
+      },
+    ]);
+    expect(fake.writes[2]!.values).toMatchObject({ result: "left_open", completed_at: expect.any(String) });
+  });
+
+  it("records an adjustment made during the visit as fixed", async () => {
+    const fake = renderReview();
+    fireEvent.click(await screen.findByRole("button", { name: "✏️ Adjust balance" }));
+    const form = within(screen.getByRole("form", { name: "Adjust Bank current" }));
+    fireEvent.change(form.getByLabelText("Reason"), { target: { value: "Bank charge not sent by SMS" } });
+    fireEvent.click(form.getByRole("button", { name: "Save adjustment −2,500" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Mark reviewed" }));
+
+    expect(await screen.findByText(/^Review saved with your fixes\. Next review/)).toBeInTheDocument();
+    const checks = fake.writes.find((w) => w.table === "review_checks")!.values as { resolution: string }[];
+    expect(checks.map((c) => c.resolution)).toEqual(["matched", "adjustment"]);
+    expect(fake.writes.at(-1)!.values).toMatchObject({ result: "fixed" });
   });
 });

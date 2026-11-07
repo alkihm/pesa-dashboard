@@ -1,6 +1,7 @@
 import { useEffect, type ReactNode } from "react";
 import { Link, NavLink } from "react-router";
 import { Icon } from "@/components/Icon";
+import { ReviewDot } from "@/features/review/ReviewStatus";
 import { Logo } from "./Logo";
 import { DESKTOP_NAV } from "./navigation";
 import { ThemeToggle } from "./ThemeToggle";
@@ -67,10 +68,13 @@ export function PageHeader({
             )}
           </div>
           <div className={styles.titles}>
-            <h1 className={styles.title}>
-              <span className={styles.desktopOnly}>{title}</span>
-              <span className={styles.phoneOnly}>{phoneTitle ?? title}</span>
-            </h1>
+            <div className={styles.titleLine}>
+              <h1 className={styles.title}>
+                <span className={styles.desktopOnly}>{title}</span>
+                <span className={styles.phoneOnly}>{phoneTitle ?? title}</span>
+              </h1>
+              <ReviewDot />
+            </div>
             {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
           </div>
           <div className={styles.phoneSlot}>{trailing}</div>

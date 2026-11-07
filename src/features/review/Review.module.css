@@ -73,25 +73,72 @@
 
 /* ---- banner ------------------------------------------------------------------------------------------- */
 
+/* Review status [4.3]: the tone classes colour the banner, the legend bars and the history dots. */
 .banner {
   display: flex;
-  align-items: center;
+  flex-direction: column;
   gap: 16px;
   padding: 18px;
   border-radius: var(--radius-card);
   border: 1px solid;
 }
 
-.bannerRed {
+.bannerMain {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.banner.red {
   background: var(--tone-red-bg);
   border-color: var(--tone-red-dot);
   color: var(--tone-red-text);
 }
 
-.bannerGreen {
+.banner.amber {
+  background: var(--tone-amber-bg);
+  border-color: var(--tone-amber-dot);
+  color: var(--tone-amber-text);
+}
+
+.banner.green {
   background: var(--tone-green-bg);
   border-color: var(--tone-green-dot);
   color: var(--tone-green-text);
+}
+
+.bands {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px;
+  font-size: 10px;
+  color: var(--color-text-muted);
+}
+
+.bands li::before {
+  content: "";
+  display: block;
+  height: 5px;
+  margin-bottom: 5px;
+  border-radius: 3px;
+}
+
+.bands .green::before,
+.historyDot.green {
+  background: var(--tone-green-dot);
+}
+
+.bands .amber::before,
+.historyDot.amber {
+  background: var(--tone-amber-dot);
+}
+
+.bands .red::before,
+.historyDot.red {
+  background: var(--tone-red-dot);
 }
 
 .bannerIcon {
@@ -107,11 +154,15 @@
   font-weight: var(--font-weight-bold);
 }
 
-.bannerRed .bannerIcon {
+.banner.red .bannerIcon {
   background: var(--tone-red-dot);
 }
 
-.bannerGreen .bannerIcon {
+.banner.amber .bannerIcon {
+  background: var(--tone-amber-dot);
+}
+
+.banner.green .bannerIcon {
   background: var(--tone-green-dot);
 }
 
@@ -170,10 +221,105 @@
   font-weight: var(--font-weight-semibold);
 }
 
+/* Ledger on the left, checklist and history in a side column on desktop; one column on phones. */
+.columns {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
 @media (min-width: 900px) {
-  .ledger {
-    max-width: 920px;
+  .banner {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
   }
+
+  .bands {
+    flex: 0 1 420px;
+    font-size: 12px;
+  }
+
+  .columns {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+    align-items: start;
+    gap: 16px;
+  }
+}
+
+/* ---- checklist and history [4.3] ---------------------------------------------------------------------- */
+
+.checks,
+.history {
+  margin: 0 0 12px;
+  padding: 0;
+  list-style: none;
+}
+
+.check,
+.historyRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  border-top: 1px solid var(--color-line);
+  font-size: 13px;
+}
+
+.check:first-child,
+.historyRow:first-child {
+  border-top: 0;
+}
+
+.checkText {
+  flex: 1;
+  min-width: 0;
+}
+
+.fixLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 4px;
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-link);
+}
+
+.fixLink:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+.markError {
+  margin: 0 0 10px;
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--tone-red-text);
+}
+
+.historyDot {
+  width: 9px;
+  height: 9px;
+  flex: none;
+  border-radius: 50%;
+}
+
+.historyDay {
+  flex: 1;
+  font-weight: var(--font-weight-semibold);
+}
+
+.history {
+  margin-bottom: 0;
 }
 
 /* ---- fix a mismatch [4.2] ----------------------------------------------------------------------------- */
