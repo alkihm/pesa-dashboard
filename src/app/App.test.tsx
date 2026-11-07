@@ -1,6 +1,6 @@
 import type { Session } from "@supabase/supabase-js";
 import { render, screen, within } from "@testing-library/react";
-import { createMemoryRouter, RouterProvider } from "react-router";
+import { createMemoryRouter, RouterProvider, type RouteObject } from "react-router";
 import { SessionProvider } from "@/features/auth/SessionProvider";
 import { fakeAuth, fakeSession } from "@/test/fakeAuth";
 import { fakePin } from "@/test/fakePin";
@@ -40,6 +40,35 @@ describe("app shell", () => {
     expect(await screen.findByRole("heading", { level: 1 })).toHaveTextContent(title);
     expect(screen.getByRole("navigation", { name: "Main" })).toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "Tabs" })).toBeInTheDocument();
+  });
+
+  // Two routes with the same path do not fail anywhere else: the router quietly uses the first. #125 and #126
+  // merged cleanly and left a placeholder in front of the real /import screen, with the same title.
+  it("has no two routes with the same path", () => {
+    const paths: string[] = [];
+    const walk = (list: RouteObject[], parent: string) => {
+      for (const r of list) {
+        const path = r.index
+          ? `${parent}(index)`
+          : r.path?.startsWith("/")
+            ? r.path
+            : `${parent}${r.path ?? ""}`;
+        if (r.path || r.index) paths.push(path);
+        if (r.children) walk(r.children, r.path ? `${path.replace(/\/?$/, "/")}` : parent);
+      }
+    };
+    walk(routes, "/");
+    expect(paths.filter((p, i) => paths.indexOf(p) !== i)).toEqual([]);
+  });
+
+  it("opens the real import screen, not a placeholder", async () => {
+    renderAt("/import");
+    expect(await screen.findByLabelText("File to import")).toBeInTheDocument();
+  });
+
+  it("opens the real export screen", async () => {
+    renderAt("/export");
+    expect(await screen.findByRole("button", { name: "⬇ Download everything (.zip)" })).toBeInTheDocument();
   });
 
   it("renders the month report signed in but without the tab bar, so it prints alone", async () => {
