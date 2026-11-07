@@ -109,7 +109,8 @@ export function ImportScreen({ db = supabase, download = save }: { db?: () => Db
         back="/settings"
       />
       <div className={styles.page}>
-        <Card title="⬇️ Template">
+        {/* Settings' "Excel template" row links to /import#template. */}
+        <Card title="⬇️ Template" id="template">
           <p className={styles.text}>
             Your accounts and categories are in the Excel drop-downs. Fill one row per transaction; the ref
             (M-PESA or bank code) lets duplicates be spotted for sure.
