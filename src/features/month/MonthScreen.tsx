@@ -29,6 +29,7 @@ import {
   type Month,
 } from "./month";
 import styles from "./MonthScreen.module.css";
+import { budgetMonthSpan } from "@/lib/budgetMonth";
 
 type Tab = "overview" | "compare";
 const TABS = [
@@ -97,7 +98,7 @@ export function MonthScreen({ db = supabase, now }: { db?: () => Db; now?: Date 
     <>
       <PageHeader
         title={monthTitle(month)}
-        subtitle={`vs ${monthName(previous)}`}
+        subtitle={[budgetMonthSpan(month), `vs ${monthName(previous)}`].filter(Boolean).join(" · ")}
         leading={prevLink}
         trailing={nextLink}
         controls={

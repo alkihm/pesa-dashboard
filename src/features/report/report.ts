@@ -18,6 +18,7 @@ import {
 import { summarise, type AccountBalance } from "@/lib/balances";
 import { categoryColourVar } from "@/lib/categoryColours";
 import { formatAmount } from "@/lib/money";
+import { budgetMonthRange } from "@/lib/budgetMonth";
 
 /** A row of account_balances_at: the ledger of one account at the month's end. */
 export interface BalanceAtRow {
@@ -87,7 +88,8 @@ export interface Report {
 }
 
 /** The moment a month ends: the first instant of the next month in Nairobi. */
-export const monthEnd = (month: Month) => `${addMonths(month, 1)}T00:00:00+03:00`;
+/** The month's end: the next budget month's first moment ([4.9] month start day). */
+export const monthEnd = (month: Month) => budgetMonthRange(month).to;
 
 /** Rows shown in "Where the money went"; the rest are summed into "Other (n)". */
 export const CATEGORY_ROWS = 8;

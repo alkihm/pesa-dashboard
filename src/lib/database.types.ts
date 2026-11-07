@@ -730,8 +730,10 @@ export type Database = {
         Row: {
           alerts: Json;
           created_at: string;
+          currency: string;
           id: string;
           loan_allocation_pct: number;
+          month_start_day: number;
           review_interval_days: number;
           theme: string;
           updated_at: string;
@@ -741,8 +743,10 @@ export type Database = {
         Insert: {
           alerts?: Json;
           created_at?: string;
+          currency?: string;
           id?: string;
           loan_allocation_pct?: number;
+          month_start_day?: number;
           review_interval_days?: number;
           theme?: string;
           updated_at?: string;
@@ -752,8 +756,10 @@ export type Database = {
         Update: {
           alerts?: Json;
           created_at?: string;
+          currency?: string;
           id?: string;
           loan_allocation_pct?: number;
+          month_start_day?: number;
           review_interval_days?: number;
           theme?: string;
           updated_at?: string;
@@ -1033,6 +1039,13 @@ export type Database = {
           p_paid: number;
         };
         Returns: boolean;
+      };
+      budget_month: {
+        Args: {
+          p_local: string;
+          p_start_day: number;
+        };
+        Returns: string;
       };
       ensure_bill_months: {
         Args: {

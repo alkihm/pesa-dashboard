@@ -3,16 +3,15 @@
 // here works on those totals and is tested on its own.
 
 import { budgetStatus, type BudgetStatus } from "@/lib/budget";
+import { budgetMonthOf, budgetMonthRange } from "@/lib/budgetMonth";
 import { formatAmount } from "@/lib/money";
 
 /** A month as the totals views key it: its first day, "2026-10-01". */
 export type Month = string;
 
-const NAIROBI_MS = 3 * 60 * 60 * 1000;
-
+/** The budget month holding `now` ([4.9]: follows settings.month_start_day; the calendar month by default). */
 export function currentMonth(now = new Date()): Month {
-  const local = new Date(now.getTime() + NAIROBI_MS);
-  return `${local.getUTCFullYear()}-${String(local.getUTCMonth() + 1).padStart(2, "0")}-01`;
+  return budgetMonthOf(now);
 }
 
 /** "2026-10" from the URL → "2026-10-01"; anything else → null. */
@@ -40,9 +39,9 @@ export const monthTitle = (month: Month) => withYear.format(asDate(month));
 export const monthName = (month: Month) => longName.format(asDate(month));
 export const monthShort = (month: Month) => shortName.format(asDate(month)).slice(0, 3);
 
-/** The month's start and the next month's start as Nairobi times, for filtering transactions. */
+/** The month's start and the next month's start as Nairobi times, for filtering transactions (budget month). */
 export function monthRange(month: Month) {
-  return { from: `${month}T00:00:00+03:00`, to: `${addMonths(month, 1)}T00:00:00+03:00` };
+  return budgetMonthRange(month);
 }
 
 export interface MonthTotals {

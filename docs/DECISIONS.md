@@ -211,3 +211,19 @@ database covers every way a payment arrives (intake, add transaction with a past
 The guard is what the issue asks for: an auto-paid bill cannot be undone by mistake.
 **Rules out:** Matching on amount alone; matching manual or imported rows (they carry no SMS to show); a
 tolerance per bill (can be added if a bill varies more than 20%).
+
+## D-016 · 2026-11-08 · Ledger currency and budget month start
+
+**Decided:** Settings holds the ledger's currency (`settings.currency`: KES, UGX, TZS, RWF, USD, EUR, GBP; default
+KES) and the day the budget month starts (`settings.month_start_day`, 1–28, default 1). The currency is the
+prefix every amount shows; amounts are never converted. A budget month keeps the key of the calendar month it
+starts in: with start day D, month `2026-11-01` runs from D Nov 00:00 to D Dec 00:00, Nairobi time
+(`public.budget_month()` in the database, `src/lib/budgetMonth.ts` in the app, same rule). `month_totals` and
+`category_month_totals` group by it, so Month, Overview, category budgets and the month report follow it; the
+Month screen and the report show the date range when D is not 1. Bills and budget items stay on calendar months.
+The app reads both values at sign-in and when settings change (SyncProvider), and every screen re-reads.
+**Why:** The owner asked for both (2026-11-08, [4.9]). Paid on a fixed day, a budget month that starts on payday
+matches how the money actually arrives. Days 29–31 do not exist in every month. Bills are due on real dates, so
+moving them between months would hide what is owed this month.
+**Rules out:** Converting between currencies; a start day after the 28th; naming a budget month after the month
+it ends in.

@@ -2,6 +2,7 @@
 // (D-007), so a payment at 01:00 EAT counts as that morning, not the evening before in UTC.
 
 import type { ActivityRow } from "./query";
+import { budgetMonthOf } from "@/lib/budgetMonth";
 
 const NAIROBI_MS = 3 * 3_600_000; // Africa/Nairobi has no daylight saving
 const DAY_MS = 86_400_000;
@@ -40,10 +41,9 @@ export function shortDate(iso: string, now = new Date()) {
   return (sameYear ? dayMonth : dayMonthYear).format(at);
 }
 
-/** First day of the Nairobi month holding `now`, as the `month` column of the totals views has it: "2026-10-01". */
+/** The budget month holding `now`, as the `month` column of the totals views has it: "2026-10-01". */
 export function monthStart(now = new Date()) {
-  const local = new Date(now.getTime() + NAIROBI_MS);
-  return `${local.getUTCFullYear()}-${String(local.getUTCMonth() + 1).padStart(2, "0")}-01`;
+  return budgetMonthOf(now);
 }
 
 const KIND_LOOK: Record<string, { label: string; emoji: string }> = {

@@ -29,7 +29,8 @@ describe("pull-to-refresh", () => {
     expect(screen.getByText("Release to refresh")).toBeInTheDocument();
     touch("touchend", 0);
 
-    expect(liveTick(["transactions"])).toBe(before + 1);
+    // Everything is announced: transactions and settings each move on.
+    expect(liveTick(["transactions"])).toBe(before + 2);
     expect(screen.getByRole("status")).toHaveTextContent("Refreshing…");
     act(() => vi.advanceTimersByTime(1000));
     expect(screen.queryByRole("status")).toBeNull();
