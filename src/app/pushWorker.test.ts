@@ -9,14 +9,20 @@ const ORIGIN = "https://pesa.example";
 
 type Handler = (event: unknown) => void;
 
-function worker(windows: Record<string, unknown>[]) {
+function worker(windows: Record<string, unknown>[], withCache = false) {
   const handlers: Record<string, Handler> = {};
   const openWindow = vi.fn(async () => null);
+  const stored = new Map<string, string>();
+  const cacheOpen = vi.fn(async () => ({
+    put: async (req: Request, res: Response) =>
+      void stored.set(`${cacheOpen.mock.calls.at(-1)}|${req.url}`, await res.text()),
+  }));
   const self = {
     location: { origin: ORIGIN },
     addEventListener: (type: string, fn: Handler) => (handlers[type] = fn),
     registration: { showNotification: vi.fn() },
     clients: { matchAll: vi.fn(async () => windows), openWindow },
+    ...(withCache ? { caches: { open: cacheOpen } } : {}),
   };
   new Function("self", code)(self);
   async function tap(url = "/bills") {
@@ -35,7 +41,7 @@ function worker(windows: Record<string, unknown>[]) {
     });
     await done;
   }
-  return { self, openWindow, tap, push };
+  return { self, openWindow, tap, push, stored };
 }
 
 const win = (over: Record<string, unknown> = {}) => {
@@ -76,6 +82,25 @@ describe("tapping a notification", () => {
   it("opens the app when the window refuses to come forward", async () => {
     const open = win({ focus: vi.fn(async () => Promise.reject(new Error("InvalidAccessError"))) });
     const w = worker([open]);
+    await w.tap("/bills");
+    expect(w.openWindow).toHaveBeenCalledWith(`${ORIGIN}/bills`);
+  });
+
+  it("stores the screen before bringing the app forward, for the page to pick up (iPhone)", async () => {
+    const open = win({ navigate: vi.fn(async () => open) });
+    const w = worker([open], true);
+    await w.tap("/settings");
+    const [key, value] = [...w.stored.entries()][0]!;
+    expect(key).toBe(`pesa-open|${ORIGIN}/__pesa-open`);
+    expect(JSON.parse(value)).toEqual({ url: `${ORIGIN}/settings`, at: expect.any(Number) });
+    expect(open.navigate).toHaveBeenCalledWith(`${ORIGIN}/settings`);
+  });
+
+  it("still opens the screen when the Cache API fails", async () => {
+    const w = worker([], true);
+    (w.self as unknown as { caches: { open: () => Promise<never> } }).caches.open = async () => {
+      throw new Error("quota");
+    };
     await w.tap("/bills");
     expect(w.openWindow).toHaveBeenCalledWith(`${ORIGIN}/bills`);
   });
