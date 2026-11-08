@@ -69,7 +69,8 @@ Node 24 (`.nvmrc`) and pnpm 9. On the server, run `source ~/.nvm/nvm.sh` first i
 Config comes from env only: copy `.env.example` to `.env.local` and fill it from `supabase status`.
 `src/lib/env.ts` fails at start-up if a value is missing.
 
-Source layout: `src/app` (entry, shell, routes), `src/features/<feature>` (screens and their logic),
+Source layout: `src/app` (entry, shell, router), `src/features/<feature>` (screens, their logic and their own
+`routes.tsx` — a new screen is registered there, never in `src/app/routes.tsx`; see WORKFLOW "Building a screen"),
 `src/components` (shared UI), `src/lib` (shared helpers). Import from `src` with the `@/` alias.
 
 Screens are built from `src/components` (Card, KpiCard, Chip, Segmented, Switch, StatusPill, EmojiTile,

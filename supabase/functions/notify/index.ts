@@ -19,8 +19,16 @@ import {
   type NotifyFacts,
 } from "../_shared/lib/notify/rules.ts";
 
+// The app calls this from the browser (Send a test), so the browser's CORS preflight must be answered. Access is
+// decided by the key or the user's token, never by cookies, so any origin may ask (Vercel previews change address).
+const CORS = {
+  "access-control-allow-origin": "*",
+  "access-control-allow-headers": "authorization, x-client-info, apikey, content-type, x-notify-key",
+  "access-control-allow-methods": "POST, OPTIONS",
+};
+
 const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json" } });
+  new Response(JSON.stringify(body), { status, headers: { ...CORS, "content-type": "application/json" } });
 const env = (name: string) => Deno.env.get(name) ?? "";
 
 interface Subscription {
@@ -134,6 +142,7 @@ async function facts(db: SupabaseClient, userId: string, now: Date): Promise<Not
 }
 
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
   if (req.method !== "POST") return json({ ok: false, error: "POST only" }, 405);
   if (!env("VAPID_PUBLIC_KEY") || !env("VAPID_PRIVATE_KEY"))
     return json({ ok: false, error: "push not configured" }, 500);

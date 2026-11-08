@@ -18,14 +18,35 @@ self.addEventListener("push", (event) => {
   );
 });
 
+// Tapping opens the screen the notification is about. On iPhone, bringing a window forward can be refused and a
+// window this worker does not control cannot be redirected, so each step falls back: focus, then navigate or ask
+// the page to go there itself (src/app/App.tsx listens for "pesa:open"), and if any of that fails or no window is
+// open, open the app at that screen.
+async function openFromNotification(scope, url) {
+  const windows = await scope.clients.matchAll({ type: "window", includeUncontrolled: true });
+  const open = windows.find((w) => w.url.startsWith(scope.location.origin));
+  if (open) {
+    try {
+      const focused = (await open.focus()) || open;
+      try {
+        if (focused.navigate) {
+          await focused.navigate(url);
+          return;
+        }
+      } catch {
+        // Not controlled by this worker: the page moves itself.
+      }
+      focused.postMessage({ type: "pesa:open", url });
+      return;
+    } catch {
+      // Could not bring it forward: open the app instead.
+    }
+  }
+  if (scope.clients.openWindow) await scope.clients.openWindow(url);
+}
+
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
   const url = new URL(event.notification.data?.url || "/", self.location.origin).href;
-  event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((windows) => {
-      const open = windows.find((w) => w.url.startsWith(self.location.origin));
-      if (open) return open.focus().then(() => open.navigate(url));
-      return self.clients.openWindow(url);
-    }),
-  );
+  event.waitUntil(openFromNotification(self, url));
 });

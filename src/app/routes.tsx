@@ -1,37 +1,26 @@
-import type { RouteObject } from "react-router";
-import { AccountsScreen, DebtScreen, SavingsScreen } from "@/features/accounts/AccountsScreen";
-import { NewAccountScreen } from "@/features/accounts/new/NewAccountScreen";
-import { ActivityScreen } from "@/features/activity/ActivityScreen";
-import { TransactionScreen } from "@/features/activity/TransactionScreen";
-import { BillsScreen } from "@/features/bills/BillsScreen";
-import { NewBudgetItemScreen } from "@/features/bills/BudgetItems";
-import { NewBillScreen } from "@/features/bills/NewBillScreen";
+import { Outlet, type RouteObject } from "react-router";
 import { RequireSession } from "@/features/auth/RequireSession";
 import { SignInScreen } from "@/features/auth/SignInScreen";
-import { CategoriesScreen, CategoryScreen } from "@/features/categories/CategoriesScreen";
-import { ExportScreen } from "@/features/export/ExportScreen";
-import { ImportScreen } from "@/features/import/ImportScreen";
-import { MonthScreen } from "@/features/month/MonthScreen";
-import { OverviewScreen } from "@/features/overview/OverviewScreen";
-import { ReportScreen } from "@/features/report/ReportScreen";
-import { ReviewScreen } from "@/features/review/ReviewScreen";
-import { SettingsScreen } from "@/features/settings/SettingsScreen";
 import { SyncProvider } from "@/features/sync/SyncProvider";
-import { AddTransactionScreen } from "@/features/transactions/AddTransactionScreen";
+import { collectFeatureRoutes, type FeatureRoutes } from "./featureRoutes";
 import { AppShell } from "./shell/AppShell";
 import { NotFound } from "./Placeholder";
 
-// Every screen in docs/DESIGN.md. Placeholders name the issue that builds the real screen.
+// [5.0] Each feature registers its screens in src/features/<feature>/routes.tsx (see featureRoutes.ts). This file
+// keeps only the shell, sign-in, the dev gallery and the catch-all, so two laptops never edit the same line here.
+export const featureRoutes = collectFeatureRoutes(
+  import.meta.glob<{ routes: FeatureRoutes }>("/src/features/*/routes.tsx", { eager: true }),
+);
+
 export const routes: RouteObject[] = [
   { path: "/sign-in", element: <SignInScreen /> },
-  // [4.8] Outside the app shell, so the phone tab bar never prints.
   {
-    path: "/report",
     element: (
       <RequireSession>
-        <ReportScreen />
+        <Outlet />
       </RequireSession>
     ),
+    children: featureRoutes.signedIn,
   },
   {
     element: (
@@ -42,25 +31,7 @@ export const routes: RouteObject[] = [
       </RequireSession>
     ),
     children: [
-      { index: true, element: <OverviewScreen /> },
-      { path: "activity", element: <ActivityScreen /> },
-      { path: "activity/:id", element: <TransactionScreen /> },
-      { path: "transactions/new", element: <AddTransactionScreen /> },
-      { path: "month", element: <MonthScreen /> },
-      { path: "bills", element: <BillsScreen /> },
-      { path: "bills/new", element: <NewBillScreen /> },
-      { path: "bills/budget/new", element: <NewBudgetItemScreen /> },
-      { path: "review", element: <ReviewScreen /> },
-      { path: "accounts", element: <AccountsScreen /> },
-      { path: "accounts/savings", element: <SavingsScreen /> },
-      { path: "accounts/debt", element: <DebtScreen /> },
-      { path: "accounts/new", element: <NewAccountScreen /> },
-      { path: "categories", element: <CategoriesScreen /> },
-      { path: "categories/new", element: <CategoryScreen /> },
-      { path: "categories/:id", element: <CategoryScreen /> },
-      { path: "settings", element: <SettingsScreen /> },
-      { path: "export", element: <ExportScreen /> },
-      { path: "import", element: <ImportScreen /> },
+      ...featureRoutes.shell,
       ...(import.meta.env.DEV
         ? [
             {
