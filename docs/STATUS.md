@@ -36,7 +36,8 @@ _Last updated: 2026-11-08 by Hydracore_
     prints on one A4 page ([4.8], `/report?m=2026-10`); Export everything as CSV ([4.10], `/export`); Bulk import from
     an Excel or CSV template ([4.7], `/import`). Alfie: Offline queue ([4.5]), Instant refresh and realtime ([4.6]),
     Settings with ledger currency and budget month start ([4.9], D-016), web push notifications ([4.4], D-017 — live
-    on the dev cloud project; the owner's iPhone test is the last check).
+    on the dev cloud project; checked on the owner's iPhone 2026-11-08: the test arrives; tapping it does not open
+    its screen yet, #141).
   - **M5 Launch — split confirmed by the owner on 2026-11-08 (D-019).** Plan, order and owner checkpoints in
     [M5 plan](#m5-plan) below.
 - **Latest migrations:** `20261108000000_account_balances_at`, `20261108010000_realtime_publication`,
@@ -121,7 +122,7 @@ except at the checkpoints listed, which need the owner's phone, accounts or appr
 1. Before the M5 sessions start: on `dev`, **require branches to be up to date** and **require `e2e`**
    (Settings → Branches). Until then auto-merge waits for `checks` only. The first session checks it with
    `gh api repos/alkihm/pesa-dashboard/branches/dev/protection`.
-2. [4.4] iPhone: Settings → Notifications → Turn on → Send a test.
+2. ~~[4.4] iPhone: Settings → Notifications → Turn on → Send a test.~~ Done 2026-11-08 (push arrives; tap → #141).
 3. [5.1] Run `docs/DEVICE-CHECKLIST.md` on the iPhone.
 4. [5.7] Approve the prod push (one OK, after reading the dry run), then merge the release PR `Release M1–M5`
    (Create a merge commit).
