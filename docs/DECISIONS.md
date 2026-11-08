@@ -263,3 +263,18 @@ duplicate `/import` route on `dev`; test rows went into the shared database and 
 Playwright checks were rewritten in a scratch folder every session; and the owner was needed for every merge.
 **Rules out:** A full local run before every push; GitHub's merge queue (organisation repos only); a separate
 local Supabase stack per laptop (about 1–1.5 GB of RAM each on nascore); visual checks as one-off scripts.
+
+## D-019 · 2026-11-08 · M5 split and launch gates
+
+**Decided:** M5 is split as follows. Hydracore: [5.0] per-feature routes first (#134), then [5.2] accessibility, [5.1]
+device testing, [5.7] production readiness (#135). Alfie: [5.5] intake monitoring (after [5.0] merges), then [5.4]
+backups and a restore drill. [5.3] cut-over and [5.6] retiring Apps Script are delivered as runbooks in
+`docs/LAUNCH.md` that the owner carries out. Production: sessions prepare and dry-run everything (migrations,
+functions, secrets by name, Vercel env, release PR) and the owner gives one approval for the prod push and merges
+the release PR. The real ledger history is not imported into prod in M5; the owner decides when.
+**Why:** The owner wants the build finished without being needed for routine steps (D-018 makes merges automatic),
+while anything that touches real money data, the iPhone or the owner's Google account stays with the owner.
+Alfie built `notify` in [4.4], so monitoring ([5.5]) builds on it there; per-feature routes go first so the two
+laptops never edit the same router line.
+**Rules out:** Sessions pushing to the prod Supabase project or merging into `main` on their own; importing real
+history as part of the launch.

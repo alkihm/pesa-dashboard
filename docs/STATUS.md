@@ -9,8 +9,9 @@ _Last updated: 2026-11-08 by Hydracore_
 - **Design:** complete — every phone and desktop screen, both themes, app icon. Screen list in [DESIGN.md](DESIGN.md).
 - **Dev flow (D-018, #131):** the full suite, database tests and the Playwright suite (`e2e/`) run once, in CI
   (jobs `checks`, `e2e`, `overlap`); laptops run `pnpm check:changed`. Screenshots of every main screen are in each
-  run's `e2e-report` artifact. Feature PRs merge by auto-merge; per-feature route files come at M5 start.
-- **Repo:** public, `dev`/`main` protected (required check `checks`), 50 issues across M0–M5, plus 13 `[EPIC n]`
+  run's `e2e-report` artifact. Feature PRs merge by auto-merge (repo setting on since 2026-11-08); per-feature route
+  files are [5.0].
+- **Repo:** public, `dev`/`main` protected, 52 issues across M0–M5, plus 13 `[EPIC n]`
   parent issues (#105–#117, one per `epic:*` label) with those issues as sub-issues.
 - **Project board:** [pesa-dash workspace](https://github.com/users/alkihm/projects/2), copied from the broll board
   (Backlog / Ready / In progress / In review / Done, Priority, Estimate, the same tabs). Every issue and PR is on it;
@@ -30,16 +31,17 @@ _Last updated: 2026-11-08 by Hydracore_
     marked paid from SMS ([3.2], D-015); Pay / Skip / Undo ([3.3]); budget items with approval ([3.4],
     `/bills/budget/new`); loan repayment slider and the Bills card on Overview ([3.5]); category budgets in Month
     ([3.6]); net position plus the after-all-debt figure ([3.7]).
-  - **M4 Review & reliability — 8/10.** Hydracore's six are done: Reconcile ([4.1], `/review`); Fix a mismatch
-    ([4.2]); Review status green/amber/red with Mark reviewed, history and a dot in every header ([4.3]); Month report
-    that prints on one A4 page ([4.8], `/report?m=2026-10`); Export everything as CSV ([4.10], `/export`); Bulk import
-    from an Excel or CSV template ([4.7], `/import`). Alfie's done: Offline queue ([4.5]), Instant refresh and
-    realtime ([4.6]), Settings part A ([4.9]). Left (Alfie): [4.9] part B (currency, budget month start — a
-    migration that also touches the report and `export/tables.ts`), then [4.4] Notifications.
-  - **M5 Launch — not split yet.** The owner waits until Alfie finishes M4, then decides the split (2026-11-08).
-- **Latest migrations:** `20261105000000_bill_loan_link`, `20261108000000_account_balances_at` (read-only function
-  for month-end balances, [4.8]) and `20261108010000_realtime_publication` ([4.6]) — all on the shared local database
-  **and** the dev cloud project. Not on prod (see Supabase below).
+  - **M4 Review & reliability — done (10/10).** Hydracore: Reconcile ([4.1], `/review`); Fix a mismatch ([4.2]);
+    Review status green/amber/red with Mark reviewed, history and a dot in every header ([4.3]); Month report that
+    prints on one A4 page ([4.8], `/report?m=2026-10`); Export everything as CSV ([4.10], `/export`); Bulk import from
+    an Excel or CSV template ([4.7], `/import`). Alfie: Offline queue ([4.5]), Instant refresh and realtime ([4.6]),
+    Settings with ledger currency and budget month start ([4.9], D-016), web push notifications ([4.4], D-017 — live
+    on the dev cloud project; the owner's iPhone test is the last check).
+  - **M5 Launch — split confirmed by the owner on 2026-11-08 (D-019).** Plan, order and owner checkpoints in
+    [M5 plan](#m5-plan) below.
+- **Latest migrations:** `20261108000000_account_balances_at`, `20261108010000_realtime_publication`,
+  `20261108020000_currency_month_start` and `20261108030000_notifications` — all on the shared local database **and**
+  the dev cloud project. Not on prod (see Supabase below; [5.7] prepares it).
 - **Intake live on the dev cloud project:** the iPhone Shortcut posts to it alongside the Sheet ([1.6], steps in
   [SHORTCUT.md](SHORTCUT.md)).
 - **Dev cloud data:** the old ledgers (2020–2026) are imported — about 20,600 transactions, 3,823 flagged for review.
@@ -85,12 +87,48 @@ Install on the iPhone from the dev preview above in Safari (Share → Add to Hom
 
 | Laptop | Next issues |
 |---|---|
-| Hydracore | M4 done. Waiting for the M5 split (owner decides after Alfie's M4). |
-| Alfie | M4: [4.9] part B (#43, db-migration) → [4.4] Notifications (#38) |
+| Hydracore | **[5.0] Per-feature routes (#134) first**, then [5.2] Accessibility (#46) → [5.1] Device testing (#45) → [5.7] Production readiness (#135) |
+| Alfie | [5.5] Monitoring (#49) → [5.4] Backups and restore drill (#48). Start [5.5] once [5.0] has merged |
+| Owner | Checkpoints only — see the M5 plan below |
 
-The M4 split was confirmed by the owner on 2026-11-04 and re-split on 2026-11-08 (Hydracore took [4.7] and [4.10]).
-M5 candidates: [5.1] Device testing, [5.2] Accessibility pass, [5.3] Cut-over, [5.4] Backups and restore drill,
-[5.5] Monitoring (needs [4.4] push), [5.6] Retire Apps Script.
+## M5 plan
+
+Confirmed by the owner on 2026-11-08 (D-019). Goal: the full build finished by the two sessions without the owner,
+except at the checkpoints listed, which need the owner's phone, accounts or approval.
+
+**Order and dependencies**
+
+| # | Issue | Laptop | Depends on | What "done" looks like |
+|---|---|---|---|---|
+| 1 | [5.0] Per-feature routes (#134) | Hydracore | — | Each `src/features/<f>/routes.tsx` registers its routes; `routes.tsx` collects them. Merge before anyone adds a route |
+| 2 | [5.5] Monitoring (#49) | Alfie | [5.0] | Alert when no SMS for N daytime hours or parse failures spike; in Settings and by push (reuses `notify`). Likely the one `db-migration` of M5: claim the slot |
+| 3 | [5.2] Accessibility (#46) | Hydracore | [5.0] | `@axe-core/playwright` check on every screen in `e2e/` (both themes), fixes for what it finds, keyboard pass written up; contrast 4.5:1 |
+| 4 | [5.4] Backups and restore drill (#48) | Alfie | — (runs against dev; the prod part goes into LAUNCH.md) | Scheduled database backup beyond the Sheet, restore into a fresh database, totals compared, documented |
+| 5 | [5.1] Device testing (#45) | Hydracore | [5.2] | Playwright projects for Chromium, Firefox and WebKit (Safari engine) in CI; `docs/DEVICE-CHECKLIST.md` for the owner's iPhone (install, offline, push, both themes) |
+| 6 | [5.7] Production readiness (#135) | Hydracore | all M5 code | `docs/LAUNCH.md` runbook, prod dry run, release PR `dev` → `main` open and green |
+| 7 | [5.3] Cut-over (#47), [5.6] Retire Apps Script (#50) | written by Hydracore in LAUNCH.md | [5.7] live | Runbooks; the owner does the Shortcut and Apps Script steps |
+
+**How sessions work without the owner**
+- Feature PRs: `pnpm check:changed`, open the PR, **arm auto-merge** (`gh pr merge <n> --auto --squash`). If the
+  session is not allowed to run it, add the PR to the owner list in your board and move to the next issue.
+- Talk to the other laptop's session directly when both are running; write anything that changes its work in
+  `progress/NOTES.md` too.
+- Dev cloud project: pushing a merged migration (dry run first) and deploying functions to **dev** is part of the
+  issue — the owner OKed this pattern for [4.9] and [4.4]. Never the prod project.
+- Blocked on the owner? Record it in "Owner checkpoints" in your board, and carry on with the next issue.
+
+**Owner checkpoints (cannot be done by a session)**
+1. Before the M5 sessions start: on `dev`, **require branches to be up to date** and **require `e2e`**
+   (Settings → Branches). Until then auto-merge waits for `checks` only. The first session checks it with
+   `gh api repos/alkihm/pesa-dashboard/branches/dev/protection`.
+2. [4.4] iPhone: Settings → Notifications → Turn on → Send a test.
+3. [5.1] Run `docs/DEVICE-CHECKLIST.md` on the iPhone.
+4. [5.7] Approve the prod push (one OK, after reading the dry run), then merge the release PR `Release M1–M5`
+   (Create a merge commit).
+5. [5.3] Change the Shortcut (runbook), then a week of clean intake. [5.6] Remove the Apps Script deployment.
+6. Later, when the owner says so: import the real history into prod (D-012 script, dry run first).
+
+**Not in M5:** importing real history into prod (owner decides later); a native app.
 
 **Server note:** Node on nascore segfaults now and then (exit 139) in `tsc`, Prettier and Vitest, even when the
 server is idle; a rerun passes and CI is unaffected. Run `pnpm test --maxWorkers=1` and rerun once before suspecting
@@ -156,8 +194,8 @@ never to the repo or the local database.
 - The local Supabase database (port 54322, password `postgres`) and API (54321) listen on all interfaces —
   the CLI has no bind setting. The API must stay reachable for phone testing; the database port should be
   firewalled to localhost on the server (owner).
-- Production deploy of the database: when and how migrations, the intake and sheet-backup functions and the
-  history import reach the prod project (before [2.1]/[2.2] read real data).
+- Production deploy of the database: answered by D-019. [5.7] prepares and dry-runs it; the owner approves the
+  push. The history import waits for the owner.
 
 ## Owner to-dos outside the repo
 
