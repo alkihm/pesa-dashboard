@@ -150,7 +150,10 @@ Changing a PIN needs a sign-in in the last 10 minutes (the newest `amr` timestam
 "reset with Google" works. The app asks for the PIN once per tab, and not straight after a Google sign-in.
 Offline, the device checks it against its own PBKDF2 hash of the last accepted PIN (D-014,
 `src/features/auth/offlinePin.ts`).
-`push_subscriptions`: `endpoint`, `keys`, `device_label`.
+`push_subscriptions`: `endpoint`, `keys`, `device_label` (one per device that turned notifications on).
+`notification_log` ([4.4]): every notification sent, unique per user, `kind` and `ref`; the owner can read it, only
+the `notify` Edge Function writes it. Every 15 minutes pg_cron calls `run_notifications()`, which posts to `notify`
+(D-017; rules in `src/lib/notify/rules.ts`; quiet 22:00–07:00 Nairobi).
 
 ### Views
 

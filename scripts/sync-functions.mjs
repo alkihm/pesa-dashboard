@@ -1,12 +1,12 @@
 // Copies the shared code the Edge Functions use from src/lib into supabase/functions/_shared/lib.
 // The edge runtime only sees the supabase/ folder, so it cannot import from src/ directly.
-// Run after changing src/lib/sms or src/lib/intake: `node scripts/sync-functions.mjs`.
+// Run after changing src/lib/sms, intake, backup or notify: `node scripts/sync-functions.mjs`.
 // src/lib/intake/shared-copy.test.ts fails while the copies are out of date.
 
 import { cpSync, mkdirSync, readdirSync, rmSync } from "node:fs";
 import { join } from "node:path";
 
-export const SHARED = ["sms", "intake", "backup"];
+export const SHARED = ["sms", "intake", "backup", "notify"];
 const from = "src/lib";
 const to = "supabase/functions/_shared/lib";
 const isSource = (f) => f.endsWith(".ts") && !f.endsWith(".test.ts") && f !== "fixtures.ts";
