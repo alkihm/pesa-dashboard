@@ -86,6 +86,10 @@ boards stay the written record.
 - Shared files (design tokens, app shell, router, database schema) change in small pull requests that are
   merged quickly. The `overlap` job comments on a pull request when another open pull request changes the same
   files, and lists the shared files it touches.
+- **Building a screen ([5.0]):** register it in your feature's own `src/features/<feature>/routes.tsx`
+  (`export const routes: FeatureRoutes = { shell: [...] }`; `signedIn: [...]` for a signed-in page outside the
+  shell, like `/report`). `src/app/routes.tsx` picks every such file up by itself — do not edit it to add a
+  screen. The "no two routes with the same path" test in `src/app/App.test.tsx` covers the collected list.
 
 ## Tests and CI (D-018)
 
