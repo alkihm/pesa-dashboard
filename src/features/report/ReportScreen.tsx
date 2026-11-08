@@ -189,7 +189,7 @@ function ReportSheet({ report, generated }: { report: Report; generated: Date })
               </tbody>
             </table>
           ) : (
-            <p className={styles.status}>No spending recorded in {monthTitle(report.month)}.</p>
+            <p className={styles.sheetEmpty}>No spending recorded in {monthTitle(report.month)}.</p>
           )}
         </section>
 
