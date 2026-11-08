@@ -101,7 +101,18 @@ inside the local Supabase container; nothing is installed.
 
 ## Backups in production ([5.4])
 
-*To be filled in by [5.4] (Alfie): the scheduled database backup and the restore drill, for the prod project.*
+The nightly database backup and the restore drill are in [BACKUPS.md](BACKUPS.md); on dev they run already. For
+prod, after the smoke checklist:
+
+- [ ] **Session:** `ops/db-backup.sh prod` once by hand. It prints `db-backup: prod ok · … · N transactions`.
+- [ ] **Session:** `ops/restore-drill.sh prod`. All checks must match (with an empty ledger the counts are small but
+      every table is still compared).
+- [ ] **Session:** add prod to the nightly timer: in `/etc/systemd/system/pesa-db-backup.service` add a second
+      `ExecStart=/srv/Kihmnas/pesa-dashboard/integration/ops/db-backup.sh prod` line (oneshot units run them in
+      turn), copy it to `ops/systemd/` too, then `sudo systemctl daemon-reload`.
+- [ ] Next morning: `ops/db-backup.log` has a `prod ok` line and `private/backups/prod/` has the dump and `.checks`.
+- [ ] After the real history import (owner, later): run `ops/restore-drill.sh prod` again on the first backup that
+      has it.
 
 ## [5.3] Cut-over — the Shortcut posts only to the app
 
