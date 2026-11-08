@@ -7,6 +7,9 @@ _Last updated: 2026-11-08 by Hydracore_
 ## Where things stand
 
 - **Design:** complete — every phone and desktop screen, both themes, app icon. Screen list in [DESIGN.md](DESIGN.md).
+- **Dev flow (D-018, #131):** the full suite, database tests and the Playwright suite (`e2e/`) run once, in CI
+  (jobs `checks`, `e2e`, `overlap`); laptops run `pnpm check:changed`. Screenshots of every main screen are in each
+  run's `e2e-report` artifact. Feature PRs merge by auto-merge; per-feature route files come at M5 start.
 - **Repo:** public, `dev`/`main` protected (required check `checks`), 50 issues across M0–M5, plus 13 `[EPIC n]`
   parent issues (#105–#117, one per `epic:*` label) with those issues as sub-issues.
 - **Project board:** [pesa-dash workspace](https://github.com/users/alkihm/projects/2), copied from the broll board

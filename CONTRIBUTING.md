@@ -23,8 +23,10 @@ The day-to-day routine for each laptop is in [docs/WORKFLOW.md](docs/WORKFLOW.md
 3. `git switch -c feat/<issue>-<slug>`
 4. Commit in small steps. Message format: `type(scope): summary (#issue)`, e.g.
    `feat(bills): colour bills by days to due date (#31)`.
-5. `git push -u origin HEAD`, open a pull request into `dev` with `Closes #<issue>` in the body.
-6. CI must pass. Squash-merge, delete the branch.
+5. `pnpm check:changed`, then `git push -u origin HEAD` and open a pull request into `dev` with
+   `Closes #<issue>` in the body.
+6. Arm auto-merge (`gh pr merge --auto --squash`). GitHub squash-merges once CI (`checks`, `e2e`) is green on the
+   branch brought up to date with `dev`, and deletes the branch.
 7. On the other laptop: `git switch dev && git pull --rebase` before starting anything new.
 
 If a branch lives longer than a day, rebase it on `dev` (`git pull --rebase origin dev`) so conflicts
@@ -55,7 +57,8 @@ Issue titles are numbered `[milestone.n]`, e.g. `[3.1]`.
 - Matches the screen named in the issue (see [docs/DESIGN.md](docs/DESIGN.md)), in light and dark mode,
   at phone width and desktop width.
 - Money calculations have unit tests.
-- Lint, type check, tests and build pass in CI.
+- Lint, type check, tests, build, database tests and the end-to-end suite pass in CI.
+- A new screen or flow adds or extends a test in `e2e/`.
 - No real data in the diff.
 
 ## Never commit

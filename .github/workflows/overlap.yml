@@ -1,0 +1,72 @@
+name: Overlap
+
+# Comments on a pull request into dev when it changes files that another open pull request also changes, and
+# flags shared files (router, tokens, app shell, schema, packages). Informational: it never fails the PR.
+# One comment per PR, updated in place on every push.
+
+on:
+  pull_request:
+    branches: [dev]
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: overlap-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  overlap:
+    name: overlap
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      GH_TOKEN: ${{ github.token }}
+      REPO: ${{ github.repository }}
+      PR: ${{ github.event.pull_request.number }}
+    steps:
+      - name: Compare with other open pull requests
+        run: |
+          set -euo pipefail
+          files() { gh api --paginate "repos/$REPO/pulls/$1/files" --jq '.[].filename' | sort -u; }
+          files "$PR" > mine.txt
+
+          : > report.md
+          for other in $(gh api "repos/$REPO/pulls?state=open&base=dev&per_page=100" --jq ".[] | select(.number != $PR) | .number"); do
+            files "$other" > other.txt
+            both=$(comm -12 mine.txt other.txt || true)
+            if [ -n "$both" ]; then
+              title=$(gh api "repos/$REPO/pulls/$other" --jq '.title')
+              { echo "**#$other** $title"; echo "$both" | sed 's/^/- `/; s/$/`/'; echo; } >> report.md
+            fi
+          done
+
+          shared=$(grep -E '^(src/app/routes\.tsx|src/app/shell/|src/styles/tokens\.css|src/lib/database\.types\.ts|supabase/migrations/|package\.json|pnpm-lock\.yaml|vite\.config\.ts)' mine.txt || true)
+
+          marker='<!-- overlap-check -->'
+          {
+            echo "$marker"
+            if [ -s report.md ]; then
+              echo "### ⚠️ Files also changed by another open pull request"
+              echo "Whoever merges second rebases and resolves. Agree who goes first in the progress notes."
+              echo
+              cat report.md
+            else
+              echo "### ✓ No file overlap with other open pull requests"
+            fi
+            if [ -n "$shared" ]; then
+              echo
+              echo "**Shared files in this PR** — leave a line in \`progress/NOTES.md\` if you have not:"
+              echo "$shared" | sed 's/^/- `/; s/$/`/'
+            fi
+          } > body.md
+
+          existing=$(gh api "repos/$REPO/issues/$PR/comments" --paginate --jq ".[] | select(.body | startswith(\"$marker\")) | .id" | head -1)
+          if [ -n "$existing" ]; then
+            gh api -X PATCH "repos/$REPO/issues/comments/$existing" -F body=@body.md > /dev/null
+          elif [ -s report.md ] || [ -n "$shared" ]; then
+            gh pr comment "$PR" --repo "$REPO" --body-file body.md
+          fi
+          cat body.md >> "$GITHUB_STEP_SUMMARY"

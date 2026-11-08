@@ -1,5 +1,8 @@
 name: CI
 
+# The one place the full suite runs (D-018). Laptops run only `pnpm check:changed`.
+# With "Require branches to be up to date" on dev, every PR is tested on top of the latest dev before it merges.
+
 on:
   pull_request:
     branches: [dev, main]
@@ -29,3 +32,54 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm build
+
+  # A fresh local Supabase: every migration and the seed applied from scratch, the pgTAP tests, then the
+  # Playwright suite against a production build. Screenshots, the report PDF and traces are in the artifact.
+  e2e:
+    name: e2e
+    # Pinned: Playwright 1.60 cannot install its browser dependencies on ubuntu-latest (26.04). Move both together.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - uses: supabase/setup-cli@v3.0.1
+        with:
+          version: 2.20.5
+      - name: Start Supabase (migrations + seed from scratch)
+        run: supabase start -x edge-runtime,imgproxy,logflare,vector,supavisor
+      - name: Database tests
+        run: supabase test db
+      - name: Local stack values
+        run: |
+          supabase status -o env > "$RUNNER_TEMP/supabase.env"
+          set -a; . "$RUNNER_TEMP/supabase.env"; set +a
+          {
+            echo "SUPABASE_URL=$API_URL"
+            echo "SUPABASE_ANON_KEY=$ANON_KEY"
+            echo "SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY"
+            echo "VITE_SUPABASE_URL=$API_URL"
+            echo "VITE_SUPABASE_ANON_KEY=$ANON_KEY"
+          } >> "$GITHUB_ENV"
+      - run: pnpm build
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm e2e
+      - name: Upload report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14
+      - name: Summary
+        if: ${{ !cancelled() }}
+        run: |
+          echo "Screenshots (phone/light, desktop/dark), the report PDF and any failure traces:" >> "$GITHUB_STEP_SUMMARY"
+          echo "download **e2e-report** below and open \`playwright-report/index.html\`." >> "$GITHUB_STEP_SUMMARY"
