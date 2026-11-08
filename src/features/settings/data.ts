@@ -8,6 +8,7 @@ import type { Json } from "@/lib/database.types";
 import { setMonthStartDay } from "@/lib/budgetMonth";
 import { announce, useLive } from "@/lib/live";
 import { setCurrency } from "@/lib/money";
+import { intakeQuiet, parseFailing } from "@/lib/notify/rules";
 import { DEFAULT_REVIEW_INTERVAL } from "@/lib/review";
 import { supabase, type Db } from "@/lib/supabase";
 
@@ -30,37 +31,49 @@ export interface Backup {
 export interface SettingsData {
   prefs: Prefs;
   lastSmsAt: string | null;
+  /** [5.5] SMS received in the last day: read into the ledger, and left to review. */
+  smsDay: { parsed: number; toReview: number };
   backup: Backup | null;
   counts: { accounts: number; smsMatched: number; categories: number; rules: number; bills: number };
 }
 
 const count = (r: { count: number | null }) => r.count ?? 0;
 
-export async function loadSettings(db: Db): Promise<SettingsData> {
-  const [settings, sms, backup, accounts, matched, categories, rules, bills] = await Promise.all([
-    db.from("settings").select("review_interval_days, alerts, currency, month_start_day").maybeSingle(),
+export async function loadSettings(db: Db, now = new Date()): Promise<SettingsData> {
+  const dayAgo = new Date(now.getTime() - 86_400_000).toISOString();
+  const smsSince = (status: "parsed" | "to_review") =>
     db
       .from("sms_messages")
-      .select("received_at")
-      .order("received_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-    db
-      .from("backup_runs")
-      .select("status, started_at, finished_at, rows_written, tabs, error")
-      .order("started_at", { ascending: false })
-      .limit(1)
-      .maybeSingle(),
-    db.from("accounts").select("id", { count: "exact", head: true }).is("archived_at", null),
-    db
-      .from("accounts")
       .select("id", { count: "exact", head: true })
-      .is("archived_at", null)
-      .not("sms_account_hint", "is", null),
-    db.from("categories").select("id", { count: "exact", head: true }).is("archived_at", null),
-    db.from("payee_rules").select("id", { count: "exact", head: true }),
-    db.from("bills").select("id", { count: "exact", head: true }).is("archived_at", null),
-  ]);
+      .eq("parse_status", status)
+      .gte("received_at", dayAgo);
+  const [settings, sms, backup, accounts, matched, categories, rules, bills, parsed, toReview] =
+    await Promise.all([
+      db.from("settings").select("review_interval_days, alerts, currency, month_start_day").maybeSingle(),
+      db
+        .from("sms_messages")
+        .select("received_at")
+        .order("received_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      db
+        .from("backup_runs")
+        .select("status, started_at, finished_at, rows_written, tabs, error")
+        .order("started_at", { ascending: false })
+        .limit(1)
+        .maybeSingle(),
+      db.from("accounts").select("id", { count: "exact", head: true }).is("archived_at", null),
+      db
+        .from("accounts")
+        .select("id", { count: "exact", head: true })
+        .is("archived_at", null)
+        .not("sms_account_hint", "is", null),
+      db.from("categories").select("id", { count: "exact", head: true }).is("archived_at", null),
+      db.from("payee_rules").select("id", { count: "exact", head: true }),
+      db.from("bills").select("id", { count: "exact", head: true }).is("archived_at", null),
+      smsSince("parsed"),
+      smsSince("to_review"),
+    ]);
   const error = settings.error ?? sms.error ?? backup.error;
   if (error) throw new Error(error.message);
 
@@ -73,6 +86,7 @@ export async function loadSettings(db: Db): Promise<SettingsData> {
       monthStartDay: settings.data?.month_start_day ?? 1,
     },
     lastSmsAt: sms.data?.received_at ?? null,
+    smsDay: { parsed: count(parsed), toReview: count(toReview) },
     backup: b
       ? {
           status: b.status as Backup["status"],
@@ -146,17 +160,23 @@ export function ago(at: string, now = new Date()) {
   return `${days} day${days === 1 ? "" : "s"} ago`;
 }
 
-/** No SMS for this long and the Shortcut row turns amber. */
-export const SMS_QUIET_DAYS = 2;
-
-export function smsState(lastSmsAt: string | null, now = new Date()) {
+/** [5.5] The Shortcut row follows the intake alert rules (src/lib/notify/rules.ts): amber when no SMS came for 8
+ *  daytime hours, or when too many of the last day's SMS could not be read. */
+export function smsState(
+  lastSmsAt: string | null,
+  now = new Date(),
+  smsDay: { parsed: number; toReview: number } = { parsed: 0, toReview: 0 },
+) {
   if (!lastSmsAt) return { tone: "grey" as const, pill: "No SMS yet", meta: "Nothing received yet" };
-  const quiet = now.getTime() - new Date(lastSmsAt).getTime() > SMS_QUIET_DAYS * 86_400_000;
-  return {
-    tone: quiet ? ("amber" as const) : ("green" as const),
-    pill: quiet ? "Quiet" : "✓ Connected",
-    meta: `Last SMS received ${ago(lastSmsAt, now)}`,
-  };
+  const last = `Last SMS received ${ago(lastSmsAt, now)}`;
+  if (intakeQuiet(lastSmsAt, now)) return { tone: "amber" as const, pill: "Quiet", meta: last };
+  if (parseFailing(smsDay))
+    return {
+      tone: "amber" as const,
+      pill: "Not reading",
+      meta: `${last} · ${smsDay.toReview} of ${smsDay.parsed + smsDay.toReview} in a day need a look`,
+    };
+  return { tone: "green" as const, pill: "✓ Connected", meta: last };
 }
 
 const rows = new Intl.NumberFormat("en-KE");

@@ -47,6 +47,8 @@ function fakeDb({
         order: () => q,
         limit: () => q,
         is: () => q,
+        eq: () => q,
+        gte: () => q,
         not: () => ((notNull = true), q),
         maybeSingle: () => q,
         upsert: (values: unknown, options: unknown) => {
@@ -123,6 +125,14 @@ describe("Settings · data & sync", () => {
   it("words each source state", () => {
     expect(smsState(null, NOW)).toMatchObject({ tone: "grey", pill: "No SMS yet" });
     expect(smsState("2026-11-05T09:00:00Z", NOW)).toMatchObject({ tone: "amber", pill: "Quiet" });
+    // [5.5] Same rule as the intake alert: 8 daytime hours. NOW is 12:00 Nairobi; 21:00 the evening before is 1 + 5.
+    expect(smsState("2026-11-07T18:00:00Z", NOW)).toMatchObject({ tone: "green" });
+    expect(smsState("2026-11-07T15:00:00Z", NOW)).toMatchObject({ tone: "amber", pill: "Quiet" }); // 4 + 5
+    expect(smsState("2026-11-08T08:56:00Z", NOW, { parsed: 6, toReview: 4 })).toMatchObject({
+      tone: "amber",
+      pill: "Not reading",
+      meta: "Last SMS received 4 min ago · 4 of 10 in a day need a look",
+    });
     expect(backupState(null, NOW)).toMatchObject({ tone: "grey", pill: "Not run yet" });
     const failed = {
       status: "failed" as const,

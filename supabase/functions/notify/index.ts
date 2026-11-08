@@ -70,7 +70,7 @@ async function facts(db: SupabaseClient, userId: string, now: Date): Promise<Not
   const dayAgo = new Date(now.getTime() - 86_400_000).toISOString();
   const weekAgo = new Date(now.getTime() - 7 * 86_400_000).toISOString();
   const tomorrow = new Date(Date.parse(`${today}T00:00:00Z`) + 86_400_000).toISOString().slice(0, 10);
-  const [settings, review, balances, bills, spends, week] = await Promise.all([
+  const [settings, review, balances, bills, spends, week, lastSms, smsDay] = await Promise.all([
     db.from("settings").select("alerts, currency, review_interval_days").eq("user_id", userId).maybeSingle(),
     db
       .from("reviews")
@@ -107,8 +107,30 @@ async function facts(db: SupabaseClient, userId: string, now: Date): Promise<Not
       .eq("kind", "spending")
       .is("deleted_at", null)
       .gte("occurred_at", weekAgo),
+    // [5.5] Intake monitoring: the newest SMS, and how the last day's SMS were read.
+    db
+      .from("sms_messages")
+      .select("received_at")
+      .eq("user_id", userId)
+      .order("received_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    db
+      .from("sms_messages")
+      .select("parse_status")
+      .eq("user_id", userId)
+      .in("parse_status", ["parsed", "to_review"])
+      .gte("received_at", dayAgo),
   ]);
-  const error = settings.error ?? review.error ?? balances.error ?? bills.error ?? spends.error ?? week.error;
+  const error =
+    settings.error ??
+    review.error ??
+    balances.error ??
+    bills.error ??
+    spends.error ??
+    week.error ??
+    lastSms.error ??
+    smsDay.error;
   if (error) throw new Error(error.message);
 
   return {
@@ -138,6 +160,11 @@ async function facts(db: SupabaseClient, userId: string, now: Date): Promise<Not
       occurredAt: s.occurred_at,
     })),
     weekSpendingCents: -(week.data ?? []).reduce((sum, t) => sum + t.amount_cents, 0),
+    lastSmsAt: lastSms.data?.received_at ?? null,
+    smsDay: {
+      parsed: (smsDay.data ?? []).filter((s) => s.parse_status === "parsed").length,
+      toReview: (smsDay.data ?? []).filter((s) => s.parse_status === "to_review").length,
+    },
   };
 }
 
