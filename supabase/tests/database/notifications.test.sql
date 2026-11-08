@@ -1,7 +1,7 @@
 -- [4.4] notification_log: owner read only, one row per (user, kind, ref); the 15-minute job. Invented data; rolled back.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(7);
+select plan(8);
 
 insert into auth.users (id, instance_id, aud, role, email, raw_app_meta_data, raw_user_meta_data, created_at, updated_at)
 values
@@ -25,6 +25,15 @@ select throws_ok(
      values ('99999999-9999-4999-8999-999999999991', 'nonsense', 'x', 'x') $$,
   '23514', null, 'only known kinds'
 );
+
+-- [5.5] The intake monitoring alerts.
+select lives_ok(
+  $$ insert into public.notification_log (user_id, kind, ref, title)
+     values ('99999999-9999-4999-8999-999999999992', 'intake_quiet', 'quiet:2026-11-08T05:00:00Z', 'No SMS'),
+            ('99999999-9999-4999-8999-999999999992', 'parse_failures', 'parse:2026-11-08', 'SMS not read') $$,
+  'intake_quiet and parse_failures can be logged'
+);
+delete from public.notification_log where user_id = '99999999-9999-4999-8999-999999999992';
 
 set local role authenticated;
 select set_config('request.jwt.claims', '{"sub": "99999999-9999-4999-8999-999999999991", "role": "authenticated"}', true);

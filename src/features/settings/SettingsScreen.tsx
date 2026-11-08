@@ -41,7 +41,7 @@ function ThemeSwitch({ variant }: { variant: "header" | "surface" }) {
 function Sources({ data, now }: { data?: SettingsData; now?: Date }) {
   if (!data) return null;
   const sources = [
-    { emoji: "📲", name: "iPhone Shortcut", ...smsState(data.lastSmsAt, now) },
+    { emoji: "📲", name: "iPhone Shortcut", ...smsState(data.lastSmsAt, now, data.smsDay) },
     { emoji: "📊", name: "Google Sheet backup", ...backupState(data.backup, now) },
   ];
   return (
