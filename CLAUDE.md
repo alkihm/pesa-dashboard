@@ -35,6 +35,11 @@ Read [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) and [docs/DESIGN.md](docs/DESI
 - Money logic (net position, loan allocation, bill status, reconciliation) gets unit tests with Vitest.
 - Every new table gets row-level security and an owner policy in the same migration; `supabase test db` checks it.
 - Keep the raw SMS text on every transaction that came from one; the review screens show it.
+- Do not run the full suite, the build or e2e locally as a matter of routine — CI does that once, on the code as it
+  will be merged (D-017). Locally: `pnpm check:changed`.
+- A visual or end-to-end check you would repeat goes into `e2e/` as a Playwright test, not into a scratch script.
+  Tests that write data use `throwawayUser()`; never add rows to the seed user.
+- When a PR is ready, arm auto-merge (`gh pr merge <n> --auto --squash`); if that is blocked, ask the owner.
 
 ## Commands
 
@@ -46,7 +51,9 @@ Node 24 (`.nvmrc`) and pnpm 9. On the server, run `source ~/.nvm/nvm.sh` first i
 | `pnpm dev --host --port <port>` | Dev server — port per laptop in `SERVER.md` |
 | `pnpm lint` | ESLint |
 | `pnpm typecheck` | TypeScript, strict |
-| `pnpm test` | Vitest once (`pnpm test:watch` to watch) |
+| `pnpm check:changed` | **The local check before a PR** (D-017): Prettier + ESLint on changed files, typecheck, Vitest tests related to the changes. The full suite runs in CI only |
+| `pnpm test` | Vitest once (`pnpm test:watch` to watch) — the whole suite; CI runs it, you rarely need to |
+| `pnpm e2e` | Playwright suite in `e2e/` — runs in CI's `e2e` job; to run it yourself see WORKFLOW.md "Tests and CI" |
 | `pnpm build` | Type check and production build into `dist/` |
 | `pnpm preview` | Serve the production build |
 | `pnpm format` / `pnpm format:check` | Prettier (Markdown is formatted by hand) |

@@ -227,3 +227,21 @@ matches how the money actually arrives. Days 29–31 do not exist in every month
 moving them between months would hide what is owed this month.
 **Rules out:** Converting between currencies; a start day after the 28th; naming a budget month after the month
 it ends in.
+
+## D-017 · 2026-11-08 · Tests run once, in CI, on the merged result
+
+**Decided:** The full Vitest suite, the build, the database tests and the end-to-end tests run once per pull
+request, in GitHub Actions; laptops run only `pnpm check:changed` (changed files and the tests related to them).
+CI has three jobs: `checks` (format, lint, typecheck, Vitest, build), `e2e` (a fresh local Supabase with every
+migration and the seed, `supabase test db`, then the Playwright suite in `e2e/` against a production build at phone
+and desktop widths), and `overlap` (comments when another open PR changes the same files; never fails). `dev`
+requires `checks` and `e2e` and requires branches to be up to date, so each PR is tested on top of the latest `dev`.
+Feature PRs into `dev` merge by auto-merge once green; the owner reviews releases and decisions. End-to-end tests
+that write data use a throwaway user that is deleted afterwards. Per-feature route files, so `routes.tsx` stops
+being shared, come at the start of M5, before the split.
+**Why:** Session 3 (2026-11-08): the same tests ran up to three times on one 8 GB server (both workspaces live on
+it, and Node crashed under the load); CI tested each PR alone, so #125 and #126 both passed and their merge put a
+duplicate `/import` route on `dev`; test rows went into the shared database and were cleaned up by hand; the
+Playwright checks were rewritten in a scratch folder every session; and the owner was needed for every merge.
+**Rules out:** A full local run before every push; GitHub's merge queue (organisation repos only); a separate
+local Supabase stack per laptop (about 1–1.5 GB of RAM each on nascore); visual checks as one-off scripts.

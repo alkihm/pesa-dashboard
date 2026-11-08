@@ -70,23 +70,60 @@ Update your board at the start, when you open or finish a pull request, when you
 Write a note **before** you change something the other laptop depends on (tokens, app shell, router, schema,
 shared types). These files are on the server only — never copy them into the repo.
 
-If both Claude sessions run on the server at the same time, they may also message each other directly
-(Claude Code can see other local sessions). Treat that as a bonus; the board and notes are the record.
+**Talk session to session when both are active.** Claude sessions on the same machine can message each other
+directly (Claude Code lists other local sessions; send with SendMessage). Use it for quick questions that would
+otherwise wait for the next session: "I am about to touch `X`, are you in it?", "is your PR ready to go first?".
+Anything that changes what the other laptop does still goes into `progress/NOTES.md` as well; the notes and the
+boards stay the written record.
 
 ## While working
 
 - Commit small: `type(scope): summary (#issue)`.
 - Push the branch at least once per session and open a **draft** pull request early so the other laptop can
   see it.
-- Test on the lowest rung first: `pnpm test` → your dev server (laptop browser, then the iPhone over the home
-  network or Tailscale).
+- Test on the lowest rung first: `pnpm check:changed` → your dev server (laptop browser, then the iPhone over the
+  home network or Tailscale). The full suite runs in CI (next section).
 - Shared files (design tokens, app shell, router, database schema) change in small pull requests that are
-  merged quickly.
+  merged quickly. The `overlap` job comments on a pull request when another open pull request changes the same
+  files, and lists the shared files it touches.
+
+## Tests and CI (D-017)
+
+Both workspaces run on one server, so every test a laptop runs costs the other laptop too. The full suite runs
+**once, in CI**; laptops check only what they changed.
+
+| Where | What runs |
+|---|---|
+| Your workspace | `pnpm check:changed`: Prettier and ESLint on changed files, the hex-colour check, typecheck, and the Vitest tests whose imports reach a changed file (`vitest --changed origin/dev`, one worker) |
+| CI `checks` job | Prettier, ESLint, typecheck, the whole Vitest suite, production build |
+| CI `e2e` job | A fresh local Supabase (every migration and the seed applied from scratch), `supabase test db` (pgTAP), then the Playwright suite in `e2e/` against a production build, at phone width in light mode and desktop width in dark mode |
+| CI `overlap` job | Comment on the PR naming files that other open PRs also change, and the shared files it touches. Informational only |
+
+- **Every PR is tested on top of the latest `dev`.** `dev` requires branches to be up to date, so a PR that falls
+  behind must be updated before it can merge, and CI runs again on the combined code. Update with
+  `gh pr update-branch <n>` (adds a merge commit to your branch; the squash merge flattens it, so no force-push).
+- **Screenshots come from CI.** The `e2e` artifact (`e2e-report`, linked from the run summary) holds a screenshot of
+  every main screen in both layouts, the month report as a PDF, and traces for any failure. Look there instead of
+  writing a one-off script. A check you would repeat belongs in `e2e/` as a test.
+- **Running e2e yourself** is optional. Build with the local stack's values, serve it on your own port (Hydracore
+  4183, Alfie 4184, see `SERVER.md`) and point the suite at it:
+  ```
+  eval "$(supabase status -o env | sed 's/^/export /')"
+  export SUPABASE_URL=$API_URL SUPABASE_ANON_KEY=$ANON_KEY SUPABASE_SERVICE_ROLE_KEY=$SERVICE_ROLE_KEY
+  VITE_SUPABASE_URL=$API_URL VITE_SUPABASE_ANON_KEY=$ANON_KEY pnpm exec vite build --outDir /tmp/<laptop>-e2e
+  pnpm exec vite preview --outDir /tmp/<laptop>-e2e --host 127.0.0.1 --port <port> &
+  E2E_BASE_URL=http://127.0.0.1:<port> pnpm e2e
+  ```
+- **Tests that write data use a throwaway user** (`throwawayUser()` in `e2e/support.ts`): a new user that owns
+  every row the test creates and is deleted afterwards, with its rows. Read-only tests may use the seed user. Do
+  the same by hand: to try a write on the shared local database, sign up a throwaway account rather than adding
+  rows to `sample@example.test`.
 
 ## Database rules
 
-- One shared local database. Only **one** open pull request may contain migrations at a time — it carries the
-  `db-migration` label. Check before creating a migration.
+- One shared local database. Only **one** open pull request may contain migrations at a time; it carries the
+  `db-migration` label. Check before creating a migration. (The slot protects the shared database while an
+  unmerged migration is applied to it; CI separately proves every migration applies from scratch.)
 - Never edit a migration that is already merged; add a new one.
 - After a migration is merged: in `integration/`, `git pull` then `supabase db reset` (rebuilds the shared dev
   database with seed data). Tell the other laptop in its issue or PR.
@@ -95,11 +132,17 @@ If both Claude sessions run on the server at the same time, they may also messag
 ## Finishing an issue
 
 1. Everything in the issue's **Done when** list is ticked.
-2. `pnpm lint && pnpm typecheck && pnpm test && pnpm build` pass.
-3. Pull request into `dev` with `Closes #<n>`, ready for review; CI green; squash-merge.
+2. `pnpm check:changed` passes.
+3. Pull request into `dev` with `Closes #<n>`, marked ready for review. Then arm auto-merge:
+   `gh pr merge <n> --auto --squash`. GitHub squash-merges once `checks` and `e2e` are green and the branch is up
+   to date. If the session is not allowed to run that command, ask the owner to click **Enable auto-merge**.
+   If CI fails, fix it on the branch; auto-merge stays armed.
 4. After the merge, check the issue closed and its card is in **Done**. The `Closes` line did not fire for #20 and #33;
    if it does not, close the issue by hand with a comment naming the PR.
-5. The other laptop pulls `dev` before its next commit.
+5. The other laptop pulls `dev` before its next commit, and updates any open PR (`gh pr update-branch`).
+
+The owner reviews releases (`dev` → `main`) and decisions (milestone splits, migrations pushed to the cloud
+projects, scope), not every feature merge.
 
 ## End of a session
 
@@ -122,3 +165,5 @@ are pushed to the prod Supabase project as a separate step.
 - Conflict on rebase: resolve in your workspace, run the tests, continue the rebase. Never force-push `dev` or `main`.
 - Shared database broken: in `integration/`, `supabase db reset`.
 - Both laptops changed the same file: the second pull request rebases and resolves; talk it through in the PR.
+- `e2e` fails and you cannot see why: download the `e2e-report` artifact and open the trace of the failing test
+  (`pnpm exec playwright show-trace <trace.zip>`), which replays the run step by step with screenshots.
