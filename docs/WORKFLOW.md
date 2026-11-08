@@ -100,7 +100,7 @@ Both workspaces run on one server, so every test a laptop runs costs the other l
 |---|---|
 | Your workspace | `pnpm check:changed`: Prettier and ESLint on changed files, the hex-colour check, typecheck, and the Vitest tests whose imports reach a changed file (`vitest --changed origin/dev`, one worker) |
 | CI `checks` job | Prettier, ESLint, typecheck, the whole Vitest suite, production build |
-| CI `e2e` job | A fresh local Supabase (every migration and the seed applied from scratch), `supabase test db` (pgTAP), then the Playwright suite in `e2e/` against a production build, at phone width in light mode and desktop width in dark mode |
+| CI `e2e` job | A fresh local Supabase (every migration and the seed applied from scratch), `supabase test db` (pgTAP), then the Playwright suite in `e2e/` against a production build, in four projects: Chromium at phone width (light) and desktop width (dark), WebKit as an iPhone (dark) and Firefox at desktop width (light). Locally only the two Chromium projects run (`E2E_ALL_BROWSERS=1` adds the others where their libraries are installed) |
 | CI `overlap` job | Comment on the PR naming files that other open PRs also change, and the shared files it touches. Informational only |
 
 - **Every PR is tested on top of the latest `dev`.** `dev` requires branches to be up to date, so a PR that falls

@@ -67,7 +67,7 @@ jobs:
             echo "VITE_SUPABASE_ANON_KEY=$ANON_KEY"
           } >> "$GITHUB_ENV"
       - run: pnpm build
-      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm exec playwright install --with-deps chromium firefox webkit
       - run: pnpm e2e
       - name: Upload report
         if: ${{ !cancelled() }}
