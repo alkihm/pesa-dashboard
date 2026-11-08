@@ -12,6 +12,7 @@ import { backupState, savePrefs, smsState, useSettingsData, type Prefs, type Set
 import { ImportExportCard, ManageCard } from "./Links";
 import { MoneyPrefs } from "./MoneyPrefs";
 import { PinCard } from "./PinCard";
+import { PushRow } from "./PushRow";
 import { RemindersCard } from "./Reminders";
 import styles from "./SettingsScreen.module.css";
 
@@ -103,7 +104,7 @@ export function SettingsScreen({ db = supabase, now }: ScreenProps) {
         )}
         <SyncCard sources={<Sources data={data} now={now} />} />
         {data ? (
-          <RemindersCard prefs={data.prefs} onChange={(p) => void change(p)} />
+          <RemindersCard prefs={data.prefs} onChange={(p) => void change(p)} push={<PushRow db={db} />} />
         ) : (
           <Card title="🔔 Reminders & alerts">
             <p className={styles.note}>Loading…</p>

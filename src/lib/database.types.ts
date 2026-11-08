@@ -495,6 +495,45 @@ export type Database = {
         };
         Relationships: [];
       };
+      notification_log: {
+        Row: {
+          created_at: string;
+          devices: number;
+          id: string;
+          kind: string;
+          ref: string;
+          sent_at: string;
+          title: string;
+          updated_at: string;
+          user_id: string;
+          version: number;
+        };
+        Insert: {
+          created_at?: string;
+          devices?: number;
+          id?: string;
+          kind: string;
+          ref: string;
+          sent_at?: string;
+          title: string;
+          updated_at?: string;
+          user_id?: string;
+          version?: number;
+        };
+        Update: {
+          created_at?: string;
+          devices?: number;
+          id?: string;
+          kind?: string;
+          ref?: string;
+          sent_at?: string;
+          title?: string;
+          updated_at?: string;
+          user_id?: string;
+          version?: number;
+        };
+        Relationships: [];
+      };
       payee_rules: {
         Row: {
           category_id: string | null;
@@ -1096,6 +1135,10 @@ export type Database = {
       pin_status: {
         Args: Record<PropertyKey, never>;
         Returns: Database["public"]["CompositeTypes"]["pin_state"];
+      };
+      run_notifications: {
+        Args: Record<PropertyKey, never>;
+        Returns: number;
       };
       run_sheet_backup: {
         Args: Record<PropertyKey, never>;

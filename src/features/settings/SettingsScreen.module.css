@@ -172,3 +172,26 @@
     margin-top: 0;
   }
 }
+
+/* [4.4] Notifications on this device, above the review interval */
+.push {
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.push .row {
+  min-height: 36px;
+  padding: 0;
+}
+
+.push .note {
+  margin-top: 4px;
+}
+
+.choice {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}

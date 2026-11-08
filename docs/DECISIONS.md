@@ -227,3 +227,21 @@ matches how the money actually arrives. Days 29–31 do not exist in every month
 moving them between months would hide what is owed this month.
 **Rules out:** Converting between currencies; a start day after the 28th; naming a budget month after the month
 it ends in.
+
+## D-017 · 2026-11-08 · How notifications are sent
+
+**Decided:** Web push with VAPID keys (D-001: iOS push through the installed home-screen app, iOS 16.4+). Each
+device subscribes from Settings (`push_subscriptions`). Every 15 minutes pg_cron calls `public.run_notifications()`,
+which posts to the `notify` Edge Function with the notify key. The function gathers each user's facts and works out
+what is due with `src/lib/notify/rules.ts`: review past the interval (once a day), an account whose latest SMS
+balance differs from the ledger (once per reading), a bill due tomorrow, a bill overdue (once per bill month), a
+single spend of KES 10,000 or more in the last day (once per transaction), and the Sunday summary after 18:00
+(off by default). Only switches that are on in `settings.alerts` count. `notification_log` is unique per user, kind
+and ref, and a notice is logged before it is pushed, so a notice never goes out twice even if two runs overlap.
+Nothing is sent from 22:00 to 07:00 Nairobi time; what came due then goes out at 07:00. Push services that answer
+404 or 410 have their subscription deleted. The VAPID private key lives only in `private/env/` and the function
+secrets; the subject is the app's https address, not a personal email.
+**Why:** No server of our own to keep running: the database already has pg_cron and pg_net (D-013), and the rules
+stay pure and tested in the app's code. Logging before sending is the simplest way to send at most once.
+**Rules out:** Email or SMS reminders; a native app; per-alert schedules or thresholds (the 10,000 limit is fixed
+for now).
