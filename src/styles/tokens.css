@@ -25,7 +25,7 @@
   --color-header-selected: light-dark(#16475c, #0f1a2e);
   --color-hero: light-dark(#1f5f7a, #17253e);
   --color-on-header: #ffffff;
-  --color-on-header-muted: #dce3ec;
+  --color-on-header-muted: #e1e7ef; /* 4.6:1 on the header with a faint chip behind it ([5.2]) */
   --color-on-header-faint: rgb(255 255 255 / 0.08);
   --color-on-header-line: rgb(255 255 255 / 0.18);
   --color-knob: #ffffff;
@@ -54,7 +54,7 @@
   --tone-red-text: light-dark(#a12626, #ff9c9c);
   --tone-red-dot: light-dark(#d93a3a, #ff6b6b);
   --tone-orange-bg: light-dark(#fde7d6, #3e2a1e);
-  --tone-orange-text: light-dark(#b4541a, #f6a66e);
+  --tone-orange-text: light-dark(#a34a15, #f6a66e); /* 4.9:1 on its pill ([5.2]) */
   --tone-orange-dot: #ed7d31;
   --tone-amber-bg: light-dark(#fdf1d8, #3a3220);
   --tone-amber-text: light-dark(#8a5a00, #f8c76a);
@@ -63,7 +63,7 @@
   --tone-blue-text: light-dark(#20639b, #8fbce6);
   --tone-blue-dot: light-dark(#4b8fd0, #4fa3c7);
   --tone-green-bg: light-dark(#d5f8ea, #123b3a);
-  --tone-green-text: light-dark(#03724e, #05da93);
+  --tone-green-text: light-dark(#03724e, #5ee8b0); /* dark: 4.6:1 on the page background ([5.2]) */
   --tone-green-dot: light-dark(#04a673, #05da93);
   --tone-grey-bg: light-dark(#eef1f5, #2c4166);
   --tone-grey-text: light-dark(#5a677a, #cbd4e0);
