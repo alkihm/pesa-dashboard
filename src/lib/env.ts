@@ -4,6 +4,8 @@
 export interface Env {
   supabaseUrl: string;
   supabaseAnonKey: string;
+  /** Web push public key ([4.4]); optional: without it Settings says notifications are not set up. */
+  vapidPublicKey: string | null;
 }
 
 type RawEnv = Record<string, string | boolean | undefined>;
@@ -24,7 +26,12 @@ export function readEnv(raw: RawEnv): Env {
   const supabaseUrl = value("VITE_SUPABASE_URL");
   if (!URL.canParse(supabaseUrl)) throw new Error(`VITE_SUPABASE_URL is not a URL: ${supabaseUrl}`);
 
-  return { supabaseUrl, supabaseAnonKey: value("VITE_SUPABASE_ANON_KEY") };
+  const vapid = raw.VITE_VAPID_PUBLIC_KEY;
+  return {
+    supabaseUrl,
+    supabaseAnonKey: value("VITE_SUPABASE_ANON_KEY"),
+    vapidPublicKey: typeof vapid === "string" && vapid.trim() ? vapid.trim() : null,
+  };
 }
 
 let cached: Env | undefined;

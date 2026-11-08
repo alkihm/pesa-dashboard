@@ -10,7 +10,12 @@ describe("readEnv", () => {
     expect(readEnv(valid)).toEqual({
       supabaseUrl: "http://127.0.0.1:54321",
       supabaseAnonKey: "test-anon-key",
+      vapidPublicKey: null,
     });
+  });
+
+  it("reads the optional web push key", () => {
+    expect(readEnv({ ...valid, VITE_VAPID_PUBLIC_KEY: " BPublicKey " }).vapidPublicKey).toBe("BPublicKey");
   });
 
   it("names every missing value", () => {

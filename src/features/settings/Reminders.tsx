@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useId, type ReactNode } from "react";
 
 import { Card } from "@/components/Card";
 import { Segmented } from "@/components/Segmented";
@@ -12,9 +12,11 @@ interface Props {
   prefs: Prefs;
   onChange: (prefs: Prefs) => void;
   disabled?: boolean;
+  /** The device's notification row ([4.4]). */
+  push?: ReactNode;
 }
 
-export function RemindersCard({ prefs, onChange, disabled }: Props) {
+export function RemindersCard({ prefs, onChange, disabled, push }: Props) {
   const id = useId();
   const options = INTERVALS.map((d) => ({ value: String(d), label: `${d} days` }));
   // A value saved elsewhere that is not one of the buttons still shows, as its own button.
@@ -26,6 +28,7 @@ export function RemindersCard({ prefs, onChange, disabled }: Props) {
 
   return (
     <Card title="🔔 Reminders & alerts">
+      {push}
       <Segmented
         label="Review reminder every"
         variant="surface"

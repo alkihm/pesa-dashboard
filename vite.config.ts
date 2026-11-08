@@ -33,6 +33,8 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html,png,woff2}"],
         navigateFallback: "/index.html",
         cleanupOutdatedCaches: true,
+        // [4.4] Push notifications: public/push-sw.js shows them and opens the screen they point to.
+        importScripts: ["push-sw.js"],
       },
     }),
   ],
