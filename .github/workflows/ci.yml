@@ -37,7 +37,8 @@ jobs:
   # Playwright suite against a production build. Screenshots, the report PDF and traces are in the artifact.
   e2e:
     name: e2e
-    runs-on: ubuntu-latest
+    # Pinned: Playwright 1.60 cannot install its browser dependencies on ubuntu-latest (26.04). Move both together.
+    runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v7
