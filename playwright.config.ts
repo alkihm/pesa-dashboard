@@ -31,6 +31,22 @@ export default defineConfig({
       name: "desktop-dark",
       use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 900 }, colorScheme: "dark" },
     },
+    // [5.1] The other two engines, CI only: nascore lacks their system libraries (E2E_ALL_BROWSERS=1 forces them).
+    // WebKit is Safari's engine, run as an iPhone (touch, mobile viewport); the owner's real iPhone check is
+    // docs/DEVICE-CHECKLIST.md. Firefox stands in for the other desktop browsers (Edge is Chromium).
+    ...(ci || process.env.E2E_ALL_BROWSERS
+      ? [
+          { name: "iphone-webkit", use: { ...devices["iPhone 15"], colorScheme: "dark" as const } },
+          {
+            name: "desktop-firefox",
+            use: {
+              ...devices["Desktop Firefox"],
+              viewport: { width: 1280, height: 900 },
+              colorScheme: "light" as const,
+            },
+          },
+        ]
+      : []),
   ],
   // Without E2E_BASE_URL, serve the build in dist/ (run `pnpm build` first, with the local stack's env values).
   webServer: process.env.E2E_BASE_URL
