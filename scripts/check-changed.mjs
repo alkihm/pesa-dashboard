@@ -1,5 +1,5 @@
 // Local checks for what this branch changed, compared with origin/dev (or the ref given as the first argument).
-// The full suite, the database tests and the end-to-end tests run once, in CI (D-017).
+// The full suite, the database tests and the end-to-end tests run once, in CI (D-018).
 //
 //   pnpm check:changed            Prettier + ESLint on changed files, typecheck, tests related to the changes
 //   pnpm check:changed origin/main

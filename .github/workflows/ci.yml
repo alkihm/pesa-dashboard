@@ -1,6 +1,6 @@
 name: CI
 
-# The one place the full suite runs (D-017). Laptops run only `pnpm check:changed`.
+# The one place the full suite runs (D-018). Laptops run only `pnpm check:changed`.
 # With "Require branches to be up to date" on dev, every PR is tested on top of the latest dev before it merges.
 
 on:

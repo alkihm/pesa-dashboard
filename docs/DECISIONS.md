@@ -228,7 +228,7 @@ moving them between months would hide what is owed this month.
 **Rules out:** Converting between currencies; a start day after the 28th; naming a budget month after the month
 it ends in.
 
-## D-017 · 2026-11-08 · Tests run once, in CI, on the merged result
+## D-018 · 2026-11-08 · Tests run once, in CI, on the merged result
 
 **Decided:** The full Vitest suite, the build, the database tests and the end-to-end tests run once per pull
 request, in GitHub Actions; laptops run only `pnpm check:changed` (changed files and the tests related to them).

@@ -87,7 +87,7 @@ boards stay the written record.
   merged quickly. The `overlap` job comments on a pull request when another open pull request changes the same
   files, and lists the shared files it touches.
 
-## Tests and CI (D-017)
+## Tests and CI (D-018)
 
 Both workspaces run on one server, so every test a laptop runs costs the other laptop too. The full suite runs
 **once, in CI**; laptops check only what they changed.
