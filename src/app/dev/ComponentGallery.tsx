@@ -83,6 +83,8 @@ export function ComponentGallery() {
             to="/month"
           />
           <KpiCard icon="bill" label="Bills to pay" value="53,700" sub="4 bills · next in 2 days" />
+          <KpiCard tone="green" icon="chart" label="Savings" value="98,000" />
+          <KpiCard tone="amber" icon="bill" label="Short-term debt" value="41,250" />
         </div>
 
         <div className={styles.row}>

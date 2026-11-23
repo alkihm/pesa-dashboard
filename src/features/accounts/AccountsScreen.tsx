@@ -102,18 +102,21 @@ export function AccountsScreen({ db = supabase, now }: ScreenProps) {
                 label="Savings"
                 value={formatAmount(sum.savingsCents)}
                 icon="chart"
+                tone="green"
                 to="/accounts/savings"
               />
               <KpiCard
                 label="Short-term debt"
                 value={formatAmount(sum.shortDebtCents)}
                 icon="bill"
+                tone="amber"
                 to="/accounts/debt"
               />
               <KpiCard
                 label="Long-term debt"
                 value={formatAmount(sum.longDebtCents)}
                 icon="bill"
+                tone="amber"
                 to="/accounts/debt?term=long"
               />
             </section>
