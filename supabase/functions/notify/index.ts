@@ -17,7 +17,9 @@ import {
   quietHours,
   type Notice,
   type NotifyFacts,
+  type PlanFacts,
 } from "../_shared/lib/notify/rules.ts";
+import { milestoneProgress, type Track } from "../_shared/lib/notify/plan.ts";
 
 // The app calls this from the browser (Send a test), so the browser's CORS preflight must be answered. Access is
 // decided by the key or the user's token, never by cookies, so any origin may ask (Vercel previews change address).
@@ -65,12 +67,72 @@ async function push(
   return reached;
 }
 
+/** My plan: the plan and its milestones, each with whether it is reached now (same rules as the app). */
+async function planFacts(db: SupabaseClient, userId: string): Promise<PlanFacts | null> {
+  const plan = await db
+    .from("plans")
+    .select("why, saving_target_cents, payday")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (plan.error) throw new Error(plan.error.message);
+  if (!plan.data) return null;
+  const [items, balances, terms] = await Promise.all([
+    db
+      .from("plan_items")
+      .select(
+        "id, title, emoji, target_on, track, account_id, target_cents, from_cents, done_at, headline, sort_order",
+      )
+      .eq("user_id", userId)
+      .eq("kind", "milestone")
+      .is("archived_at", null),
+    db
+      .from("account_balances")
+      .select("account_id, kind, debt_term, balance_cents")
+      .eq("user_id", userId)
+      .is("archived_at", null),
+    db.from("accounts").select("id, original_cents").eq("user_id", userId),
+  ]);
+  const error = items.error ?? balances.error ?? terms.error;
+  if (error) throw new Error(error.message);
+  const original = new Map((terms.data ?? []).map((t) => [t.id, t.original_cents as number | null]));
+  const accounts = (balances.data ?? []).map((b) => ({
+    id: b.account_id as string,
+    kind: b.kind as string,
+    balanceCents: (b.balance_cents as number) ?? 0,
+    originalCents: original.get(b.account_id) ?? null,
+  }));
+  const shortDebt = (balances.data ?? [])
+    .filter((b) => (b.kind === "loan" || b.kind === "card") && b.debt_term === "short")
+    .reduce((t, b) => t + Math.max(0, -((b.balance_cents as number) ?? 0)), 0);
+  return {
+    why: plan.data.why,
+    savingTargetCents: plan.data.saving_target_cents,
+    payday: plan.data.payday,
+    milestones: (items.data ?? []).map((r) => {
+      const m = {
+        id: r.id,
+        title: r.title,
+        emoji: r.emoji,
+        targetOn: r.target_on,
+        track: r.track as Track,
+        accountId: r.account_id,
+        targetCents: r.target_cents,
+        fromCents: r.from_cents,
+        doneAt: r.done_at,
+        headline: r.headline,
+        sortOrder: r.sort_order,
+      };
+      return { ...m, reached: milestoneProgress(m, accounts, shortDebt).reached };
+    }),
+  };
+}
+
 async function facts(db: SupabaseClient, userId: string, now: Date): Promise<NotifyFacts> {
   const today = nairobiDate(now);
   const dayAgo = new Date(now.getTime() - 86_400_000).toISOString();
   const weekAgo = new Date(now.getTime() - 7 * 86_400_000).toISOString();
   const tomorrow = new Date(Date.parse(`${today}T00:00:00Z`) + 86_400_000).toISOString().slice(0, 10);
-  const [settings, review, balances, bills, spends, week, lastSms, smsDay] = await Promise.all([
+  const [settings, review, balances, bills, spends, week, lastSms, smsDay, plan] = await Promise.all([
     db.from("settings").select("alerts, currency, review_interval_days").eq("user_id", userId).maybeSingle(),
     db
       .from("reviews")
@@ -121,6 +183,7 @@ async function facts(db: SupabaseClient, userId: string, now: Date): Promise<Not
       .eq("user_id", userId)
       .in("parse_status", ["parsed", "to_review"])
       .gte("received_at", dayAgo),
+    planFacts(db, userId),
   ]);
   const error =
     settings.error ??
@@ -165,6 +228,7 @@ async function facts(db: SupabaseClient, userId: string, now: Date): Promise<Not
       parsed: (smsDay.data ?? []).filter((s) => s.parse_status === "parsed").length,
       toReview: (smsDay.data ?? []).filter((s) => s.parse_status === "to_review").length,
     },
+    plan,
   };
 }
 
@@ -222,7 +286,8 @@ Deno.serve(async (req) => {
   const sent: { user: string; kind: string; devices: number }[] = [];
   for (const [userId, subs] of byUser) {
     try {
-      const due = dueNotices(await facts(db, userId, now));
+      const userFacts = await facts(db, userId, now);
+      const due = dueNotices(userFacts);
       if (dryRun) {
         due.forEach((n) => sent.push({ user: userId, kind: `${n.kind} · ${n.title}`, devices: subs.length }));
         continue;
@@ -252,6 +317,19 @@ Deno.serve(async (req) => {
           .eq("ref", notice.ref);
         sent.push({ user: userId, kind: notice.kind, devices });
       }
+      // My plan: a tracked milestone that is reached gets its done_at, so it stays reached from now on.
+      const reachedUnmarked = (userFacts.plan?.milestones ?? []).filter(
+        (m) => m.reached && m.doneAt === null,
+      );
+      if (reachedUnmarked.length)
+        await db
+          .from("plan_items")
+          .update({ done_at: now.toISOString() })
+          .in(
+            "id",
+            reachedUnmarked.map((m) => m.id),
+          )
+          .is("done_at", null);
     } catch (e) {
       console.error("notify failed for a user", (e as Error).message);
     }

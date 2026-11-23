@@ -10,6 +10,7 @@ import {
   type AlertKey,
   type Alerts,
 } from "./alerts.ts";
+import { daysFrom, nextMilestone, type PlanMilestone } from "./plan.ts";
 
 const NAIROBI_MS = 3 * 60 * 60 * 1000;
 const DAY_MS = 86_400_000;
@@ -75,7 +76,19 @@ export interface NotifyFacts {
   lastSmsAt: string | null;
   /** [5.5] SMS received in the last day: read into the ledger, and left to review. */
   smsDay: { parsed: number; toReview: number };
+  /** [My plan] My plan, when the user has one: milestones carry whether they are reached now. */
+  plan?: PlanFacts | null;
 }
+
+export interface PlanFacts {
+  why: string | null;
+  savingTargetCents: number | null;
+  payday: number | null;
+  milestones: (PlanMilestone & { reached: boolean })[];
+}
+
+/** A reached milestone is announced if it was ticked in the last two days or is reached but not marked yet. */
+const REACHED_WINDOW_MS = 2 * DAY_MS;
 
 export interface Notice {
   kind: AlertKey;
@@ -173,6 +186,8 @@ export function dueNotices(f: NotifyFacts): Notice[] {
       url: "/transactions/new",
     });
 
+  if (f.plan) out.push(...planNotices(f, f.plan, today));
+
   if (on("weekly_summary") && nairobiWeekday(f.now) === 0 && nairobiHour(f.now) >= 18)
     out.push({
       kind: "weekly_summary",
@@ -182,5 +197,60 @@ export function dueNotices(f: NotifyFacts): Notice[] {
       url: "/month",
     });
 
+  return out;
+}
+
+const plural = (n: number, one: string) => `${n} ${one}${n === 1 ? "" : "s"}`;
+
+/** [My plan] The payday nudge (from 08:00 on payday) and milestone notices: a week before, and when reached. */
+function planNotices(f: NotifyFacts, plan: PlanFacts, today: string): Notice[] {
+  const out: Notice[] = [];
+  const next = nextMilestone(plan.milestones, (m) => m.reached);
+  const toNext = next?.targetOn ? daysFrom(today, next.targetOn) : null;
+  const countdown =
+    next && toNext !== null && toNext >= 0 ? `${plural(toNext, "day")} to ${next.title.toLowerCase()}.` : "";
+
+  if (f.alerts.plan_payday && plan.payday) {
+    const [y, m, d] = today.split("-").map(Number) as [number, number, number];
+    const lastDay = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    if (d === Math.min(plan.payday, lastDay) && nairobiHour(f.now) >= 8) {
+      const save = plan.savingTargetCents
+        ? `Move ${money(plan.savingTargetCents, f.currency)} to savings before anything else.`
+        : "";
+      out.push({
+        kind: "plan_payday",
+        ref: `payday:${today.slice(0, 7)}`,
+        title: "💸 Payday: pay yourself first",
+        body: [save, countdown].filter(Boolean).join(" ") || "Pay yourself first, then live on the rest.",
+        url: "/plan",
+      });
+    }
+  }
+
+  if (f.alerts.plan_milestone)
+    for (const ms of plan.milestones) {
+      if (!ms.reached && ms.targetOn && daysFrom(today, ms.targetOn) === 7)
+        out.push({
+          kind: "plan_milestone",
+          ref: `soon:${ms.id}`,
+          title: "🏁 One week to go",
+          body: `${ms.title} · ${day(ms.targetOn)}.${plan.why ? ` Your why: ${plan.why}` : ""}`,
+          url: "/plan",
+        });
+      const fresh = ms.doneAt === null || f.now.getTime() - Date.parse(ms.doneAt) <= REACHED_WINDOW_MS;
+      if (ms.reached && fresh) {
+        const after = nextMilestone(
+          plan.milestones.filter((x) => x.id !== ms.id),
+          (x) => x.reached,
+        );
+        out.push({
+          kind: "plan_milestone",
+          ref: `reached:${ms.id}`,
+          title: "🎉 Milestone reached",
+          body: `${ms.title}.${after ? ` Next: ${after.title}.` : " That was the last one. Well done!"}`,
+          url: "/plan",
+        });
+      }
+    }
   return out;
 }

@@ -51,7 +51,7 @@ describe("Export everything", () => {
     fireEvent.click(screen.getByRole("button", { name: "⬇ Download everything (.zip)" }));
 
     expect(
-      await screen.findByText(/^✅ pesa-export-\d{4}-\d{2}-\d{2}\.zip · 5 rows in 13 tables$/),
+      await screen.findByText(/^✅ pesa-export-\d{4}-\d{2}-\d{2}\.zip · 5 rows in 15 tables$/),
     ).toBeInTheDocument();
     expect(download).toHaveBeenCalledOnce();
     const [bytes, fileName] = download.mock.calls[0]!;

@@ -22,6 +22,7 @@ const screens = [
   ["Categories", "/categories"],
   ["New category", "/categories/new"],
   ["Settings", "/settings"],
+  ["My plan", "/plan"],
   ["Export", "/export"],
   ["Import", "/import"],
   ["Report", "/report?m=2026-10"],

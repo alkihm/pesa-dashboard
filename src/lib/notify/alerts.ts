@@ -17,6 +17,13 @@ export const ALERTS = [
   { key: "big_spend", emoji: "💸", label: "A single spend over 10,000", on: true },
   { key: "intake_quiet", emoji: "📵", label: "No SMS for 8 daytime hours", on: true },
   { key: "parse_failures", emoji: "🧩", label: "Many SMS could not be read", on: true },
+  { key: "plan_payday", emoji: "💸", label: "Payday nudge from My plan", on: true },
+  {
+    key: "plan_milestone",
+    emoji: "🏁",
+    label: "My plan milestones: a week before and when reached",
+    on: true,
+  },
   { key: "weekly_summary", emoji: "📅", label: "Weekly summary on Sunday", on: false },
 ] as const;
 

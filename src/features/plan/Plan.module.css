@@ -1,0 +1,423 @@
+/* [My plan] My plan: the Home card and the /plan screen. Colours only from the design tokens (both themes). */
+
+.page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 var(--shell-gutter) 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.status {
+  margin: 0;
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+}
+
+.muted {
+  font-size: 12px;
+  color: var(--color-text-muted);
+}
+
+/* ---- Home card ---- */
+
+.card {
+  background: linear-gradient(160deg, var(--tone-green-bg), var(--color-surface) 70%);
+  border: 1px solid color-mix(in srgb, var(--tone-green-dot) 30%, transparent);
+}
+
+.why {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.45;
+}
+
+.next {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid var(--color-line);
+  background: var(--color-surface);
+  color: inherit;
+  text-decoration: none;
+}
+
+.count {
+  min-width: 56px;
+  padding: 6px 4px;
+  border-radius: var(--radius-control);
+  background: var(--tone-amber-bg);
+  color: var(--tone-amber-text);
+  text-align: center;
+  line-height: 1.1;
+}
+
+.count b {
+  display: block;
+  font-size: 20px;
+}
+
+.count span {
+  font-size: 10px;
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.nextTitle {
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.barWrap {
+  display: block;
+}
+
+.barTop {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 5px;
+  font-size: 12px;
+}
+
+.barTop b {
+  font-weight: var(--font-weight-semibold);
+}
+
+.track {
+  display: block;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-track);
+  overflow: hidden;
+}
+
+.track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+}
+
+.fillDebt {
+  background: var(--tone-amber-dot);
+}
+
+.fillSave {
+  background: var(--tone-green-dot);
+}
+
+.fillDone {
+  background: var(--tone-green-dot);
+}
+
+.streaks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--color-sunk);
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.start {
+  display: inline-block;
+  margin-top: 4px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-link);
+}
+
+/* ---- /plan ---- */
+
+.hero {
+  padding: 20px;
+  border-radius: var(--radius-hero);
+  background: var(--color-hero);
+  color: var(--color-on-header);
+  box-shadow: var(--shadow-card);
+  text-align: center;
+}
+
+.heroLabel {
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-on-header-muted);
+}
+
+.heroValue {
+  display: block;
+  font-size: 46px;
+  font-weight: var(--font-weight-bold);
+  line-height: 1.15;
+}
+
+.heroSub {
+  font-size: 13px;
+  color: var(--color-on-header-muted);
+}
+
+.whyBox {
+  position: relative;
+  margin-top: 14px;
+  padding: 12px 64px 12px 12px;
+  border-radius: 14px;
+  background: var(--color-on-header-faint);
+  text-align: left;
+  font-size: 14px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.45;
+}
+
+.whyBox small {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-on-header-muted);
+}
+
+.heroEdit {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 6px 10px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-accent);
+  cursor: pointer;
+}
+
+.streakGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.streak {
+  padding: 14px;
+  border-radius: 16px;
+  background: var(--color-sunk);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.streak b {
+  font-size: 26px;
+  line-height: 1.1;
+}
+
+.streakBorrow b {
+  color: var(--tone-amber-text);
+}
+
+.streakSave b {
+  color: var(--tone-green-text);
+}
+
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.step {
+  position: relative;
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr) auto;
+  gap: 10px;
+  padding-bottom: 16px;
+}
+
+.step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 14px;
+  top: 30px;
+  bottom: 2px;
+  width: 2px;
+  background: var(--color-line);
+}
+
+.tick {
+  z-index: 1;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid var(--color-line);
+  background: var(--color-surface);
+  display: grid;
+  place-items: center;
+  font-size: 13px;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  padding: 0;
+}
+
+.tick:disabled {
+  cursor: default;
+}
+
+.tickDone {
+  border-color: var(--tone-green-dot);
+  background: var(--tone-green-dot);
+  color: var(--color-on-accent);
+}
+
+.tickNow {
+  border-color: var(--tone-amber-dot);
+  color: var(--tone-amber-text);
+}
+
+.stepBody {
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.stepTitle {
+  display: block;
+  font-size: 13px;
+  font-weight: var(--font-weight-semibold);
+}
+
+.stepMeta {
+  display: block;
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.stepBar {
+  margin-top: 6px;
+}
+
+.rules {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rule {
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 12px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background: var(--color-sunk);
+  font: inherit;
+  font-size: 13px;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.rule span:first-child {
+  font-size: 16px;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  font-size: 13px;
+}
+
+.row + .row {
+  border-top: 1px solid var(--color-line);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
+  border-radius: 16px;
+  background: var(--color-sunk);
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 10px;
+}
+
+.formTwo {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.error {
+  margin: 0;
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--tone-red-text);
+}
+
+.addLink {
+  padding: 4px 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-link);
+  cursor: pointer;
+}
+
+.addLink:focus-visible,
+.heroEdit:focus-visible,
+.tick:focus-visible,
+.stepBody:focus-visible,
+.rule:focus-visible,
+.next:focus-visible {
+  outline: 2px solid var(--color-link);
+  outline-offset: 2px;
+}

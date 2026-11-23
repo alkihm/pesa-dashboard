@@ -625,6 +625,117 @@ export type Database = {
         };
         Relationships: [];
       };
+      plan_items: {
+        Row: {
+          account_id: string | null;
+          archived_at: string | null;
+          created_at: string;
+          done_at: string | null;
+          emoji: string | null;
+          from_cents: number | null;
+          headline: boolean;
+          id: string;
+          kind: string;
+          sort_order: number;
+          target_cents: number | null;
+          target_on: string | null;
+          title: string;
+          track: string;
+          updated_at: string;
+          user_id: string;
+          version: number;
+        };
+        Insert: {
+          account_id?: string | null;
+          archived_at?: string | null;
+          created_at?: string;
+          done_at?: string | null;
+          emoji?: string | null;
+          from_cents?: number | null;
+          headline?: boolean;
+          id?: string;
+          kind: string;
+          sort_order?: number;
+          target_cents?: number | null;
+          target_on?: string | null;
+          title: string;
+          track?: string;
+          updated_at?: string;
+          user_id?: string;
+          version?: number;
+        };
+        Update: {
+          account_id?: string | null;
+          archived_at?: string | null;
+          created_at?: string;
+          done_at?: string | null;
+          emoji?: string | null;
+          from_cents?: number | null;
+          headline?: boolean;
+          id?: string;
+          kind?: string;
+          sort_order?: number;
+          target_cents?: number | null;
+          target_on?: string | null;
+          title?: string;
+          track?: string;
+          updated_at?: string;
+          user_id?: string;
+          version?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "plan_items_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: false;
+            referencedRelation: "account_balances";
+            referencedColumns: ["account_id"];
+          },
+          {
+            foreignKeyName: "plan_items_account_id_fkey";
+            columns: ["account_id"];
+            isOneToOne: false;
+            referencedRelation: "accounts";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      plans: {
+        Row: {
+          created_at: string;
+          id: string;
+          payday: number | null;
+          saving_target_cents: number | null;
+          started_on: string;
+          updated_at: string;
+          user_id: string;
+          version: number;
+          why: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          payday?: number | null;
+          saving_target_cents?: number | null;
+          started_on?: string;
+          updated_at?: string;
+          user_id?: string;
+          version?: number;
+          why?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          payday?: number | null;
+          saving_target_cents?: number | null;
+          started_on?: string;
+          updated_at?: string;
+          user_id?: string;
+          version?: number;
+          why?: string | null;
+        };
+        Relationships: [];
+      };
       push_subscriptions: {
         Row: {
           created_at: string;
