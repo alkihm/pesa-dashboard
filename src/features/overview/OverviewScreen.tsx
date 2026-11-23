@@ -23,6 +23,7 @@ import {
 import { BillsSummaryCard } from "@/features/bills/BillsSummaryCard";
 import { LoanRepaymentCard } from "@/features/loans/LoanRepaymentCard";
 import { currentMonth, leftOver, monthName, totalsFor, trend } from "@/features/month/month";
+import { PlanCard } from "@/features/plan/PlanCard";
 import { summarise } from "@/lib/balances";
 import { CATEGORY_COLOURS, categoryColourVar } from "@/lib/categoryColours";
 import { useAccounts, type Account } from "@/lib/data/accounts";
@@ -154,6 +155,8 @@ export function OverviewScreen({ db = supabase, now }: { db?: () => Db; now?: Da
                 />
               </div>
             </section>
+
+            <PlanCard accounts={all} db={db} now={now} className={styles.plan} />
 
             <AccountsCard accounts={all.filter(isEveryday)} />
             <SavingsCard savings={all.filter(isSavings)} total={sum.savingsCents} />

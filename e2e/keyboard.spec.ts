@@ -14,6 +14,7 @@ const screens = [
   ["New account", "/accounts/new"],
   ["Categories", "/categories"],
   ["Settings", "/settings"],
+  ["My plan", "/plan"],
   ["Export", "/export"],
   ["Import", "/import"],
   ["Report", "/report?m=2026-10"],

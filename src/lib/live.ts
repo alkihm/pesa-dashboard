@@ -15,7 +15,8 @@ export type LiveTable =
   | "accounts"
   | "categories"
   | "reviews"
-  | "settings";
+  | "settings"
+  | "plans";
 
 export const ALL_TABLES: readonly LiveTable[] = [
   "transactions",
@@ -26,6 +27,7 @@ export const ALL_TABLES: readonly LiveTable[] = [
   "categories",
   "reviews",
   "settings",
+  "plans",
 ];
 
 const ticks = new Map<LiveTable, number>(ALL_TABLES.map((t) => [t, 0]));

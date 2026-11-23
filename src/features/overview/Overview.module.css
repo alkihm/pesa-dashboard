@@ -345,6 +345,7 @@
     grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-template-areas:
       "totals totals totals"
+      "plan plan plan"
       "accounts savings debt"
       "trend trend loan"
       "spending bills bills";
@@ -365,6 +366,10 @@
 
   .heroValue {
     font-size: 28px;
+  }
+
+  .plan {
+    grid-area: plan;
   }
 
   .accounts {

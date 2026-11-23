@@ -43,4 +43,6 @@ export const EXPORT_TABLES: readonly ExportTable[] = [
   { name: "reviews", columns: columns<"reviews">()(["id", "started_at", "completed_at", "result", "note", "created_at", "updated_at", "version"]) },
   { name: "review_checks", columns: columns<"review_checks">()(["id", "review_id", "account_id", "ledger_cents", "stated_cents", "resolution", "transaction_id", "created_at", "updated_at", "version"]) },
   { name: "settings", columns: columns<"settings">()(["id", "review_interval_days", "loan_allocation_pct", "theme", "alerts", "currency", "month_start_day", "created_at", "updated_at", "version"]), json: ["alerts"] },
+  { name: "plans", columns: columns<"plans">()(["id", "why", "saving_target_cents", "payday", "started_on", "created_at", "updated_at", "version"]) },
+  { name: "plan_items", columns: columns<"plan_items">()(["id", "kind", "title", "emoji", "target_on", "track", "account_id", "target_cents", "from_cents", "done_at", "headline", "sort_order", "archived_at", "created_at", "updated_at", "version"]) },
 ];
