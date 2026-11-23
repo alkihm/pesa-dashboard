@@ -1,5 +1,5 @@
 import type { Account } from "@/lib/data/accounts";
-import { debtRow, debtRows, goalOf, lockOf, matchStatus } from "./accounts";
+import { byBalance, debtRow, debtRows, goalOf, lockOf, matchStatus } from "./accounts";
 
 const KES = 100;
 const NOW = new Date("2026-11-03T09:00:00Z");
@@ -130,5 +130,27 @@ describe("debt", () => {
       ["paid", undefined, undefined],
     ]);
     expect(rows[4]!.progress).toBe("Nothing owed");
+  });
+});
+
+describe("byBalance, highest balance first", () => {
+  it("puts the highest balance first and keeps the incoming order for equal balances", () => {
+    const list = [
+      account({ account_id: "small", balance_cents: 500 * KES }),
+      account({ account_id: "tie-a", balance_cents: 0 }),
+      account({ account_id: "big", balance_cents: 120_000 * KES }),
+      account({ account_id: "negative", balance_cents: -50 * KES }),
+      account({ account_id: "tie-b", balance_cents: 0 }),
+      account({ account_id: "none", balance_cents: null }),
+    ];
+    expect(byBalance(list).map((a) => a.account_id)).toEqual([
+      "big",
+      "small",
+      "tie-a",
+      "tie-b",
+      "none",
+      "negative",
+    ]);
+    expect(list[0]!.account_id).toBe("small"); // the input is not changed
   });
 });

@@ -17,6 +17,11 @@ export const balance = (a: Account) => a.balance_cents ?? 0;
 /** What a loan or card owes, as a positive number; an overpaid one owes nothing. */
 export const owed = (a: Account) => Math.max(0, -balance(a));
 
+/** Highest balance first (#148). The sort is stable, so equal balances keep the order they came in (sort_order). */
+export function byBalance(accounts: readonly Account[]): Account[] {
+  return [...accounts].sort((a, b) => balance(b) - balance(a));
+}
+
 export function debtOf(accounts: Account[], term: Term) {
   return accounts.filter((a) => isDebt(a) && a.debt_term === term);
 }
