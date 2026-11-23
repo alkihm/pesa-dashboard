@@ -8,14 +8,17 @@ interface KpiCardProps {
   value: ReactNode;
   sub?: ReactNode;
   icon: IconName;
-  /** `hero` for the lead figure (dark card), `plain` for the rest. */
-  tone?: "hero" | "plain";
+  /** `hero` for the lead figure (dark card), `plain` for the rest; `green` and `amber` tint the card with the
+   *  matching tone tokens (issue 150: savings green, debt amber). */
+  tone?: "hero" | "plain" | "green" | "amber";
   /** Makes the whole card a link. */
   to?: string;
 }
 
+const TONE_CLASS = { hero: styles.hero, plain: "", green: styles.green, amber: styles.amber } as const;
+
 export function KpiCard({ label, value, sub, icon, tone = "plain", to }: KpiCardProps) {
-  const className = `${styles.kpi} ${tone === "hero" ? styles.hero : ""}`;
+  const className = `${styles.kpi} ${TONE_CLASS[tone]}`;
   const body = (
     <>
       <span className={styles.top}>

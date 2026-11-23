@@ -18,6 +18,34 @@
   color: var(--color-on-header);
 }
 
+/* Tinted cards (issue 150): the tone tokens the status pills use, so both themes keep 4.5:1. */
+.green {
+  background: var(--tone-green-bg);
+  border-color: var(--tone-green-bg);
+}
+
+.amber {
+  background: var(--tone-amber-bg);
+  border-color: var(--tone-amber-bg);
+}
+
+.green .icon,
+.amber .icon {
+  background: var(--color-surface);
+}
+
+.green .icon,
+.green .label,
+.green .sub {
+  color: var(--tone-green-text);
+}
+
+.amber .icon,
+.amber .label,
+.amber .sub {
+  color: var(--tone-amber-text);
+}
+
 a.kpi:hover {
   border-color: var(--color-border-strong);
 }
