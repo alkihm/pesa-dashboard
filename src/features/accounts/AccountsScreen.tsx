@@ -16,6 +16,7 @@ import { formatAmount, formatCompact, formatKes } from "@/lib/money";
 import { supabase, type Db } from "@/lib/supabase";
 import {
   balance,
+  byBalance,
   debtOf,
   debtRows,
   goalOf,
@@ -63,8 +64,8 @@ export function AccountsScreen({ db = supabase, now }: ScreenProps) {
   const [term, setTerm] = useTerm();
   const all = accounts ?? [];
   const sum = summarise(all);
-  const everyday = all.filter(isEveryday);
-  const savings = all.filter(isSavings);
+  const everyday = byBalance(all.filter(isEveryday));
+  const savings = byBalance(all.filter(isSavings));
   const short = debtOf(all, "short");
   const long = debtOf(all, "long");
   const debtTotal = sum.shortDebtCents + sum.longDebtCents;
@@ -304,7 +305,7 @@ type SavingsFilter = "all" | "flex" | "locked";
 export function SavingsScreen({ db = supabase, now }: ScreenProps) {
   const { accounts, error } = useAccounts(db);
   const [filter, setFilter] = useState<SavingsFilter>("all");
-  const savings = useMemo(() => (accounts ?? []).filter(isSavings), [accounts]);
+  const savings = useMemo(() => byBalance((accounts ?? []).filter(isSavings)), [accounts]);
   const total = savings.reduce((t, a) => t + balance(a), 0);
   const shown = savings.filter((a) => filter === "all" || lockOf(a, now).locked === (filter === "locked"));
   const goal = goalOf(savings);
