@@ -3,7 +3,8 @@
 .page {
   min-height: 100dvh;
   box-sizing: border-box;
-  padding: 64px 28px 36px;
+  padding: max(64px, calc(env(safe-area-inset-top) + 24px)) 28px
+    max(36px, calc(env(safe-area-inset-bottom) + 16px));
   background: var(--color-bg);
   color: var(--color-text);
   display: flex;
@@ -36,7 +37,9 @@
 .dots {
   display: flex;
   gap: 16px;
-  margin: 36px 0 44px;
+  /* Issue 153: the spare height above 700px moves the dots and keypad down, so on a tall phone they sit in the
+     lower half within thumb reach (144px on an iPhone 14, up to 160px); short screens such as an SE keep 36px. */
+  margin: clamp(36px, calc(100dvh - 700px), 160px) 0 44px;
 }
 
 .dot,

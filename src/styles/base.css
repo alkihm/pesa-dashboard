@@ -5,6 +5,16 @@
 }
 
 /*
+ * Phones (issue 152): no double-tap zoom on fast taps (keypad, buttons) while pinch zoom still works, and no text
+ * inflation when the phone turns.
+ */
+html {
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/*
  * Behind the page is the header colour: iOS tints the status bar and the overscroll areas from it, so they
  * match the header and the tab bar. Screens paint the page colour themselves (AppShell, sign-in).
  */
@@ -28,6 +38,19 @@ input,
 select,
 textarea {
   font: inherit;
+}
+
+/*
+ * iOS zooms into any field whose text is under 16px when it gets focus and does not zoom back out, which left
+ * the installed app "drifting" (issue 152). On touch screens every field gets at least 16px; this has to win over
+ * the 12–14px set in component modules, hence !important.
+ */
+@media (pointer: coarse) {
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1em) !important;
+  }
 }
 
 /* Hidden on screen, read by screen readers. */
