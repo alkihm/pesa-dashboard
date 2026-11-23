@@ -2,7 +2,7 @@
 
 The handover note. Read it at the start of every session; update it when something important changes.
 
-_Last updated: 2026-11-08 by Hydracore_
+_Last updated: 2026-11-23 by Alfie_
 
 ## Where things stand
 
@@ -40,14 +40,36 @@ _Last updated: 2026-11-08 by Hydracore_
     its screen yet, #141).
   - **M5 Launch — split confirmed by the owner on 2026-11-08 (D-019).** Plan, order and owner checkpoints in
     [M5 plan](#m5-plan) below.
-- **Latest migrations:** `20261108000000_account_balances_at`, `20261108010000_realtime_publication`,
-  `20261108020000_currency_month_start` and `20261108030000_notifications` — all on the shared local database **and**
-  the dev cloud project. Not on prod (see Supabase below; [5.7] prepares it).
+  - **Owner requests, 2026-11-23 (Alfie, owner present) — all merged:**
+    - #149: Accounts lists everyday and savings accounts by balance, highest first (`byBalance()`); Debt is still
+      ordered by soonest due.
+    - #151: `KpiCard` gains `tone="green" | "amber"`; Accounts shows Savings green and both debt totals amber.
+    - #154: iPhone "drifting" zoom fixed in `base.css`. Fields are at least 16px on touch screens (iOS zooms into
+      smaller ones), plus `touch-action: manipulation` (no double-tap zoom; pinch still works). **Owner to confirm on
+      the iPhone.**
+    - #155: PIN dots and keypad sit lower on tall phones.
+    - **#157 My plan (#156):**
+      - Home `PlanCard` and the `/plan` screen: the owner's why, milestones (`manual` / `account` / `short_debt`
+        tracked; reached ones tick themselves), rules, and two streaks (days without a draw on a short-term loan;
+        months in a row meeting the saving target).
+      - Reminders from `notify`: payday nudge, a week before each milestone, and when one is reached (alert keys
+        `plan_payday`, `plan_milestone`).
+      - Tables `plans` and `plan_items`, both in Export (now 15 tables). Pure rules in `src/lib/notify/plan.ts`
+        (shared with the function).
+- **Latest migrations:** `20261108030000_notifications`, `20261108040000_intake_alerts` and
+  `20261123000000_my_plan` — all on the shared local database **and** the dev cloud project; notify redeployed to dev
+  on 2026-11-23. Not on prod (see Supabase below; [5.7] prepares it).
 - **Intake live on the dev cloud project:** the iPhone Shortcut posts to it alongside the Sheet ([1.6], steps in
   [SHORTCUT.md](SHORTCUT.md)).
 - **Dev cloud data:** the old ledgers (2020–2026) are imported — about 20,600 transactions, 3,823 flagged for review.
-  No opening balances yet, so historic balances do not reconcile until the owner enters them. **Owner: test on dev
-  only for now — do not import into production** until they say so.
+  **On 2026-11-23 the owner's accounts were aligned to their real balances**, with the owner checking each figure:
+  - Dated adjustments and manual readings, so every live account shows "match".
+  - New accounts, bills and category budgets, an emergency-fund goal, and the owner's plan.
+
+  The figures live only in the database and in `private/`, never in the repo. Treat the dev data as the owner's real
+  ledger now: do not "clean it up", and change balances only through Reconcile or a new adjustment. Test rows go on
+  the seed or a throwaway user, never on the owner. **Owner: test on dev only for now — do not import into
+  production** until they say so.
 - **Sheet backup live on dev:** pg_cron runs `sheet-backup` at 23:30 Nairobi time into the "Pesa Dashboard backup"
   Sheet; each run is logged in `backup_runs` (for Settings). Secrets in `private/env/` on the server.
 - **Toolchain:** Node **24** LTS (`.nvmrc`, `engines: 24.x`, #74), pnpm 9.15.0, GitHub CLI,
@@ -89,8 +111,8 @@ Install on the iPhone from the dev preview above in Safari (Share → Add to Hom
 | Laptop | Next issues |
 |---|---|
 | Hydracore | **[5.0] Per-feature routes (#134) first**, then [5.2] Accessibility (#46) → [5.1] Device testing (#45) → [5.7] Production readiness (#135) |
-| Alfie | [5.5] Monitoring (#49) → [5.4] Backups and restore drill (#48). Start [5.5] once [5.0] has merged |
-| Owner | Checkpoints only — see the M5 plan below |
+| Alfie | M5 items done ([5.5] #145, [5.4] #146, #141 tap fix #147). 2026-11-23 owner requests all merged (#149 #151 #154 #155 #157). Next: whatever the owner asks; then delete the scratch scripts holding real figures (`~/scratch-alfie/`) once the owner confirms |
+| Owner | Checkpoints below, plus from 2026-11-23: on the iPhone, confirm the zoom fix (tap into an amount, the screen stays put), the lower PIN keypad, and My plan with its reminders |
 
 ## M5 plan
 
@@ -117,6 +139,11 @@ except at the checkpoints listed, which need the owner's phone, accounts or appr
 - Dev cloud project: pushing a merged migration (dry run first) and deploying functions to **dev** is part of the
   issue — the owner OKed this pattern for [4.9] and [4.4]. Never the prod project.
 - Blocked on the owner? Record it in "Owner checkpoints" in your board, and carry on with the next issue.
+- `dev` requires branches to be **up to date** (strict). With several PRs open, only the first one merges: the
+  others turn BEHIND and auto-merge waits silently. Update and merge them one at a time (`gh pr update-branch <n>`,
+  wait for the merge, then the next one).
+- `check:changed`'s "No hex colours" step flags `#123`-style issue numbers in code comments and CSS. Write
+  "issue 123" there; PR titles and commit messages are fine.
 
 **Owner checkpoints (cannot be done by a session)**
 1. Before the M5 sessions start: on `dev`, **require branches to be up to date** and **require `e2e`**
